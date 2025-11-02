@@ -1,5 +1,126 @@
 ---
-title: "datasci203"
+title: "Predictive Model for Ideal Breastroke Stroke Count in Different Competitive Swimming Scenarios"
+authors: 
+  - name: "Duy Bao Vo"
+    email: "duyvo@ischool.berkeley.edu"
+date: today
 format: pdf
-editor: visual
+editor: source
+bibliography: references.bib
+csl: https://www.zotero.org/styles/apa
+toc: true
 ---
+
+# Overview
+
+Swimming is an important life skill to prevent childhood deaths[^1]. Swimming is also a great life-long sport[^2][^3]. Competitive swimming can help with academic achievement[^4] and develop important skills like stress management, interpersonal harmony, and goal management[^5].
+
+[^1]: In the US, drowing is the leading cause of death for children ages 1-4 and the second leading cause of unintentional injury death for children ages 5-15.\
+    **Source:** Centers for Disease Control and Prevention. (n.d.). *Drowning Facts*. Centers for Disease Control and Prevention, Injury Prevention & Control. Retrieved October 31, 2025, from <https://www.cdc.gov/drowning/data-research/facts/index.html>
+
+[^2]: After accounting for other health factors like age, body mass index, and smoking status, swimmers had 49-53% lower mortality risks compared to the other groups.\
+    **Source:** Chase, N. L., Sui, X., & Blair, S. N. (2008). Swimming and all-cause mortality risk compared with running, walking, and sedentary habits in men. *International Journal of Aquatic Research and Education*, *2*(3), 213–223. [https://doi.org/10.25035/ijare.02.03.03](https://www.google.com/search?q=https://doi.org/10.25035/ijare.02.03.03&authuser=1)
+
+[^3]: Swimming provides a combination of buoyancy for a low-impact workout that reduces joint loading and breakdown and water resistance that allows for effective muscle strengthening and cardiovascular conditioning.\
+    **Source:** Song, J.-A., & Oh, J. W. (2022). Effects of aquatic exercises for patients with osteoarthritis: Systematic review with meta-analysis. *Healthcare*, *10*(3), Article 560. [https://doi.org/10.3390/healthcare10030560](https://www.google.com/search?q=https://doi.org/10.3390/healthcare10030560&authuser=1)
+
+[^4]: A study of 254 Spanish swimmers showed a correlation between a higher the level of physical activity to higher average grades achieved. This relationship was especially significant among girls (P=.04).\
+    **Source:** Ayan, C., Cancela Carral, J., & Montero, C. (2014). Academic performance of young competitive swimmers is associated with physical activity intensity and its predominant metabolic pathway: A pilot study. *Journal of Physical Activity and Health*, *11*(6), 1141–1146. [https://doi.org/10.1123/jpah.2012-0402](https://www.google.com/search?q=https://doi.org/10.1123/jpah.2012-0402&authuser=1)
+
+[^5]: Students in the experimental group of a 15-week swimming intervention program showed significant improvements in emotional stability (P = 0.01) and relaxation (P = 0.02). Positive changes were also observed in social adaptation, including interpersonal harmony (P = 0.03) and perceived social support (P = 0.04). Additionally, academic composure (P = 0.02) and goal management ability (P = 0.04) significantly improved.\
+    **Source:** Wang, W., Yu, L., Huang, L., & Gao, X. (2025). Mechanisms of the impact of exercise intervention on college students' mental health: a longitudinal experimental study using swimming as an example. Frontiers in Psychology, 16, 1535214. doi:10.3389/fpsyg.2025.1535214
+
+@Craig1979 published research in sports biomechanics to help improve individual swimming athlete's performance in 1979. Given the formula
+
+$$
+Velocity (V) = Stroke Rate (SR) \times Stroke Length (SL)
+$$
+
+The study claims that in all four competitive strokes, V increased as a result of increasing the stroke rate SR and decreasing SL. @Vorontsov1991 published research that male swimmers ages 11-15 should focus more on SL. In a follow-up study, @Vorontsov2002 published findings that maintaining a long SL is a key factor in improving performance. Moreover, @Vorontsov2002 claims that that the individual swimming rhythm is largely established by age 11-12.
+
+There is no peer-reviewed research for stroke length of swimmers under 10 years old despite competitive multi-city competitions available for six year-olds with multi-state Age Group Zones (AGZ) Championships for 10 year-olds. Many of these studies are done in meter courses wheras many competitions in the US are done in shorter yard courses.
+
+Being able to calculate SR and SL requires special camera equipment, which we do not have access to. Therefore, we will make use of the proxy, Stroke Count (SC) per lap. SC is propotional to SR and inversely proportional to SL. Accounting for the start distance (how far the swimmer is able to dive and swim underwater or kick off the wall and swim underwater), the relationship between SL and SC is
+
+$$
+StrokeLength(SL)=\frac{PoolLength(L)-StartDistance}{StrokeCount(SC)}
+$$
+
+This study aims to identify the ideal SC taking into account a range of independent variables. We want to provide a framework that can be used to provide a customized SC analysis with several goals:
+
+-   Account for a variety of distances in both meter and yard courses.
+
+-   Be customizable for individual swimmers as young as 6 years old who have demonstrated a sufficient mastery of the stroke (they are not disqualified at a sanctioned swim meet for the stroke).
+
+This initial study will be exclusively on the Breaststroke though its methodologies can be applied to other competitive strokes. The metric is selected for the US, though the framework can be extended to international swimming pools. The primary audience will be individuals working with swimmers under 11 year olds, though the data collection and analysis can be enhanced for older swimmers.
+
+# Experiment Design
+
+## Measurement Metric
+
+There are two type of courses in competitive swimming: long course and short course. Olympic competition happens in long course format where each lap is a 50 meter yard (LCM). Internationally, short courses are 25 meter (SCM) (so LCM = 2 x SCM). In the US, most competitive swimming up through college uses 25 yard short courses (SCY) and 50 meter long courses (LCM), which means LCM \~=2.18722 SCY). This experiment is designed with SCY.
+
+## Selection of Events
+
+Given this study focuses on breaststroke for swimmers under 11 years old, there are several competitive events that are applicable in the US
+
+| **Event** | **Note** |
+| :--- | :--- |
+| 25 Breaststroke SCY | Only for swimmers under 9 years old |
+| 50 Breaststroke SCY | |
+| 50 Breaststroke LCM | |
+| 100 Breaststroke SCY | |
+| 100 Breaststroke LCM | |
+| 100 Individual Medley SCY | |
+| 200 Individual Medley SCY | |
+| 200 Individual Medley LCM | |
+: US Competitive event with Breaststroke for Swimmers Under 11 Years Old {#tbl-competitive_event_with_breastroke}
+
+
+For US non-collegiate swimming, LCM courses are mostly only available during the summer sessions, so we only conduct our study in SCY. An Individual Medley (IM) is where the swimmer swims all four strokes and is usually considered the second most physically demanding swim (eg, a 100 butterfly is the only more demanding swim than a 100 IM). Therefore, it would be too physically demanding for an 8-year old to continuously swim 200 IM's for the purpose of the analysis. Finally, we exclude a 100 Breaststroke event because of time constraints as breaststroke is, by far, the slowest of the competitive strokes. The events that we will conduct the tests are:
+
+* 25 Breaststroke SCY
+* 50 Breaststroke SCY
+* 100 Individual Medley SCY
+
+# Data
+
+## Power Analysis
+
+
+
+## Data Collection
+
+To build the initial model, an 8-year old competitive swimmer will swim laps defined by the power analysis. The swimmer's name is Jadzia Bao Trao Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daugther of Duy Bao Vo.
+
+# Analysis
+
+## Linear Regression Model
+
+We start with the outline of the regression model
+
+$$
+Y = \beta_0 + \beta_1 SC_{25scy} + \beta_2 SC_{50scyL2} + \beta_3 SC_{100IMscyL3} + \epsilon
+$$
+
+# Future Work
+We limited our study to SCY because that's the prevailing courses available during the time of the study in the US. We could enhance the study to LCM and SCM and add additional events we would analyze, including much longer distance events including a 400 IM LCM.
+
+We also limited our study to breaststroke. There are three other competitive strokes we can analyze.
+
+## Additional Variables
+In addition to considering other strokes, there are additional variables that we would add to make this study more relevant to a wider population. We added these variables because we expect they will can improve our model, but are not 
+
+| **Variable** | **Reason** |
+| :--- | :--- |
+| Age | Competitive swimming requires significant concentration to improve techinique. Age is a proxy for maturity. |
+| Number of competitions | Good swimmers know their bodies and how their swim styles. The more experience they have at competition, the more ability they have to feel how their body interact with water. |
+| Weight | Muscle mass is important for generating propulsion. Weight is an imperfect, but useful proxy. Weight also causes reistance. |
+| Height | Arm and leg length can result in longer SL. Height is a useful, albeit imperfect, proxy for arm and leg length. |
+
+
+
+
+```         
+References 
+```
