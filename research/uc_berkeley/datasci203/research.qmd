@@ -1,5 +1,5 @@
 ---
-title: "Predictive Model for Ideal Breastroke Stroke Count in Different Competitive Swimming Scenarios"
+title: "Predictive Model for Ideal Breaststroke Stroke Count in Different Competitive Swimming Scenarios"
 authors: 
   - name: "Duy Bao Vo"
     email: "duyvo@ischool.berkeley.edu"
@@ -30,27 +30,23 @@ Swimming is an important life skill to prevent childhood deaths[^1]. Swimming is
 [^5]: Students in the experimental group of a 15-week swimming intervention program showed significant improvements in emotional stability (P = 0.01) and relaxation (P = 0.02). Positive changes were also observed in social adaptation, including interpersonal harmony (P = 0.03) and perceived social support (P = 0.04). Additionally, academic composure (P = 0.02) and goal management ability (P = 0.04) significantly improved.\
     **Source:** Wang, W., Yu, L., Huang, L., & Gao, X. (2025). Mechanisms of the impact of exercise intervention on college students' mental health: a longitudinal experimental study using swimming as an example. Frontiers in Psychology, 16, 1535214. doi:10.3389/fpsyg.2025.1535214
 
-@Craig1979 published research in sports biomechanics to help improve individual swimming athlete's performance in 1979. Given the formula
+@Craig1979 published research in sports biomechanics to help improve individual swimming athlete's performance in 1979 and published the formula
 
 $$
-Velocity (V) = Stroke Rate (SR) \times Stroke Length (SL)
+Velocity = Stroke Rate \times Stroke Length
 $$
 
-The study claims that in all four competitive strokes, V increased as a result of increasing the stroke rate SR and decreasing SL. @Vorontsov1991 published research that male swimmers ages 11-15 should focus more on SL. In a follow-up study, @Vorontsov2002 published findings that maintaining a long SL is a key factor in improving performance. Moreover, @Vorontsov2002 claims that that the individual swimming rhythm is largely established by age 11-12.
+The study claims that in all four competitive strokes, velocity $V$ increased as a result of increasing the stroke rate $S_R$ and decreasing the stroke length $S_L$. @Vorontsov1991 published research that male swimmers ages 11-15 should focus more on $S_L$. In a follow-up study, @Vorontsov2002 published findings that maintaining a long $S_L$ is a key factor in improving performance for younger swimmers, especially before they turn 11-12 because that's when the individual swimming rhythm is largely established.
 
 There is no peer-reviewed research for stroke length of swimmers under 10 years old despite competitive multi-city competitions available for six year-olds with multi-state Age Group Zones (AGZ) Championships for 10 year-olds. Many of these studies are done in meter courses wheras many competitions in the US are done in shorter yard courses.
 
-Being able to calculate SR and SL requires special camera equipment, which we do not have access to. Therefore, we will make use of the proxy, Stroke Count (SC) per lap. SC is propotional to SR and inversely proportional to SL. Accounting for the start distance (how far the swimmer is able to dive and swim underwater or kick off the wall and swim underwater), the relationship between SL and SC is
+Being able to calculate SR and SL requires special camera equipment, which we do not have access to. Therefore, we will make use of the proxy, Stroke Count ($S_C$) per lap. $S_C$ is propotional to $S_R$ and inversely proportional to $S_L$. Accounting for the start distance (how far the swimmer is able to dive and swim underwater or kick off the wall and swim underwater), the relationship between $S_L$ and $S_C$ is
 
 $$
-StrokeLength(SL)=\frac{PoolLength(L)-StartDistance}{StrokeCount(SC)}
+StrokeLength=\frac{PoolLength-StartDistance}{StrokeCount}
 $$
 
-This study aims to identify the ideal SC taking into account a range of independent variables. We want to provide a framework that can be used to provide a customized SC analysis with several goals:
-
--   Account for a variety of distances in both meter and yard courses.
-
--   Be customizable for individual swimmers as young as 6 years old who have demonstrated a sufficient mastery of the stroke (they are not disqualified at a sanctioned swim meet for the stroke).
+This study aims to identify the ideal $S_C$ taking into account a range of independent variables. We want to provide a framework that can be used to provide analysis for individual swimmers as young as 6 years old who have demonstrated a sufficient mastery of the stroke (they are not disqualified at a sanctioned swim meet for the stroke) and is useful for swimmers under 11 years old.
 
 This initial study will be exclusively on the Breaststroke though its methodologies can be applied to other competitive strokes. The metric is selected for the US, though the framework can be extended to international swimming pools. The primary audience will be individuals working with swimmers under 11 year olds, though the data collection and analysis can be enhanced for older swimmers.
 
@@ -64,6 +60,7 @@ There are two type of courses in competitive swimming: long course and short cou
 
 Given this study focuses on breaststroke for swimmers under 11 years old, there are several competitive events that are applicable in the US
 
+::: {tbl-colwidths="[40,60]"}
 | **Event** | **Note** |
 | :--- | :--- |
 | 25 Breaststroke SCY | Only for swimmers under 9 years old |
@@ -75,13 +72,14 @@ Given this study focuses on breaststroke for swimmers under 11 years old, there 
 | 200 Individual Medley SCY | |
 | 200 Individual Medley LCM | |
 : US Competitive event with Breaststroke for Swimmers Under 11 Years Old {#tbl-competitive_event_with_breastroke}
+:::
 
 
 For US non-collegiate swimming, LCM courses are mostly only available during the summer sessions, so we only conduct our study in SCY. An Individual Medley (IM) is where the swimmer swims all four strokes and is usually considered the second most physically demanding swim (eg, a 100 butterfly is the only more demanding swim than a 100 IM). Therefore, it would be too physically demanding for an 8-year old to continuously swim 200 IM's for the purpose of the analysis. Finally, we exclude a 100 Breaststroke event because of time constraints as breaststroke is, by far, the slowest of the competitive strokes. The events that we will conduct the tests are:
 
-* 25 Breaststroke SCY
-* 50 Breaststroke SCY
-* 100 Individual Medley SCY
+* 25 BR SCY
+* 50 BR SCY
+* 100 IM SCY
 
 # Data
 
@@ -91,36 +89,181 @@ For US non-collegiate swimming, LCM courses are mostly only available during the
 
 ## Data Collection
 
-To build the initial model, an 8-year old competitive swimmer will swim laps defined by the power analysis. The swimmer's name is Jadzia Bao Trao Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daugther of Duy Bao Vo.
+To build the initial model, an 8-year old competitive swimmer will swim laps defined by the power analysis. The swimmer's name is Jadzia Bao Tran Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daugther of Duy Bao Vo.
+
+| **Parameter** | **Use** |
+| :--- | :--- |
+| Start Timestamp | Used in conjunction with the End Timestamp to determine the time the swimmer took to complete the leg. Having the timestamp gives us resolution if we ever wanted to study effects of specific time of the year / month / week / day and ignore stale data. |
+| End Timestamp | Used in conjunction with the Start Timestamp to determine the time the swimmer took to complete the leg. Having the timestamp gives us resolution if we ever wanted to study effects of specific time of the year / month / week / day and ignore stale data. |
+| Stroke Count | The number of strokes the swimmer took to complete the lap. |
+| Data Entry Type | One of \{25, 50L1, 50L2, 100IM\} |
+: Definition of Input Parameters {#tbl-definition_input_parameters}
 
 # Analysis
+
+## Indicator Variables or Interaction Terms
+When building the linear model, we need to either use dummy / indicator variables or interaction terms to account for penalties in longer swim events:
+
+* Fatigue is especially pronounced in an IM race where breaststroke is the third leg of the race where the swimmer has expended a significant amount of energy and must also reserve the energy for the last stroke of the race, freestyle, where the swimmer is expected to sprint because freestyle is the fastest of the four strokes.
+* Turns and pull out distance are important because they will determine how much of the lap the swimmer has to swim. The ensuring turns and pull out distance will always be slower than the original start distance because the swimmer is jumping into the water as opposed to swimming in the water.
 
 ## Linear Regression Model
 
 We start with the outline of the regression model
 
 $$
-Y = \beta_0 + \beta_1 SC_{25scy} + \beta_2 SC_{50scyL2} + \beta_3 SC_{100IMscyL3} + \epsilon
+T_{leg} = \beta_0 + \beta_1 S_C + \beta_2 I_{50\_BR\_SCY} + \beta_3 I_{100\_IM\_SCY} + \epsilon
 $$
+
+::: {tbl-colwidths="[20,80]"}
+| Variable | Definition |
+| :--- | :--- |
+| $T_{leg}$ | The timing of how long it took for the swimmer to complete the breastroke swim. For the data entry of types 25 and 50L1, this is the time it takes the swimmer to swim the first lap. For 50L2, this is the time it takes the swimmer to swim the second lap. For 100IM, this is the time it takes for the swimmer to swim the breaststroke leg of the IM.
+| $\beta_0$ | This is the time needed to travel the entire distance of the first lap, assuming no stroke is taken. This is theoretically achievable for any stroke in a 25 SCY, 25 SCM, and 50 LCM scenario by a swimmer diving in and gliding to the other side without taking a single stroke. The values are in milliseconds. |
+| $\beta_1$ | The increase or decrease in time for each stroke the swimmer takes. |
+| $S_C$ | The stroke count that the swimmer takes for the given leg. |
+| $\beta_2$ | The combined lap penalty of a 50 SCY where the swimmer has to turn and pull out (which will always be slower than a good dive and start pull out) and fatigue from the previous lap. |
+| $I_{50BreastSCY}$ | An indicator variable; 1 if this is the 2nd leg of a 50 Breast SCY and 0 otherwise. |
+| $\beta_3$ | The combined lap penalty of a 100 IM where the swimmer has to turn and pull out (which will always be slower than a good dive and start pull out) and fatigue from swimming the previous two strokes. |
+| $I_{100IMSCY}$ | An indicator variable; 1 if this is the breaststroke leg of a 100 IM SCY and 0 otherwise. |
+| $\epsilon$ | The residual of the actual observed time vs that predicted by the model. |
+: Definition of Variables {#tbl-definition_of_variables}
+:::
+
+Once we've collected data outlined in @tbl-definition_input_parameters, we'll use the Ordinary Least Squares (OLS) method to calculate the vector **$\hat{\beta}$**, which contains all of our regression coefficients.
+
+### Validation of Baseline
+Our model does not differentiate the data from a 25 SCY with a that of the first leg of a 50 SCY. We will note in our data collection if the data is from a 25 SCY or the first leg of a 50 SCY. We will have the swimmer swim both a 25 SCY and 50 SCY and use the data from the 25 SCY to help validate our baseline.
+
+## Deriving Optimal Stroke Count
+
+Once we've collected the data and used OLS to calculate the regression coefficients, we end up with the predictive equation
+
+$$
+\hat{T_{leg}} = \hat{\beta_0} + \hat{\beta_1} S_C + \hat{\beta_2} I_{50\_BR\_SCY} + \hat{\beta_3} I_{100\_IM\_SCY}
+$$
+Next, we group the times first by the Data Entry Type as defined in @tbl-definition_input_parameters
+
+* 25 and 50L1 are grouped together
+* 50L2
+* 100IM
+
+After the grouping by the Data Entry Type, we group by the stroke count so we can calculate the following statistic:
+
+* mean ($\bar{x}$)
+* median ($\tilde{x}$)
+* fastest ($x_{fast}$)
+* slowest ($x_{slow}$)
+* sample standard deviation ($s$)
+
+The optimal stroke count for each swimmer will also likely account for a swimmer's risk profile. For example, all of the following scenarios are possible for a given swimmer:
+
+* $SC_1$ is associated with the two fastest times.
+* $SC_2$ has the fastest mean, but the 3rd biggest sample standard deviation.
+* $SC_3$ has the second fastest mean, but the smallest sample standard deviation.
+
+Using the grouping of times, we can define the $T_{Target}$ and calculate the optimal $S_C$ for each of the three scenarios:
+
+$$
+S_C = \frac{T_{Target} - \hat{\beta_0}}{\hat{\beta_1}}
+$$ {#eq-optimal_stroke_count_25} Optimal Stroke Count for 25 BR SCY or First Leg of 50 BR SCY
+
+$$
+S_C = \frac{T_{Target} - \hat{\beta_0} - \hat{\beta_2}}{\hat{\beta_1}}
+$$ {#eq-optimal_stroke_count_50} Optimal Stroke Count for Second Leg of 50 BR SCY
+
+$$
+S_C = \frac{T_{Target} - \hat{\beta_0} - \hat{\beta_3}}{\hat{\beta_1}}
+$$ {#eq-optimal_stroke_count_100IM} Optimal Stroke Count for Breaststroke Leg of 100 IM SCY
+
+### Case Study: Jadzia Bao Tran Vo
+
+Based on the following data set, we have computed the following for Jadzia Vo:
+
+| **$S_C$** | **$\bar{x}$** | **$x_{fast}$** | **$s$** | **$x_{slow}$** | **$\tilde{x}$** |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+: Jadzia Vo's Stroke Count Analysis for 25 and 50L1 Entries
+
+| **$S_C$** | **$\bar{x}$** | **$x_{fast}$** | **$s$** | **$x_{slow}$** | **$\tilde{x}$** |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+: Jadzia Vo's Stroke Count Analysis for 50L2 Entries
+
+| **$S_C$** | **$\bar{x}$** | **$x_{fast}$** | **$s$** | **$x_{slow}$** | **$\tilde{x}$** |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+: Jadzia Vo's Stroke Count Analysis for 100IM Entries
+
+
+### Limitation on Applicability to Individual Medley (IM) Events
+
+IM's are inherently different from other competitive events because the swimmer must swim all four strokes. Swimmers have strokes that they specialize in. For example, Katie Ledecky, who holds the world record for most gold medals won by a female swimmer, has only ever swam freestyle events at the Olympics [@OlympicsLedecky]. Michael Phelps, who holds the world record for most gold medals won by a male swimmer [@OlympicsPhelps], has never swam an individual backstroke or breaststroke event at the Olympics [@OlympediaPhelpsIndividualEvents]. When optimizing for IM, it's important to consider the strenghts of the swimmer, which is rarely breaststroke. For many swimmers, including Jadzia Vo, optimizing the breaststroke time in an IM will likely lead to a suboptimal time in the IM. However, this study does provide some value in helping determine an optimal IM strategy.
+
+If we wanted to find the optimal S_C for breaststroke that minimizes the overall 100 IM time, we'll need to have four regression models (one for each stroke), where $Leg$ accounts for how far in the event the stroke is (e.g. butterfly is the first stroke so the swimmer is fresh and breaststroke is the third stroke so the swimmer is likely fatigue):
+$$
+T_{leg} = \beta_0 + \beta_1 S_C + \beta_2 Leg + \epsilon
+$$ {#eq-optimal_stroke_per_leg}
+
+USA Swimming has a Power Point Calculator at <https://data.usaswimming.org/datahub/powerpointcalculator> that can help determine the relative strenghts of a swimmer's stroke accross different events. There are some notable idiosyncrasies about the data:
+
+* Age group ranges are defined by USA swimming. For instance, for a given event like 50 FR SCY, a seven year old and an eight year old will be compared together whereas a nine year old and a ten year old will be compared together. This means that a swimmer who just turned eight yesterday will have their time compared with a swimmer who will turn 9 tomorrow.
+* There is no fraction, so we used \pm 6 months to determine the age.
+* For events that there is no time standard for (e.g. swimmers under 9 years old do not have time standards for a 500 FR SCY), they will be compared against the first group where the time standard applies. For example, a swimmer who turned 7 yesterday and swims a 500 FR SCY will be compared to a swimmer who will turn 11 tomorrow.
+
+We can use the power points to determine what is likely the swimmer's best stroke and prioritize that when optimizing for an IM swim. We would then define the $T_{Target}$ for each stroke and find the corresponding $S_C$ for that stroke similiar to @eq-optimal_stroke_count_25, @eq-optimal_stroke_count_50, and @eq-optimal_stroke_count_100IM.
+
+As an example, below is the data compiled from Jadzia Vo's swimming records at <https://www.swimcloud.com/swimmer/2555077/>
+
+| **Event** | **Age** | **Best Time** | **Power Points** |
+| :--- | :--- | :--- | :--- |
+| 50 FR SCY | 8 | 39.22 | 241 |
+| 100 FR SCY | 8 | 1:30.30 | 131 |
+| 200 FR SCY | 7 | 3:34:65 | 16 |
+| 500 FR SCY | 7 | 8:57.53	| 76 |
+| 50 BK SCY | 8 | 44.96 | 242 |
+| 100 BK SCY | 7 | 1:50.41 | 62 |
+| 50 BR SCY | 8 | 52.63	| 207 |
+| 100 BR SCY | 7 | 1:57.03 | 188 |
+| 50 FL SCY | 8 | 43.56 | 242 |
+| 100 FL SCY | 7 | 2:21.39 | 1 |
+| 100 IM SCY | 8 | 1:36.42 | 269 |
+| 200 IM SCY | 7 | 3:50.64 | 84 |
+| 50 FR LCM | 7 | 48.85 | 97 |
+| 100 FR LCM | 8 | 1:41.90 | 156 |
+| 200 FR LCM | 8 | 3:37.42 | 142 |
+| 400 FR LCM | 8 | 7:43.73	| 130 |
+| 50 BK LCM | 8 | 54.50 | 164 |
+| 100 BK LCM | 8 | 1:52.15 | 259 |
+| 200 BK LCM | 8 | 4:00.86 | 1 |
+| 50 BR LCM | 8 | 1:01.33	| 198 |
+| 100 BR LCM | 8 | 2:19.21 | 138 |
+| 200 BR LCM | 8 | 4:47.47 | 1 |
+| 50 FL LCM | 8 | 50.22 | 211 |
+| 100 FL LCM | 8 | 2:02.80 | 168 |
+| 200 IM LCM | 8 | 4:06.95 | 189 |
+: USA Swimming Power Points for Jadzia Vo {#tbl-power_points_jadzia_vo}
+
+To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia's breaststroke is the her weakest whereas her other three strokes are effectively equally strong. This would lead to a $T_{Target}$ of as fast as possible that we can use with @eq-optimal_stroke_per_leg for the other three strokes. The challenge will be to find $T_{Target}$ for breaststroke (3rd leg) that is as fast as possible without materially impacting $T_{Target}$ for freestyle (4th and final leg). Once we know the $T_{Target}$ for breaststroke, we can use @eq-optimal_stroke_count_100IM to find $S_C$ for breaststroke that optimizes for the 100 IM.
 
 # Future Work
 We limited our study to SCY because that's the prevailing courses available during the time of the study in the US. We could enhance the study to LCM and SCM and add additional events we would analyze, including much longer distance events including a 400 IM LCM.
 
-We also limited our study to breaststroke. There are three other competitive strokes we can analyze.
+We also limited our study to breaststroke. There are three other competitive strokes we can analyze. We can then build four regression models to determine the optimal strategy for a 100 IM.
+
+Our study does not consider the psychological implication of swimming a single lap vs the first lap of a longer event. For example a swimmer who swims a 25 SCY might perform different than the first leg of a 50 SCY. In theory, there should be no distinction. However, in practice, especially for younger swimmers, there might be a psychological difference between swimming a 25 SCY vs the first leg of a 50 SCY.
 
 ## Additional Variables
-In addition to considering other strokes, there are additional variables that we would add to make this study more relevant to a wider population. We added these variables because we expect they will can improve our model, but are not 
+In addition to considering other strokes, there are additional variables that we would add to make this study more relevant to a wider population. We added these variables because we expect they will can improve our model and are not too onerous to collect.
 
+::: {tbl-colwidths="[35,65]"}
 | **Variable** | **Reason** |
 | :--- | :--- |
 | Age | Competitive swimming requires significant concentration to improve techinique. Age is a proxy for maturity. |
 | Number of competitions | Good swimmers know their bodies and how their swim styles. The more experience they have at competition, the more ability they have to feel how their body interact with water. |
 | Weight | Muscle mass is important for generating propulsion. Weight is an imperfect, but useful proxy. Weight also causes reistance. |
 | Height | Arm and leg length can result in longer SL. Height is a useful, albeit imperfect, proxy for arm and leg length. |
+:::
 
 
 
-
-```         
-References 
+```
+References
 ```
