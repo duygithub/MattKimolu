@@ -11,9 +11,16 @@ csl: https://www.zotero.org/styles/apa
 toc: true
 ---
 
+
+```{r setup}
+library(ggplot2)  # For plots
+library(readr)    # For loading your CSV file (read_csv)
+library(tidyverse) # For functions like mutate
+```
+
 # Overview
 
-Swimming is an important life skill and can prevent a significant number of childhood deaths[^1]. Swimming is also a great life-long sport[^2] [^3]. Competitive swimming can help with academic achievement[^4] and develop important skills like stress management, interpersonal harmony, and goal management[^5].
+Swimming is an important life skill and can prevent a significant number of childhood deaths[^1]. Swimming is also a great life-long sport[^2] [^3]. Competitive swimming can help with academic achievement[^4] and develop important skills like stress management, interpersonal harmony, and goal management[^5]. This study provies an explanatory framework to help young competitive swimmers swim breaststroke faster.
 
 [^1]: In the US, drowning is the leading cause of death for children ages 1-4 and the second leading cause of unintentional injury death for children ages 5-15.\
     **Source:** Centers for Disease Control and Prevention. (n.d.). *Drowning Facts*. Centers for Disease Control and Prevention, Injury Prevention & Control. Retrieved October 31, 2025, from <https://www.cdc.gov/drowning/data-research/facts/index.html>
@@ -147,23 +154,58 @@ Our model does not differentiate the data from a 25 SCY with a that of the first
 
 # Data
 
+## Data Format
+
+We will collect data in csv files with the title format YYYY_MM_DD_-8.csv where -8 is the current offset from GMT as defined below. Collecting the date and offset gives us resolution if we ever wanted to study effects of specific time of the year / month / week / day and ignore stale data.
+
+| **Parameter** | **Use** |
+| :--- | :--- |
+| event_ordinal | The first event of the file is 1 and subsequent events are incremented by 1. |
+| start_time | The local HH:mm:ss in 24-hour format. For multi-lap swim, this value is null. |
+| elapsed_time | How long it took the swimmer to complete the lap with millisecond resolution. |
+| stroke_count | The number of strokes the swimmer took to complete the lap. |
+| data_entry_type | One of \{25, 50L1, 50L2, 100IM\} |
+: Definition of Input Parameters {#tbl-definition_input_parameters}
+
 ## Deriving Sample Size
 
 ### Exploratory Data Analysis
 
-It's helpful to start with an exploratory data set to have a sense of the relationship between $S_C$ and $T_{lap}$. To start, we had one test subject, Jadzia Bao Tran Vo, swim 3 laps of 25 BR SCY at 13, 16, 18, 20, and 23 strokes with rest times defined by @tbl-rest_times. She will swim the strokes in increasing order of stroke counts, then decreasing, then increasing again.
+It's helpful to start with an exploratory data set to have a sense of the relationship between $S_C$ and $T_{lap}$. To start, we had one test subject swim 3 laps of 25 BR SCY at 10, 14, 17, 20, and 24 strokes with rest times defined by @tbl-rest_times. She will swim the strokes in increasing order of stroke counts, then decreasing, then increasing again.
+
+The swimmer's name is Jadzia Bao Tran Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daughter of Duy Bao Vo.
+
+```{r load-data-tidyverse}
+exploratory_data <- read.csv("data_template_v1.csv")
+
+# head(exploratory_data)
+
+names(exploratory_data)
+
+prepped_data <- mutate(
+  exploratory_data,
+  # Create the new grouping variable
+  swim_group = case_when(
+    data_entry_type %in% c("25", "50L1") ~ "25_50L1",
+    data_entry_type == "50L2" ~ "50L2"
+  ),
+    
+  time_seconds = as.numeric(ms(elapsed_time))
+)
+
+summary_stats <- summarize(group_by(prepped_data, swim_group), mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
+
+knitr::kable(
+  summary_stats, 
+  caption = "Summary Statistics for Swim Times by Group {#tbl-Summary Statistics of Exploratory Data}"
+)
+
+```
+
 
 ## Data Collection
 
-To build the initial model, an 8-year old competitive swimmer will swim laps defined by the power analysis. The swimmer's name is Jadzia Bao Tran Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daugther of Duy Bao Vo.
 
-| **Parameter** | **Use** |
-| :--- | :--- |
-| Start Timestamp | Used in conjunction with the End Timestamp to determine the time the swimmer took to complete the leg. Having the timestamp gives us resolution if we ever wanted to study effects of specific time of the year / month / week / day and ignore stale data. |
-| End Timestamp | Used in conjunction with the Start Timestamp to determine the time the swimmer took to complete the leg. Having the timestamp gives us resolution if we ever wanted to study effects of specific time of the year / month / week / day and ignore stale data. |
-| Stroke Count | The number of strokes the swimmer took to complete the lap. |
-| Data Entry Type | One of \{25, 50L1, 50L2, 100IM\} |
-: Definition of Input Parameters {#tbl-definition_input_parameters}
 
 # Analysis
 
@@ -171,7 +213,7 @@ To build the initial model, an 8-year old competitive swimmer will swim laps def
 
 ## Deriving Optimal Stroke Count
 
-Once we've collected the data and used OLS to calculate the regression coefficients, we end up with the predictive equation
+Once we've collected the data and used OLS to calculate the regression coefficients, we end up with the equation
 
 $$
 \hat{T}_{lap} = \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 I_{50\_BR\_SCY} + \hat{\beta}_3 I_{100\_IM\_SCY}
