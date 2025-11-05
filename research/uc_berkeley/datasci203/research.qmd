@@ -12,10 +12,12 @@ toc: true
 ---
 
 
-```{r setup}
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
 library(ggplot2)  # For plots
 library(readr)    # For loading your CSV file (read_csv)
 library(tidyverse) # For functions like mutate
+
+alpha <- .05
 ```
 
 # Overview
@@ -175,33 +177,93 @@ It's helpful to start with an exploratory data set to have a sense of the relati
 
 The swimmer's name is Jadzia Bao Tran Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daughter of Duy Bao Vo.
 
-```{r load-data-tidyverse}
+```{r analyze_exploratory_data, echo=FALSE, message=FALSE, warning=FALSE}
 exploratory_data <- read.csv("data_template_v1.csv")
 
-# head(exploratory_data)
-
-names(exploratory_data)
+# prepped_data <- mutate(
+#   exploratory_data,
+#   # Create the new grouping variable
+#   swim_group = case_when(
+#     data_entry_type %in% c("25", "50L1") ~ "25_50L1",
+#     data_entry_type == "50L2" ~ "50L2"
+#   ),
+#     
+#   time_seconds = as.numeric(ms(elapsed_time))
+# )
 
 prepped_data <- mutate(
   exploratory_data,
-  # Create the new grouping variable
-  swim_group = case_when(
-    data_entry_type %in% c("25", "50L1") ~ "25_50L1",
-    data_entry_type == "50L2" ~ "50L2"
-  ),
-    
   time_seconds = as.numeric(ms(elapsed_time))
 )
 
-summary_stats <- summarize(group_by(prepped_data, swim_group), mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
+# summary_stats <- summarize(group_by(prepped_data, swim_group), mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
+
+# summary_stats <- summarize(prepped_data, mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
+
+summary_stats <- summarize(group_by(prepped_data, stroke_count), mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
 
 knitr::kable(
-  summary_stats, 
-  caption = "Summary Statistics for Swim Times by Group {#tbl-Summary Statistics of Exploratory Data}"
+  summary_stats,
+  caption = "Summary Statistics for Swim Times by Group {#tbl-summary_statistics_exploratory_data}",
+  col.names = c("**$\\mathbf{S_c}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
+  
+  # Tell kable to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.  
+  escape = FALSE
+)
+```
+
+
+```{r plot_exploratory_data}
+#| label: fig-exploratory_data_stroke_count_elapsed_time_plot 
+#| fig-cap: "Distribution of Elapsed Time for each Stroke Count"
+#| fig-pos: H
+#| echo: false
+#| message: false
+#| warning: false
+ggplot(exploratory_data, aes(x = factor(prepped_data$stroke_count), y = prepped_data$time_seconds)) +
+geom_jitter(width = 0.2, alpha = 0.7) + # `alpha` adds transparency
+labs(
+  # title = "Elapsed Lap Time by Stroke Count",
+  x = expression(bold(S[C])),
+  y = expression(bold(T[lap]))
 )
 
 ```
 
+```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
+make_data_from_exploratory_data <- function(n) { 
+  df_ <- data.frame(
+    t_lap = rnorm(
+      n = n * nrow(summary_stats),
+      mean = rep(summary_stats$mean_time, each = n),
+      sd = rep(summary_stats$standard_deviation, each = n)
+      ),
+    
+    strokes = rep(summary_stats$stroke_count, each = n)
+  )
+  
+  return(df_)
+}
+
+power_analysis <- function(simulation_count, data_size) {
+  reject_vector <- NA
+  
+  for (i in 1 : simulation_count) {
+    exploratory_data_simulated_data <- make_data_from_exploratory_data(data_size)
+    model <- lm(t_lap ~ strokes + I(strokes^2), data = exploratory_data_simulated_data)
+    reject_vector[i] <- broom::tidy(anova(model))[1, "p.value"] < alpha
+  }
+  
+  return (mean(reject_vector))
+}
+
+power_analysis_simulation_count <- 1000
+power_analysis_data_size <- 100
+
+exploratory_data_power <- power_analysis(simulation_count=power_analysis_simulation_count, data_size=power_analysis_data_size)
+```
+
+@fig-exploratory_data_stroke_count_elapsed_time_plot shows a bell-shaped curve so we use @tbl-summary_statistics_exploratory_data's sample $\bar{x}$ and $s$ to generate data with $N(\bar{x}, s)$. We ran `r power_analysis_simulation_count` simulations using @eq-linear_regression_model with the generated data and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power`.
 
 ## Data Collection
 
@@ -217,7 +279,7 @@ Once we've collected the data and used OLS to calculate the regression coefficie
 
 $$
 \hat{T}_{lap} = \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 I_{50\_BR\_SCY} + \hat{\beta}_3 I_{100\_IM\_SCY}
-$$
+$$ {#eq-linear_regression_model} Linear Regression Model
 Next, we group the times first by the Data Entry Type as defined in @tbl-definition_input_parameters
 
 * 25 and 50L1 are grouped together
@@ -336,7 +398,7 @@ In addition to considering other strokes, there are additional variables that we
 | :--- | :--- |
 | Age | Competitive swimming requires significant concentration to improve technique. Age is a proxy for maturity. This variable could be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{fast}$. |
 | Number of competitions | Good swimmers know their bodies and swim styles. The more experience they have at competition, the more ability they have to feel how their body interacts with water. This variable could be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{fast}$.
-| Glide time | . |
+| Glide time | This is an important consideration when trying to minimize $T_{lap}$. However, there are three distinct phases of the glide for breaststroke that deserves detailed analysis beyond scope of this study. |
 :::
 
 
