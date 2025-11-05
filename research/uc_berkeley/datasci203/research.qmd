@@ -267,8 +267,6 @@ exploratory_data_power <- power_analysis(simulation_count=power_analysis_simulat
 
 ## Data Collection
 
-
-
 # Analysis
 
 ## Hypothesis Testing
