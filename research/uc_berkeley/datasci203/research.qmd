@@ -1,5 +1,5 @@
 ---
-title: "Explanatory Linear Model Framework for Optimal Breaststroke Stroke Count in Different Competitive Swimming Scenarios"
+title: "Explanatory Linear Model Framework for Optimal Breaststroke Stroke Count in Different Competitive Swimming Scenarios for Swimmers Under 11-Years-Old"
 authors: 
   - name: "Duy Bao Vo"
     email: "duyvo@ischool.berkeley.edu"
@@ -22,7 +22,7 @@ alpha <- .05
 
 # Overview
 
-Swimming is an important life skill and can prevent a significant number of childhood deaths[^1]. Swimming is also a great life-long sport[^2] [^3]. Competitive swimming can help with academic achievement[^4] and develop important skills like stress management, interpersonal harmony, and goal management[^5]. This study provies an explanatory framework to help young competitive swimmers swim breaststroke faster.
+Swimming is an important life skill and can prevent a significant number of childhood deaths[^1]. Swimming is also a great life-long sport[^2] [^3]. Competitive swimming can help with academic achievement[^4] and develop important skills like stress management, interpersonal harmony, and goal management[^5]. This study provides an explanatory framework to help young competitive swimmers improve their breaststroke swim technique and timed trials by deriving a target stroke count. It does not aim to define a universal optimal stroke count, but rather an individualized value appropriate for each swimmer and competitive event.
 
 [^1]: In the US, drowning is the leading cause of death for children ages 1-4 and the second leading cause of unintentional injury death for children ages 5-15.\
     **Source:** Centers for Disease Control and Prevention. (n.d.). *Drowning Facts*. Centers for Disease Control and Prevention, Injury Prevention & Control. Retrieved October 31, 2025, from <https://www.cdc.gov/drowning/data-research/facts/index.html>
@@ -39,17 +39,43 @@ Swimming is an important life skill and can prevent a significant number of chil
 [^5]: Students in the experimental group of a 15-week swimming intervention program showed significant improvements in emotional stability (P = 0.01) and relaxation (P = 0.02). Positive changes were also observed in social adaptation, including interpersonal harmony (P = 0.03) and perceived social support (P = 0.04). Additionally, academic composure (P = 0.02) and goal management ability (P = 0.04) significantly improved.\
     **Source:** Wang, W., Yu, L., Huang, L., & Gao, X. (2025). Mechanisms of the impact of exercise intervention on college students' mental health: a longitudinal experimental study using swimming as an example. Frontiers in Psychology, 16, 1535214. doi:10.3389/fpsyg.2025.1535214
 
+## Literature Review
 @Craig1979 published sports biomechanics research to help improve individual swimming athlete's performance in 1979 and included the formula
 
 $$
 Velocity = Stroke Rate \times Stroke Length
 $$
 
-The study claims velocity $V$ increased as a result of increasing the stroke rate $S_R$ and decreasing the stroke length $S_L$ for all four competitive strokes. @Vorontsov1991 published research that male swimmers ages 11-15 should focus more on $S_L$. In a follow-up study, @Vorontsov2002 published findings that maintaining a long $S_L$ is a key factor in improving performance for younger swimmers, especially before they turn 11-12 because that's when the individual swimming rhythm is largely established.
+The study claims that the greatest decrease to velocity $V$ resulted from a decrease in the stroke rate $S_R$. @Vorontsov1991 published research that male swimmers ages 11-15 should focus more on $S_L$. In a follow-up study, @Vorontsov2002 published findings that maintaining a long $S_L$ is a key factor in improving performance for younger swimmers, especially before they turn 11-12 because that's when the individual swimming rhythm is largely established.
 
-There is no peer-reviewed research relating to stroke length of swimmers under 10-years-old despite competitive multi-city competitions available for 6-year-olds with multi-state Age Group Zones (AGZ) Championships for 10-year-olds. Many of these studies are done in meter courses wheras many competitions in the US are done in shorter yard courses.
+The importance of stroke-related statistics in predicting swimming performance is well-established. @JurimaeBestPredictors claims that the Stroke Index, $S_I = SwimmerSpeed x S_L$, as one of the three best predictors for performance in a 400-meter freestyle swim starting at 11-years-old. Although there is a preponderance of studies for swimmers starting at 11-years-old, there is no peer-reviewed research relating to stroke count of swimmers under 11-years-old despite competitive multi-city competitions available for 5-year-olds with multi-state Age Group Zones (AGZ) Championships starting at 9-year-olds. This lack of emphasis is likely attributable to:
 
-Special camera equipment is needed to calculate $S_R$ and $S_L$ requires, which we do not have access to. Therefore, we will make use of the proxy, Stroke Count ($S_C$) per lap. $S_C$ is proportional to $S_R$ and inversely proportional to $S_L$. Accounting for the glide distance (how far the swimmer is able to dive and swim underwater or kick off the wall and swim underwater),
+1. The Long-Term Athlete Development (LTAD) developed by Dr. Istvan Balyi is often cited by many sports educators places boys aged 6-9 and girls aged 5-8 at the FUNdamentals stage and boys aged 9-12 and girls aged 8-11 at Learning to Train stage with emphasis on skill and technique development and not competition. [@LangfordLTADInterpreting]
+1. The majority of analysis relies on $S_R$ or $S_L$, both requiring special camera equipment and software that is not easily accessible.
+1. Younger swimmers are still finding their swimming rhythm.
+
+We believe that we can easily overcome (2) by using the proxy Stroke Count ($S_C$) per lap. We also believe that individualized models for young swimmers plays an important role in the LTAD framework from (1) because it enables conversations about skill and technique. Finally, we believe that an individualized model can help swimmers develop their swimming rhythm in (3).
+
+## Motivations
+
+Helping young swimmers learn fundamentals and develop good technique is critical for both the development as a long-term athlete, and, more importantly, reduce the risk of injury. In individualized framework for optimizing $S_C$ has several benefits:
+
+* Emphasize the need for good technique, which reduces the risk of injury.
+* Help swimmers appreciate the importance of learning technical concepts because $S_C$ operationalizes fundamental concepts of stroke efficiency and streamlined swimming.
+* Encourages swimmers to listen to their bodies and think about how they feel when they move.
+* Reduce the emphasis on physical advantage and help swimmers focus on their long-term development.
+
+This study aims to create a framework for deriving an individualized optimal $S_C$ that minimizes the time $T_{lap}$, measured in milliseconds, to complete a lap. We hope that the individualized data will allow coaches to have conversations about how proper technique can lead to an efficient $S_C$ that both minimizes $T_{lap}$ and reduces the chance of injury.
+
+We hope this framework will be valuable for swimmers as young as 6-years-old who have demonstrated a sufficient mastery of breaststroke (they are not disqualified at sanctioned swim meets when swimming breaststroke) to under 11-years-olds.
+
+This initial study is exclusively on the breaststroke though its methodologies can be applied to other competitive strokes. The metric is selected for the US, though the framework can be extended to international swimming pools. The target audience are individuals working with swimmers under 11-year-old, though the data collection and analysis can be enhanced for older swimmers.
+
+# Experiment Design
+
+## Stroke Count
+
+$S_C$ is proportional to $S_R$ and inversely proportional to $S_L$. Accounting for the glide distance (how far the swimmer is able to dive and swim underwater or kick off the wall and swim underwater),
 
 ![Glide Distance and Stroke Count from @Mediterraswim2019](glide_distance_pool_length.png){#fig-glide_distance_pool_length}
 
@@ -59,15 +85,9 @@ $$
 StrokeLength=\frac{PoolLength-GlideDistance}{StrokeCount}
 $$
 
-This study aims to identify the ideal $S_C$ to minimize the time it takes to complete a lap $T_{lap}$, measured in milliseconds. We want to provide a framework that can be used to provide analysis for individual swimmers as young as 6-years-old who have demonstrated a sufficient mastery of the stroke (they are not disqualified at a sanctioned swim meet for the stroke) and is useful for swimmers under 11-years-old.
-
-This initial study is exclusively on the breaststroke though its methodologies can be applied to other competitive strokes. The metric is selected for the US, though the framework can be extended to international swimming pools. The primary audience will be individuals working with swimmers under 11-year-olds, though the data collection and analysis can be enhanced for older swimmers.
-
-# Experiment Design
-
 ## Measurement Metric
 
-There are two type of courses in competitive swimming: long course and short course. Olympic competition happens in long course format where each lap is 50 meters (LCM). Internationally, short courses are 25 meters (SCM) (so 1 LCM = 2 x SCM). In the US, most competitive swimming up through college uses 25-yard short courses (SCY) and 50-meter long courses (LCM), (so 1 LCM \~=2.18722 SCY). This experiment is designed with SCY.
+There are two type of courses in competitive swimming: long course and short course. Olympic competition happens in long course format where each lap is 50 meters (LCM). Internationally, short courses are 25 meters (SCM) (so 1 LCM = 2 x SCM). In the US, most competitive swimming up through college uses 25-yard short courses (SCY) and 50-meter long courses (LCM), (so 1 LCM \~=2.18722 SCY). This study uses an SCY pool.
 
 ## Selection of Events
 
@@ -95,22 +115,43 @@ For US non-collegiate swimming, LCM courses are mostly only available during sum
 
 ## Rest Times
 
-The swimmer will be fatigued after each swim event. For us to conduct our study, we must give the swimmer adequate time to rest between each timed event. @NeivaPassiveRest recommends 10 minutes of passive recovery for a 200 FR SCM and not to exceed 20 minutes. We can use this study as a baseline for rest time because @RatelMetabolicProfile observed that prepubertal children have recovery profiles comparable to well-trained adult endurance athletes (given that our population are competitive prepubertal children, we expect them to have faster recovery times that average prepubertal children.) For our experiment, we will implement the following rest times:
+The swimmer will be fatigued after each swim event. For us to conduct our study, we must give the swimmer adequate time to rest between each timed event. @NeivaPassiveRest recommends 10 minutes of passive recovery for a 200 FR SCM and not to exceed 20 minutes. We can use this study as a baseline for rest time because @RatelMetabolicProfile observed that prepubertal children have recovery profiles comparable to well-trained adult endurance athletes (given that our population are competitive prepubertal children, we expect them to have faster recovery times that average prepubertal children.) For our experiment, we will implement the following rest times to prevent spillover between different timed tests:
 
 | **Event** | **Target Rest Time** | **Reason** |
 | :--- | :--- | :--- |
-| 100 IM SCY | 10 minutes | The 100 IM is more challenging than a 100 FR. However, @NeivaPassiveRest conducted a study with 200 FR, so a 10 minute rest is reasonable . |
+| 100 IM SCY | 10 minutes | The 100 IM is more challenging than a 100 FR. However, @NeivaPassiveRest conducted a study with 200 FR, so a 10 minute rest is reasonable . Also, the swimmer will only swim 3/4 of the 100 IM because breaststroke is the 3rd lap. |
 | 50 BR SCY | 5 minutes | This swim is 1/2 the length an IM and a BR requires the least energy output [@KachunovEnergetics]. |
 | 25 BR SCY | 3 minutes | This swim is 1/4 the length an IM and a BR requires the least energy output [@KachunovEnergetics]. |
 : Rest Times between Events {#tbl-rest_times}
+
+## Warm-Ups
+Ahead of each session, the swimmer should swim the following 1000-yard warm-up routine. The definition of Zones are defined at <https://www.phlexswim.com/blog/the-importance-of-training-zones-and-how-to-individualize-training>
+
+1. 3x 100 SCY. One set for each stroke. Start from Zone 1 and end in Zone 3. Rest up to 10 seconds every set if needed.
+1. 2x 100 SCY. One set for each kicking style, on back or stomach. Start from Zone 2 and end in Zone 3. Rest up to 10 seconds every set if needed.
+1. 4x 50 SCY. Drill on odd laps and normal swim on the even laps. Zone 2. Rest 10 seconds after every set.
+1. 4x 50 SCY. One set for each stroke. Zone 4. Rest 10 seconds after every set.
+1. 1x 100 SCY. FR or BR. Zone 1. Rest 10 minutes before starting timed tests.
 
 # Model Building
 
 ## Causal Theory and Hypothesis
 
-We opt for the explanatory mode for model building because we are primarily interested in deriving $S_C$. We want to determine what causal relationship, if any, exists between selecting a specific $S_C$ and its effect on $T_{lap}$. This leads us to our null hypothesis:
+We opt for the explanatory mode for model building because we are primarily interested in deriving $S_C$.
 
-> **$H_0$**: There is no relationship between $S_C$ and $T_{lap}$.
+@Craig1979, @Vorontsov1991, @Vorontsov2002, @JurimaeBestPredictors and many other studies have shown a causal relationship between a stroke statistic and its effect on $T_{lap}$. Since $S_C$ has a mathematical relationship to those stroke statistics, then $S_C$ has a causal relationship with $T_{lap}$. We want to see if there is a tighter causal relationship centered around an optimal $S_C$ and define our Null Hypothesis as:
+
+> **$H_0$**: Given an $S_{C_{optimal}}$ ~ $T_{lap_{optimal}}$, there is no difference of at least 1 second between $T_{lap_{optimal}}$ and $T_{lap_{-2}}$ and $T_{lap_{optimal}}$ and $T_{lap_{+2}}$ where $T_{lap_{-2}}$ ~ $S_{C_{optimal}} - 2$ strokes and $T_{lap_{+2}}$ ~ $S_{C_{optimal}} + 2$ strokes.
+
+For example, if we determine that the optimal $S_{C}$ for a given swimmer is 17 with a corresponding time of 20 seconds, then **$H_0$** asserts that there is not a 1 second difference from 20 seconds if the swimmer swims 15 or 19 strokes.
+
+We choose 1 second for our 25-yard lap because the difference between a top and second -tier national swimmer[^6] for a 50 BR SCY is $\le$ 2 seconds[^7].
+
+[^6]: A AAAA-ranked swimmer is in the top 2% of swimmers in their age group, their same-sex, in that stroke and distance. A AAA-ranked swimmer is in the top 6% of swimmers in their age group, their same-sex, in that stroke and distance. \
+    **Source:** Central California Swimming. (2024). 2024-2028 Motivational Standards Age Group. <https://www.gomotionapp.com/team/caraa/page/system/res/102429>
+    
+[^7]: AAAA time for boys and girls under 11-years-old for 50 BR SCY is 36.39 and 36.89 seconds, respectively. AAA time for boys and girls under 11-years-old for 50 BR SCY is 38.29 and 38.89 seconds, respectively. \
+    **Source:** Pacific Swimming. (2024). 2024-2028 Motivational Standards Age Group. <https://www.pacswim.org/userfiles/cms/documents/801/2024-2028-motivational-standards-age-group.pdf>
 
 
 ## Interaction Terms
@@ -148,32 +189,44 @@ $$
 
 Once we've collected data outlined in @tbl-definition_input_parameters, we'll use the Ordinary Least Squares (OLS) method to calculate the vector **$\hat{\beta}$**, which contains all of our regression coefficients.
 
-## Noted 
-
-In our data collection, we note which session and ordinal within the session we collected the data because they might impact have a significant impact on $T_{lap}$.
-
-Our model does not differentiate the data from a 25 SCY with a that of the first leg of a 50 SCY. We will note in our data collection if the data is from a 25 SCY or the first leg of a 50 SCY. We will have the swimmer swim both a 25 SCY and 50 SCY and use the data from the 25 SCY to help validate our baseline.
-
 # Data
 
 ## Data Format
 
 We will collect data in csv files with the title format YYYY_MM_DD_-8.csv where -8 is the current offset from GMT as defined below. Collecting the date and offset gives us resolution if we ever wanted to study effects of specific time of the year / month / week / day and ignore stale data.
 
+::: {tbl-colwidths="[20,80]"}
 | **Parameter** | **Use** |
 | :--- | :--- |
-| event_ordinal | The first event of the file is 1 and subsequent events are incremented by 1. |
-| start_time | The local HH:mm:ss in 24-hour format. For multi-lap swim, this value is null. |
+| event_ordinal | The first event of the file is 1 and subsequent events are incremented by 1. Not used in the linear model. |
+| start_time | The local HH:mm:ss in 24-hour format. For multi-lap swim, this value is null. Not used in the linear model. |
 | elapsed_time | How long it took the swimmer to complete the lap with millisecond resolution. |
 | stroke_count | The number of strokes the swimmer took to complete the lap. |
-| data_entry_type | One of \{25, 50L1, 50L2, 100IM\} |
+| mental_cue | A way to help our swimmer track when to start the next stroke. For example, if we instruct the swimmer to mentally say "purple" before starting the next stroke, then we expect the swimmer to have a higher $S_C$ than mentally saying "one one thousand two". |
+| data_entry_type | One of \{25, 50L1, 50L2, 100IM\}. |
+| note | Optional value describing the data. Not used in the linear model |
 : Definition of Input Parameters {#tbl-definition_input_parameters}
+:::
 
-## Deriving Sample Size
+### Metadata
 
-### Exploratory Data Analysis
+The following contextual variables are currently not used when building our data model either because they are qualitative in nature or we do not have enough conviction to include them in the model.
 
-It's helpful to start with an exploratory data set to have a sense of the relationship between $S_C$ and $T_{lap}$. To start, we had one test subject swim 3 laps of 25 BR SCY at 10, 14, 17, 20, and 24 strokes with rest times defined by @tbl-rest_times. She will swim the strokes in increasing order of stroke counts, then decreasing, then increasing again.
+* In our data collection, we track $event_ordinal$ because they might impact have a significant impact on $T_{lap}$. We do not believe this is the case because we have implemented a Rest Time strategy which should ensure sufficient non-interference.
+* The $mental_cue$ is a way to help the swimmer maintain a consistent $S_R$.
+* Our model does not differentiate the data from a 25 SCY with a that of the first leg of a 50 SCY. Our $data_entry_type$ will keep the values 25 and 50L1 for future consideration into the model. We will have the swimmer swim both a 25 SCY and 50 SCY and use the data from the 25 SCY to help validate our baseline.
+* $note$ is qualitative information and is not used in the model.
+
+## Exploratory Data Analysis
+
+It's helpful to start with an exploratory data set to get a sense of the relationship between $S_C$ and $T_{lap}$ and help us define the shape of our linear regression model. To start, we had one test subject swim
+
+* 2 laps with the instruction with lowest $S_C$ possible.
+* 3 laps of 25 BR SCY at 10, 14, 17, 20, and 24.
+* 2 laps with the instruction with the highest $S_C$ possible.
+
+
+The swimmer will have rest times defined by @tbl-rest_times. She will swim the events in the following order: ${S_{C\_Fast}}$, ${S_{C\_Slow}}$, 10, 14, 17, 20, 24, ${S_{C\_Slow}}$, 24, 20, 17, 14, 10, ${S_{C\_Fast}}$, 10, 14, 17, 20, 24.
 
 The swimmer's name is Jadzia Bao Tran Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daughter of Duy Bao Vo.
 
@@ -205,7 +258,7 @@ summary_stats <- summarize(group_by(prepped_data, stroke_count), mean_time = mea
 knitr::kable(
   summary_stats,
   caption = "Summary Statistics for Swim Times by Group {#tbl-summary_statistics_exploratory_data}",
-  col.names = c("**$\\mathbf{S_c}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
+  col.names = c("**$\\mathbf{S_C}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
   
   # Tell kable to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.  
   escape = FALSE
@@ -229,6 +282,10 @@ labs(
 )
 
 ```
+
+## Power Analysis
+
+We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-linear_regression_model. We use the summary statistics in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$. This allows us to execute our power analysis.
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
 make_data_from_exploratory_data <- function(n) { 
@@ -263,7 +320,7 @@ power_analysis_data_size <- 100
 exploratory_data_power <- power_analysis(simulation_count=power_analysis_simulation_count, data_size=power_analysis_data_size)
 ```
 
-@fig-exploratory_data_stroke_count_elapsed_time_plot shows a bell-shaped curve so we use @tbl-summary_statistics_exploratory_data's sample $\bar{x}$ and $s$ to generate data with $N(\bar{x}, s)$. We ran `r power_analysis_simulation_count` simulations using @eq-linear_regression_model with the generated data and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power`.
+We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
 
 ## Data Collection
 
@@ -388,6 +445,20 @@ We also limited our study to breaststroke. There are three other competitive str
 
 Our study does not consider the psychological implication of swimming a single lap vs the first lap of a longer event. For example a swimmer who swims a 25 SCY might perform differently than the first leg of a 50 SCY. In theory, there should be no distinction. However, in practice, especially for younger swimmers, there might be a psychological difference between swimming a 25 SCY vs the first leg of a 50 SCY.
 
+## Glide Time is a Confounder
+Glide time is an important consideration when trying to minimize $T_{lap}$. It is also a confounder because it directly affects both $T_{lap}$ and $S_C$. A very good swimmer can swim nearly 1/2 of an SCY lap with a fast glide, reducing both $T_{lap}$ and $S_C$.
+
+A glide has several phases:
+
+1. The initial dive or turn and kick-off the wall.
+1. The glide to the dolphin kick.
+1. The dolphin kick.
+1. The glide after the dolphin kick to the pull down.
+1. The pull down.
+1. The glide after the pull down to the first breaststroke.
+
+To properly model an optimal glide time would likely require several additional variables and well outside of the scope of this study. For this study, we assume that swimmer who has obtained sufficient mastery of breaststroke at competition to not get disqualified will have a sufficiently consistent glide time using the one of the models that they have been taught (e.g. 3-2-1-pull-out). In our model, we imperfectly account for this complex variable as $\beta{0}$.
+
 ## Additional Variables
 In addition to considering other strokes, there are additional variables that we would add to make this study more relevant to a wider population. We added these variables because we expect they can improve our model, but are not too onerous to collect.
 
@@ -396,11 +467,7 @@ In addition to considering other strokes, there are additional variables that we
 | :--- | :--- |
 | Age | Competitive swimming requires significant concentration to improve technique. Age is a proxy for maturity. This variable could be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{fast}$. |
 | Number of competitions | Good swimmers know their bodies and swim styles. The more experience they have at competition, the more ability they have to feel how their body interacts with water. This variable could be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{fast}$.
-| Glide time | This is an important consideration when trying to minimize $T_{lap}$. However, there are three distinct phases of the glide for breaststroke that deserves detailed analysis beyond scope of this study. |
 :::
 
 
-
-```
-References
-```
+# References
