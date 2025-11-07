@@ -16,9 +16,12 @@ toc: true
 library(ggplot2)  # For plots
 library(readr)    # For loading your CSV file (read_csv)
 library(tidyverse) # For functions like mutate
+library(units)
 
 alpha <- .05
 ```
+
+{{< pagebreak >}}
 
 # Overview
 
@@ -117,21 +120,23 @@ For US non-collegiate swimming, LCM courses are mostly only available during sum
 
 The swimmer will be fatigued after each swim event. For us to conduct our study, we must give the swimmer adequate time to rest between each timed event. @NeivaPassiveRest recommends 10 minutes of passive recovery for a 200 FR SCM and not to exceed 20 minutes. We can use this study as a baseline for rest time because @RatelMetabolicProfile observed that prepubertal children have recovery profiles comparable to well-trained adult endurance athletes (given that our population are competitive prepubertal children, we expect them to have faster recovery times that average prepubertal children.) For our experiment, we will implement the following rest times to prevent spillover between different timed tests:
 
-| **Event** | **Target Rest Time** | **Reason** |
+::: {tbl-colwidths="[15,15,70]"}
+| **Event** | **Target Rest** | **Reason** |
 | :--- | :--- | :--- |
 | 100 IM SCY | 10 minutes | The 100 IM is more challenging than a 100 FR. However, @NeivaPassiveRest conducted a study with 200 FR, so a 10 minute rest is reasonable . Also, the swimmer will only swim 3/4 of the 100 IM because breaststroke is the 3rd lap. |
-| 50 BR SCY | 5 minutes | This swim is 1/2 the length an IM and a BR requires the least energy output [@KachunovEnergetics]. |
-| 25 BR SCY | 3 minutes | This swim is 1/4 the length an IM and a BR requires the least energy output [@KachunovEnergetics]. |
-: Rest Times between Events {#tbl-rest_times}
+| 50 BR SCY | 7 minutes | This swim is 1/2 the length an IM and a BR requires the least energy output [@KachunovEnergetics]. |
+| 25 BR SCY | 4 minutes | This time was informed when collecting the exploratory data set. |
+: Rest Times between Timed Tests {#tbl-rest_times}
+:::
 
 ## Warm-Ups
-Ahead of each session, the swimmer should swim the following 1000-yard warm-up routine. The definition of Zones are defined at <https://www.phlexswim.com/blog/the-importance-of-training-zones-and-how-to-individualize-training>
+Ahead of each session, the swimmer should swim the following 900-yard warm-up routine:
 
-1. 3x 100 SCY. One set for each stroke. Start from Zone 1 and end in Zone 3. Rest up to 10 seconds every set if needed.
-1. 2x 100 SCY. One set for each kicking style, on back or stomach. Start from Zone 2 and end in Zone 3. Rest up to 10 seconds every set if needed.
-1. 4x 50 SCY. Drill on odd laps and normal swim on the even laps. Zone 2. Rest 10 seconds after every set.
-1. 4x 50 SCY. One set for each stroke. Zone 4. Rest 10 seconds after every set.
-1. 1x 100 SCY. FR or BR. Zone 1. Rest 10 minutes before starting timed tests.
+1. 2x 100 SCY. BR, FR. Pace: Easy, Build. Rest 30 seconds after FR.
+1. 2x 100 SCY. BR kick on back, FR kick on stomach. Pace: Build, Push. Rest 30 seconds after BR, rest 1 minute after FR.
+1. 4x 50 SCY. Drill on odd laps and normal swim on the even laps. Pace: Build. Rest 15 seconds after every set.
+1. 4x 50 SCY. Broken 200 IM SCY. Pace: Sprint. Rest 30 seconds after every set.
+1. 1x 100 SCY. FR or BR. Pace: Easy. Rest 10 minutes before starting timed tests.
 
 # Model Building
 
@@ -141,11 +146,11 @@ We opt for the explanatory mode for model building because we are primarily inte
 
 @Craig1979, @Vorontsov1991, @Vorontsov2002, @JurimaeBestPredictors and many other studies have shown a causal relationship between a stroke statistic and its effect on $T_{lap}$. Since $S_C$ has a mathematical relationship to those stroke statistics, then $S_C$ has a causal relationship with $T_{lap}$. We want to see if there is a tighter causal relationship centered around an optimal $S_C$ and define our Null Hypothesis as:
 
-> **$H_0$**: Given an $S_{C_{optimal}}$ ~ $T_{lap_{optimal}}$, there is no difference of at least 1 second between $T_{lap_{optimal}}$ and $T_{lap_{-2}}$ and $T_{lap_{optimal}}$ and $T_{lap_{+2}}$ where $T_{lap_{-2}}$ ~ $S_{C_{optimal}} - 2$ strokes and $T_{lap_{+2}}$ ~ $S_{C_{optimal}} + 2$ strokes.
+> **$H_0$**: Given an $S_{C_{optimal}}$ ~ $T_{lap_{optimal}}$, there is no difference of at least .5 second between $T_{lap_{optimal}}$ and $T_{lap_{-2}}$ and $T_{lap_{optimal}}$ and $T_{lap_{+2}}$ where $T_{lap_{-2}}$ ~ $S_{C_{optimal}} - 2$ strokes and $T_{lap_{+2}}$ ~ $S_{C_{optimal}} + 2$ strokes.
 
-For example, if we determine that the optimal $S_{C}$ for a given swimmer is 17 with a corresponding time of 20 seconds, then **$H_0$** asserts that there is not a 1 second difference from 20 seconds if the swimmer swims 15 or 19 strokes.
+For example, if we determine that the optimal $S_{C}$ for a given swimmer is 17 with a corresponding time of 20 seconds, then **$H_0$** asserts that there is not a .5 second difference from 20 seconds if the swimmer swims 15 or 19 strokes.
 
-We choose 1 second for our 25-yard lap because the difference between a top and second -tier national swimmer[^6] for a 50 BR SCY is $\le$ 2 seconds[^7].
+We choose .5 second for our 25-yard lap because the difference between a top and second -tier national swimmer[^6] for a 50 BR SCY is $\le$ 2 seconds[^7]. A .5 second for each lap would equal a 1 second improvement for 50 SCY and the swimmer can work on glide time and turns to improve the time by another second.
 
 [^6]: A AAAA-ranked swimmer is in the top 2% of swimmers in their age group, their same-sex, in that stroke and distance. A AAA-ranked swimmer is in the top 6% of swimmers in their age group, their same-sex, in that stroke and distance. \
     **Source:** Central California Swimming. (2024). 2024-2028 Motivational Standards Age Group. <https://www.gomotionapp.com/team/caraa/page/system/res/102429>
@@ -154,40 +159,40 @@ We choose 1 second for our 25-yard lap because the difference between a top and 
     **Source:** Pacific Swimming. (2024). 2024-2028 Motivational Standards Age Group. <https://www.pacswim.org/userfiles/cms/documents/801/2024-2028-motivational-standards-age-group.pdf>
 
 
-## Interaction Terms
+## Interaction Terms and Operationalizing Fatigue
 Our linear model make use of dummy / indicator variables to account for the optimal $S_C$ being different for the 50 BR SCY and 100 IM SCY because of the following considerations:
 
 * Fatigue is especially pronounced in an IM race where breaststroke is the third leg of the race where the swimmer has expended a significant amount of energy. The swimmer must also reserve the energy for the last stroke of the race, freestyle, where the swimmer is expected to sprint because freestyle is the fastest of the four strokes.
 * Turn and pullout distances are important because they will determine how much of the lap the swimmer has to swim. The ensuing turn and pullout distances will always be slower than the original start distance because the swimmer is jumping into the water as opposed to swimming in the water.
 
-It's clear that $S_C$ for any subsequent lap is not independent of $S_C$ for the previous lap because a higher $S_C$ in the previous lap would require more energy, resulting in a more fatigued swimmer in subsequent laps. This implies that at least one interaction term is required.
-
-**TBD: Figure out interaction terms**
+It's clear that $S_C$ for any subsequent lap is not independent of $S_C$ for the previous lap because a higher $S_C$ in the previous lap would require more energy, resulting in a more fatigued swimmer in subsequent laps.
 
 ## Linear Regression Model
 
 Our regression model is defined as
 
 $$
-T_{lap} = \beta_0 + \beta_1 S_C + \beta_2 I_{50\_BR\_SCY} + \beta_3 I_{100\_IM\_SCY} + \epsilon
-$$
+T_{lap} = \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \gamma_{50L2} I_{50L2} + \gamma_{100IM} I_{100IM} + \delta_{50L2}S_CI_{50L2} + \delta_{100IM}S_CI_{100IM} + \epsilon
+$$ {#eq-linear_regression_model}
 
 ::: {tbl-colwidths="[20,80]"}
-| Variable | Definition |
+| Component(s) | Definition |
 | :--- | :--- |
 | $T_{lap}$ | The timing of how long it took for the swimmer to complete the breastroke swim. For the data entry of types 25 and 50L1, this is the time it takes the swimmer to swim the first lap. For 50L2, this is the time it takes the swimmer to swim the second lap. For 100IM, this is the time it takes for the swimmer to swim the breaststroke leg of the IM.
 | $\beta_0$ | This is the time needed to travel the entire distance of the first lap, assuming no stroke is taken. This is theoretically achievable for any stroke in a 25 SCY, 25 SCM, and 50 LCM scenario by a swimmer diving in and gliding to the other side without taking a single stroke. The values are in milliseconds. |
-| $\beta_1$ | The increase or decrease in time for each stroke the swimmer takes. |
+| $\beta_1$, $\beta_2$ | The increase or decrease in time for each stroke the swimmer takes. |
 | $S_C$ | The stroke count that the swimmer takes for the given leg. |
-| $\beta_2$ | This operationalizes the combined lap penalty of a 50 SCY where the swimmer has to turn and pullout (which will always be slower than a good dive and start pullout) and fatigue from the previous lap. |
-| $I_{50\_BR\_SCY}$ | An indicator variable; 1 if this is the 2nd leg of a 50 Breaststroke SCY event and 0 otherwise. |
-| $\beta_3$ | This operationalizes the combined lap penalty of a 100 IM where the swimmer has to turn and pullout (which will always be slower than a good dive and start pullout) and fatigue from swimming the previous two strokes. |
-| $I_{100\_IM\_SCY}$ | An indicator variable; 1 if this is the breaststroke leg of a 100 Individual Medley SCY event and 0 otherwise. |
-| $\epsilon$ | The residual of the actual observed time vs that predicted by the model. |
-: Definition of Variables {#tbl-definition_of_variables}
+| $\gamma_{50L2}$, $\gamma_{100IM}$ | $\gamma$'s operationalizes the combined lap penalty (e.g. for the previous lap in 50L2 and the previous two laps in 100IM) where the swimmer has to turn and pullout (which will always be slower than a good dive and start pullout), thereby increasing the base time $\beta_0$. |
+| $I_{50L2Y}$ | An indicator variable; 1 if this is the 2nd leg of a 50 Breaststroke SCY event and 0 otherwise. |
+| $I_{100IM}$ | An indicator variable; 1 if this is the breaststroke leg of a 100 Individual Medley SCY event and 0 otherwise. |
+| $\delta_{50L2}$, $\delta_{100IM}$ | $\delta$'s operationalizes the fatigue from previous laps, thereby changing the slope of the model based on the change in the cost or benefit of each additional stroke.  |
+| $S_CI_{50L2}$ | An interaction variable that applies only if this is the 2nd leg of a 50 BR SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
+| $S_CI_{100IM}$ | An interaction variable that applies only if this is the breaststroke leg of a 100 IM SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
+| $\epsilon$ | The residual of the actual observed time vs that predicted by the model. Because we are building a explanatory model and not a predictive model, we are not interested in this value. |
+: Definition of Linear Model Components {#tbl-definition_of_linear_model_components}
 :::
 
-Once we've collected data outlined in @tbl-definition_input_parameters, we'll use the Ordinary Least Squares (OLS) method to calculate the vector **$\hat{\beta}$**, which contains all of our regression coefficients.
+Once we've collected data outlined in @tbl-definition_input_parameters, we'll use the Ordinary Least Squares (OLS) method to calculate our regression coefficients.
 
 # Data
 
@@ -202,7 +207,7 @@ We will collect data in csv files with the title format YYYY_MM_DD_-8.csv where 
 | start_time | The local HH:mm:ss in 24-hour format. For multi-lap swim, this value is null. Not used in the linear model. |
 | elapsed_time | How long it took the swimmer to complete the lap with millisecond resolution. |
 | stroke_count | The number of strokes the swimmer took to complete the lap. |
-| mental_cue | A way to help our swimmer track when to start the next stroke. For example, if we instruct the swimmer to mentally say "purple" before starting the next stroke, then we expect the swimmer to have a higher $S_C$ than mentally saying "one one thousand two". |
+| mental_cue | A way to help our swimmer track when to start the next stroke and help them establish their tempo. For example, if we instruct the swimmer to mentally say "purple" before starting the next stroke, then we expect the swimmer to have a higher $S_C$ than mentally saying "one one thousand two". |
 | data_entry_type | One of \{25, 50L1, 50L2, 100IM\}. |
 | note | Optional value describing the data. Not used in the linear model |
 : Definition of Input Parameters {#tbl-definition_input_parameters}
@@ -222,16 +227,16 @@ The following contextual variables are currently not used when building our data
 It's helpful to start with an exploratory data set to get a sense of the relationship between $S_C$ and $T_{lap}$ and help us define the shape of our linear regression model. To start, we had one test subject swim
 
 * 2 laps with the instruction with lowest $S_C$ possible.
-* 3 laps of 25 BR SCY at 10, 14, 17, 20, and 24.
+* 3 laps of 25 BR SCY using various mental cues that will set the tempo.
 * 2 laps with the instruction with the highest $S_C$ possible.
 
 
-The swimmer will have rest times defined by @tbl-rest_times. She will swim the events in the following order: ${S_{C\_Fast}}$, ${S_{C\_Slow}}$, 10, 14, 17, 20, 24, ${S_{C\_Slow}}$, 24, 20, 17, 14, 10, ${S_{C\_Fast}}$, 10, 14, 17, 20, 24.
+The swimmer had 3-4 minutes of rest time between the timed trials and we use this experience to help inform @tbl-rest_times. Due to the availability of time and the pool lane, we limited the collection to 25 BR SCY and data collection took place over a period of two days.
 
 The swimmer's name is Jadzia Bao Tran Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daughter of Duy Bao Vo.
 
 ```{r analyze_exploratory_data, echo=FALSE, message=FALSE, warning=FALSE}
-exploratory_data <- read.csv("data_template_v1.csv")
+exploratory_data <- read.csv("data/20251106_-8.csv")
 
 # prepped_data <- mutate(
 #   exploratory_data,
@@ -246,18 +251,20 @@ exploratory_data <- read.csv("data_template_v1.csv")
 
 prepped_data <- mutate(
   exploratory_data,
-  time_seconds = as.numeric(ms(elapsed_time))
+  time_milliseconds = set_units(set_units(.data$elapsed_time, "s"), "ms")
 )
+
+# test_time_seconds <- set_units(set_units(elapsed_time, "s"), "ms")
 
 # summary_stats <- summarize(group_by(prepped_data, swim_group), mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
 
 # summary_stats <- summarize(prepped_data, mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
 
-summary_stats <- summarize(group_by(prepped_data, stroke_count), mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
+summary_stats <- summarize(group_by(prepped_data, stroke_count), mean_time = as.numeric(mean(time_milliseconds)), standard_deviation=sd(time_milliseconds))
 
 knitr::kable(
   summary_stats,
-  caption = "Summary Statistics for Swim Times by Group {#tbl-summary_statistics_exploratory_data}",
+  caption = "Summary Statistics for Elapsed Time (in milliseconds) by Stroke Count {#tbl-summary_statistics_exploratory_data}",
   col.names = c("**$\\mathbf{S_C}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
   
   # Tell kable to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.  
@@ -268,12 +275,12 @@ knitr::kable(
 
 ```{r plot_exploratory_data}
 #| label: fig-exploratory_data_stroke_count_elapsed_time_plot 
-#| fig-cap: "Distribution of Elapsed Time for each Stroke Count"
+#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
 #| fig-pos: H
 #| echo: false
 #| message: false
 #| warning: false
-ggplot(exploratory_data, aes(x = factor(prepped_data$stroke_count), y = prepped_data$time_seconds)) +
+ggplot(exploratory_data, aes(x = factor(prepped_data$stroke_count), y = prepped_data$time_milliseconds)) +
 geom_jitter(width = 0.2, alpha = 0.7) + # `alpha` adds transparency
 labs(
   # title = "Elapsed Lap Time by Stroke Count",
@@ -328,13 +335,13 @@ We ran `r power_analysis_simulation_count` simulations and determined that our s
 
 ## Hypothesis Testing
 
-## Deriving Optimal Stroke Count
+## Deriving Stroke Count
 
 Once we've collected the data and used OLS to calculate the regression coefficients, we end up with the equation
 
 $$
-\hat{T}_{lap} = \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 I_{50\_BR\_SCY} + \hat{\beta}_3 I_{100\_IM\_SCY}
-$$ {#eq-linear_regression_model} Linear Regression Model
+\hat{T}_{lap} = \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 + \hat{\gamma}_{50L2} I_{50L2} + \hat{\gamma}_{100IM} I_{100IM} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\delta}_{100IM}S_CI_{100IM}
+$$ {#eq-fitted_linear_regression_model}
 Next, we group the times first by the Data Entry Type as defined in @tbl-definition_input_parameters
 
 * 25 and 50L1 are grouped together
@@ -349,25 +356,30 @@ After the grouping by the Data Entry Type, we group by the stroke count so we ca
 * slowest ($x_{slow}$)
 * sample standard deviation ($s$)
 
-The optimal stroke count for each swimmer will also likely account for a swimmer's penchant for risk. For example, all of the following scenarios are possible for a given swimmer:
+Choosing the optimal stroke for each swimmer will likely require understanding their swimming style, personality, and maturity. For example, all of the following scenarios are possible for a given swimmer:
 
 * $SC_1$ is associated with the two fastest times.
 * $SC_2$ is associated with the fastest $\bar{x}$, but the third biggest $s$.
 * $SC_3$ is associated with the second fastest $\bar{x}$, but the smallest $s$.
 
-Once we've selected the $T_{Target}$, we calculate the optimal $S_C$ for each of the three scenarios:
+Once we've selected the $T_{Target}$, we calculate the desired $S_C$ for each of the three scenarios:
 
 $$
-S_C = \frac{T_{Target} - \hat{\beta}_0}{\hat{\beta}_1}
-$$ {#eq-optimal_stroke_count_25} Optimal Stroke Count for 25 BR SCY or First Leg of 50 BR SCY
+S_C = \frac{-\hat{\beta}_1 \pm \sqrt{{\hat{\beta}_1}^2 - 4 \hat{\beta}_2(\hat{\beta}_0 - T_{Target})}} {2\hat{\beta}_2}
+$$ {#eq-stroke_count_for_target_time_25} Stroke Count for 25 BR SCY or First Leg of 50 BR SCY Associated with Target Time
 
 $$
-S_C = \frac{T_{Target} - \hat{\beta}_0 - \hat{\beta}_2}{\hat{\beta}_1}
-$$ {#eq-optimal_stroke_count_50} Optimal Stroke Count for Second Leg of 50 BR SCY
+S_C = \frac{-(\hat{\beta}_1 + \delta_{50L2}) \pm \sqrt{(\hat{\beta}_1 + \delta_{50L2})^2 - 4 \hat{\beta}_2(\hat{\beta}_0 + \gamma_{50L2} - T_{Target})}} {2\hat{\beta}_2}
+$$ {#eq-stroke_count_for_target_time_50L2} Stroke Count for Second Leg of 50 BR SCY Associated with Target Time
 
 $$
-S_C = \frac{T_{Target} - \hat{\beta}_0 - \hat{\beta}_3}{\hat{\beta}_1}
-$$ {#eq-optimal_stroke_count_100IM} Optimal Stroke Count for Breaststroke Leg of 100 IM SCY
+S_C = \frac{-(\hat{\beta}_1 + \delta_{100IM}) \pm \sqrt{(\hat{\beta}_1 + \delta_{100IM})^2 - 4 \hat{\beta}_2(\hat{\beta}_0 + \gamma_{100IM} - T_{Target})}} {2\hat{\beta}_2}
+$$ {#eq-stroke_count_for_target_time_100IM} Stroke Count for Breaststroke Leg of 100 IM SCY Associated with Target Time
+
+The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is not the vertex because there are two $S_C$'s in the solution (from too few strokes and too many strokes):
+
+* Given 2 $S_C$'s, with all else being equal, we would likely choose the one with lower variance for a 25 BR SCY.
+* Given 2 $S_C$'s, we might consider choosing the lower $S_C$ if the swimmer is a weak breaststroker in an IM even if the variance is a bit higher or $\bar{x}$ is a bit slower.
 
 ### Case Study: Jadzia Bao Tran Vo
 
@@ -386,14 +398,11 @@ Based on the following data set, we have computed the following for Jadzia Vo:
 : Jadzia Vo's Stroke Count Analysis for 100IM Entries
 
 
-### Limitation on Applicability to Individual Medley (IM) Events
+#### Limited Applicability to Individual Medley (IM) Events
 
-IM's are inherently different from other competitive events because the swimmer must swim all four strokes. Swimmers' performance can vary significantly among different strokes. For example, Katie Ledecky, who holds the world record for most gold medals won by a female swimmer, has only ever swam freestyle events at the Olympics [@OlympicsLedecky]. Michael Phelps, who holds the world record for most gold medals won by a male swimmer [@OlympicsPhelps], has never swam an individual backstroke or breaststroke event at the Olympics [@OlympediaPhelpsIndividualEvents]. When optimizing for IM, it's important to consider the strengths of the swimmer, which is rarely breaststroke. For many swimmers, including Jadzia Vo, optimizing the breaststroke time in an IM will likely lead to a sub optimal overall IM time. However, this study does provide some value in helping determine an optimal IM strategy.
+IM's are inherently different from other competitive events because the swimmer must swim all four strokes. Swimmers' performance can vary significantly among different strokes. For example, Katie Ledecky, who holds the world record for most gold medals won by a female swimmer, has only ever swam freestyle events at the Olympics [@OlympicsLedecky]. Michael Phelps, who holds the world record for most gold medals won by a male swimmer [@OlympicsPhelps], has never swam an individual backstroke or breaststroke event at the Olympics [@OlympediaPhelpsIndividualEvents]. When optimizing for IM, it's important to consider the strengths of the swimmer, which is rarely breaststroke. For many swimmers, including Jadzia Vo, optimizing the breaststroke time in an IM will likely lead to a sub optimal overall IM time.
 
-If we want to find the optimal $S_C$ for breaststroke that minimizes the overall 100 IM time, we'll need to have four regression models (one for each stroke), where $Ordinal_{lap}$ accounts for the order of the stroke in the event (e.g. butterfly is the first stroke so the swimmer is fresh and breaststroke is the third stroke so the swimmer is likely fatigued):
-$$
-T_{lap} = \beta_0 + \beta_1 S_C + \beta_2 Ordinal_{lap} + \epsilon
-$$ {#eq-optimal_stroke_per_leg}
+If we want to find an optimal $S_C$ for each stroke to optimize for the time of the entire IM, then we'll need to build completely different model that has all the variables interacting together. However, if we have apriori knowledge that can help inform our race strategy, we can still use this linear model to help determine a good IM strategy.
 
 USA Swimming has a Power Point Calculator at <https://data.usaswimming.org/datahub/powerpointcalculator> for calculating the relative strengths of a swimmer's stroke across different events. There are some notable idiosyncrasies about the calculator:
 
@@ -401,11 +410,7 @@ USA Swimming has a Power Point Calculator at <https://data.usaswimming.org/datah
 * There is no fraction, so we used \pm 6 months to determine the age.
 * For events that there is no time standard (e.g. swimmers under 9 years old do not have time standards for a 500 FR SCY), they will be compared against the first group where the time standard applies. For example, a swimmer who turned 7 yesterday and swims a 500 FR SCY will be compared to a swimmer who will turn 11 tomorrow, giving the latter swimmer an almost 4-year advantage in physical development and swim experience.
 
-We can use USA Swimming's Power Points to determine what is likely the swimmer's best stroke and prioritize those strokes when optimizing for an IM swim. We would then define the $T_{Target}$ for each stroke and find the corresponding $S_C$ for that stroke similar to @eq-optimal_stroke_count_25, @eq-optimal_stroke_count_50, and @eq-optimal_stroke_count_100IM.
-
-#### Example of Process to Derive Optimal Stroke Count for Jadzia Bao Tran Vo
-
-As an example, below is the data compiled from Jadzia Vo's swimming records at <https://www.swimcloud.com/swimmer/2555077/>
+We can use USA Swimming's Power Points to determine what is likely the swimmer's best stroke and prioritize those strokes when optimizing for an IM swim.
 
 | **Event** | **Age** | **Best Time** | **Power Points** |
 | :--- | :--- | :--- | :--- |
@@ -436,14 +441,14 @@ As an example, below is the data compiled from Jadzia Vo's swimming records at <
 | 200 IM LCM | 8 | 4:06.95 | 189 |
 : USA Swimming Power Points for Jadzia Vo {#tbl-power_points_jadzia_vo}
 
-To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia's breaststroke is the her weakest whereas her other three strokes are effectively equally strong. This would lead to choosing the fastest $T_{Target}$ defined by @eq-optimal_stroke_per_leg for the other three strokes. The challenge will be to find $T_{Target}$ for breaststroke (third leg) that is as fast as possible without materially impacting $T_{Target}$ for freestyle (fourth and final leg). Once we've defined $T_{Target}$ for breaststroke, we can use @eq-optimal_stroke_count_100IM to find $S_C$ for breaststroke that optimizes for the 100 IM.
+To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia's breaststroke is the her weakest (BR=207) whereas her other three strokes are effectively equally strong (FR=241, BK=242, FL=242). We would want to optimize her times for the other three strokes. The challenge will be to find $T_{Target}$ for breaststroke (third leg) that is as fast as possible without materially impacting $T_{Target}$ for freestyle (fourth and final leg). Once we've defined $T_{Target}$ for breaststroke, we can use @eq-stroke_count_for_target_time_100IM to find $S_C$ for breaststroke that is a good minimizer for the 100 IM.
 
 # Future Work
-We limited our study to SCY because that's the prevailing courses available during the time of the study in the US. We could expand the study to encompass LCM and SCM events and include much longer distance events like 400 IM LCM.
 
-We also limited our study to breaststroke. There are three other competitive strokes we can analyze. We can then build four regression models to determine the optimal strategy for an IM.
+## SCM and LCM & BK, FL, and FR
+We limited our study to SCY because that's the prevailing courses available during the time of the study in the US. We could expand the study to encompass LCM and SCM events and include longer distance events like 1500 FR LCM.
 
-Our study does not consider the psychological implication of swimming a single lap vs the first lap of a longer event. For example a swimmer who swims a 25 SCY might perform differently than the first leg of a 50 SCY. In theory, there should be no distinction. However, in practice, especially for younger swimmers, there might be a psychological difference between swimming a 25 SCY vs the first leg of a 50 SCY.
+We also limited our study to breaststroke. There are three other competitive strokes we can analyze.
 
 ## Glide Time is a Confounder
 Glide time is an important consideration when trying to minimize $T_{lap}$. It is also a confounder because it directly affects both $T_{lap}$ and $S_C$. A very good swimmer can swim nearly 1/2 of an SCY lap with a fast glide, reducing both $T_{lap}$ and $S_C$.
@@ -459,15 +464,22 @@ A glide has several phases:
 
 To properly model an optimal glide time would likely require several additional variables and well outside of the scope of this study. For this study, we assume that swimmer who has obtained sufficient mastery of breaststroke at competition to not get disqualified will have a sufficiently consistent glide time using the one of the models that they have been taught (e.g. 3-2-1-pull-out). In our model, we imperfectly account for this complex variable as $\beta{0}$.
 
-## Additional Variables
-In addition to considering other strokes, there are additional variables that we would add to make this study more relevant to a wider population. We added these variables because we expect they can improve our model, but are not too onerous to collect.
+<!-- ## Additional Variables -->
+<!-- In addition to considering other strokes, there are additional variables that might improve our model, but are not too onerous to collect. -->
 
-::: {tbl-colwidths="[35,65]"}
-| **Variable** | **Reason** |
-| :--- | :--- |
-| Age | Competitive swimming requires significant concentration to improve technique. Age is a proxy for maturity. This variable could be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{fast}$. |
-| Number of competitions | Good swimmers know their bodies and swim styles. The more experience they have at competition, the more ability they have to feel how their body interacts with water. This variable could be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{fast}$.
-:::
+<!-- ::: {tbl-colwidths="[35,65]"} -->
+<!-- | **Variable** | **Reason** | -->
+<!-- | :--- | :--- | -->
+<!-- | Age | Competitive swimming requires significant concentration to improve technique. Age is a proxy for maturity. We can use this variable to weight older data. We can also This variable could also be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{fast}$. | -->
+<!-- | Number of competitions | Good swimmers know their bodies and swim styles. The more experience they have at competition, the more ability they have to feel how their body interacts with water. This variable could be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{fast}$. -->
+<!-- ::: -->
 
+## Optimal 50, 100, and 200 BR's
+Our current model is a per-lap model and assumes that the penalties $\gamma$ and $\delta$ are constants calculated as the average across different $S_C$'s for the first lap. The best we can do with the model is to optimize for each lap independently. For a young competitive swimmer, this assumption is sufficient, especially given that there are no qualifying times for 100 or 200 BR for swimmers under 9-years-old. For a more complete model, we would need to have $\gamma$ and $\delta$ be functions of $S_C$ of the first lap and, analogously, for additional laps as we increase the length to 100 and 200 BR's.
+
+## Non-Linear Interaction Term for IM's
+Our model assumes that the interaction term for a 100 IM is $delta_{100IM}S_CI_{100IM}$. Logically, we think that there should be another term $delta_{100IM_2}{S_C}^2I_{100IM}$ because the cost of additional strokes, and therefore additional energy, is incredibly punishing for any young competitive swimmer who's not a strong breaststroker (as evident by @tbl-power_points_jadzia_vo is a relatively weak breaststroker). However, we lack the data to have sufficient conviction to add this term. Therefore, in the interest of parsimony, we opted for a linear interaction term.
+
+{{< pagebreak >}}
 
 # References

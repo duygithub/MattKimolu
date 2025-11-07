@@ -1,13 +1,7 @@
 ---
 title: "Explanatory Linear Model Framework for Optimal Breaststroke Stroke Count in Different Competitive Swimming Scenarios"
-authors: 
-  - name: "Duy Bao Vo"
-    email: "duyvo@ischool.berkeley.edu"
-date: today
 format: pdf
 editor: source
-bibliography: references.bib
-csl: https://www.zotero.org/styles/apa
 toc: true
 ---
 
