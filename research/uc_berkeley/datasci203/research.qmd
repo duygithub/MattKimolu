@@ -133,10 +133,10 @@ The swimmer will be fatigued after each swim event. For us to conduct our study,
 Ahead of each session, the swimmer should swim the following 900-yard warm-up routine:
 
 1. 2x 100 SCY. BR, FR. Pace: Easy, Build. Rest 30 seconds after FR.
-1. 2x 100 SCY. BR kick on back, FR kick on stomach. Pace: Build, Push. Rest 30 seconds after BR, rest 1 minute after FR.
+1. 2x 50 SCY. BR kick on back, FR kick on stomach. Pace: Build, Push. Rest 30 seconds after BR, rest 1 minute after FR.
 1. 4x 50 SCY. Drill on odd laps and normal swim on the even laps. Pace: Build. Rest 15 seconds after every set.
 1. 4x 50 SCY. Broken 200 IM SCY. Pace: Sprint. Rest 30 seconds after every set.
-1. 1x 100 SCY. FR or BR. Pace: Easy. Rest 10 minutes before starting timed tests.
+1. 1x 100 SCY. BR. Pace: Easy. Rest 10 minutes before starting timed tests.
 
 # Model Building
 
@@ -236,7 +236,10 @@ The swimmer had 3-4 minutes of rest time between the timed trials and we use thi
 The swimmer's name is Jadzia Bao Tran Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daughter of Duy Bao Vo.
 
 ```{r analyze_exploratory_data, echo=FALSE, message=FALSE, warning=FALSE}
-exploratory_data <- read.csv("data/20251106_-8.csv")
+exploratory_data_file1 <- read.csv("data/20251106_-8.csv")
+exploratory_data_file2 <- read.csv("data/20251111_-8.csv")
+
+exploratory_data <- rbind(exploratory_data_file1, exploratory_data_file2)
 
 # prepped_data <- mutate(
 #   exploratory_data,
@@ -292,18 +295,21 @@ labs(
 
 ## Power Analysis
 
-We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-linear_regression_model. We use the summary statistics in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$. This allows us to execute our power analysis.
+We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-linear_regression_model. We use the summary statistics, excluding those without standard deviations, in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$. This allows us to execute our power analysis.
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
+
+stats_with_sd <- summary_stats[!is.na(summary_stats$standard_deviation), ]
+
 make_data_from_exploratory_data <- function(n) { 
   df_ <- data.frame(
     t_lap = rnorm(
-      n = n * nrow(summary_stats),
-      mean = rep(summary_stats$mean_time, each = n),
-      sd = rep(summary_stats$standard_deviation, each = n)
+      n = n * nrow(stats_with_sd),
+      mean = rep(stats_with_sd$mean_time, each = n),
+      sd = rep(stats_with_sd$standard_deviation, each = n)
       ),
     
-    strokes = rep(summary_stats$stroke_count, each = n)
+    strokes = rep(stats_with_sd$stroke_count, each = n)
   )
   
   return(df_)
@@ -322,7 +328,7 @@ power_analysis <- function(simulation_count, data_size) {
 }
 
 power_analysis_simulation_count <- 1000
-power_analysis_data_size <- 100
+power_analysis_data_size <- 17
 
 exploratory_data_power <- power_analysis(simulation_count=power_analysis_simulation_count, data_size=power_analysis_data_size)
 ```
