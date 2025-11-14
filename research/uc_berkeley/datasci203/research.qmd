@@ -265,14 +265,61 @@ prepped_data <- mutate(
 
 summary_stats <- summarize(group_by(prepped_data, stroke_count), mean_time = as.numeric(mean(time_milliseconds)), standard_deviation=sd(time_milliseconds))
 
+summary_stats2 <-prepped_data %>%
+    group_by(stroke_count) %>%
+    summarize(n=length(unique(event_ordinal)),
+              Mean = mean(elapsed_time, na.rm = TRUE),
+              SD=sd(elapsed_time, na.rm = TRUE),
+              SE = sd(elapsed_time, na.rm = TRUE)/sqrt(length(elapsed_time)),
+              Min=quantile(elapsed_time,probs = 0,type=2,na.rm = TRUE) ,
+              Q1=quantile(elapsed_time,probs = 0.25,type=2,na.rm = TRUE),
+              Median= median(elapsed_time, na.rm = TRUE),
+              Q3=quantile(elapsed_time,probs = 0.75,type=2,na.rm = TRUE),
+              Max=quantile(elapsed_time,probs = 1,type=2,na.rm = TRUE)
+              )
+
+
+## Calculate Pooled SD
+summary_stats2_sd <- summary_stats2 %>%
+    filter(!is.na(SD))
+
+pooled_sd <- with(summary_stats2_sd, sqrt(sum((n - 1) * SD^2) / sum(n - 1)))
+
+summary_stats2$Pooled_SD <- pooled_sd 
+
+
+
+# knitr::kable(
+#   summary_stats,
+#   caption = "Summary Statistics for Elapsed Time (in milliseconds) by Stroke Count {#tbl-summary_statistics_exploratory_data}",
+#   col.names = c("**$\\mathbf{S_C}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
+#   
+#   # Tell kable to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.  
+#   escape = FALSE
+# )
+
+
 knitr::kable(
-  summary_stats,
+  summary_stats2,
   caption = "Summary Statistics for Elapsed Time (in milliseconds) by Stroke Count {#tbl-summary_statistics_exploratory_data}",
-  col.names = c("**$\\mathbf{S_C}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
-  
-  # Tell kable to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.  
+  col.names = c("**$\\mathbf{S_C}$**", 
+                "**$\\mathbf{n}$**", 
+                "**$\\mathbf{mean}$**", 
+                "**$\\mathbf{SD}$**",
+                "**$\\mathbf{SE}$**",
+                "**$\\mathbf{min}$**",
+                "**$\\mathbf{Q1}$**",
+                "**$\\mathbf{Median}$**",
+                "**$\\mathbf{Q3}$**",
+                "**$\\mathbf{max}$**",
+                "**$\\mathbf{Pooled SD}$**"
+                ),
+
+  # Tell kable to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.
   escape = FALSE
 )
+
+
 ```
 
 
@@ -299,27 +346,61 @@ We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
 
-stats_with_sd <- summary_stats[!is.na(summary_stats$standard_deviation), ]
+# stats_with_sd <- summary_stats[!is.na(summary_stats$standard_deviation), ]
 
-make_data_from_exploratory_data <- function(n) { 
-  df_ <- data.frame(
-    t_lap = rnorm(
-      n = n * nrow(stats_with_sd),
-      mean = rep(stats_with_sd$mean_time, each = n),
-      sd = rep(stats_with_sd$standard_deviation, each = n)
-      ),
-    
-    strokes = rep(stats_with_sd$stroke_count, each = n)
-  )
+exploratory_summary <- summary_stats2
+
+make_data_from_exploratory_data <- function(summary_df, total_n) { 
   
-  return(df_)
+  set.seed(1)
+  
+  # Number of groups
+  G <- nrow(summary_df)
+  
+  # Get pooled SD (assume it's the same for all rows, use the first)
+  sd_pooled <- summary_df$pooled_sd[1]
+  
+   group_probs <- rep(1 / G, G)
+   
+  # Determine n per group using a multinomial draw
+  n_group <- as.numeric(rmultinom(1, size = total_n, prob = group_probs))
+  
+  pooled_sd <- summary_df$Pooled_SD[1]
+  
+  # Simulate values for each group
+  sim_list <- lapply(seq_len(G), function(i) {
+    n_i <- n_group[i]
+    if (n_i == 0) return(NULL)
+    
+    data.frame(
+      strokes = summary_df$stroke_count[i],
+      t_lap = rnorm(n_i, mean = summary_df$Mean[i], sd =pooled_sd )
+    )
+  })
+  
+  sim_data <- do.call(rbind, sim_list)
+  
+  # Add record_id
+  sim_data$record_id <- seq_len(nrow(sim_data))
+  
+  # Reorder columns
+  sim_data <- sim_data[, c("record_id", "strokes", "t_lap")]
+  
+  return(sim_data)
+  
+  
+  
 }
 
-power_analysis <- function(simulation_count, data_size) {
+
+exploratory_data_simulated_data<- make_data_from_exploratory_data(summary_stats2, 1000) 
+
+
+power_analysis <- function(simulation_count, exploratory_data_simulated_data) {
   reject_vector <- NA
   
   for (i in 1 : simulation_count) {
-    exploratory_data_simulated_data <- make_data_from_exploratory_data(data_size)
+    # exploratory_data_simulated_data <- make_data_from_exploratory_data(data_size, input_data)
     model <- lm(t_lap ~ strokes + I(strokes^2), data = exploratory_data_simulated_data)
     reject_vector[i] <- broom::tidy(anova(model))[1, "p.value"] < alpha
   }
@@ -328,9 +409,9 @@ power_analysis <- function(simulation_count, data_size) {
 }
 
 power_analysis_simulation_count <- 1000
-power_analysis_data_size <- 17
+# power_analysis_data_size <- 17
 
-exploratory_data_power <- power_analysis(simulation_count=power_analysis_simulation_count, data_size=power_analysis_data_size)
+exploratory_data_power <- power_analysis(simulation_count=power_analysis_simulation_count, exploratory_data_simulated_data)
 ```
 
 We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
