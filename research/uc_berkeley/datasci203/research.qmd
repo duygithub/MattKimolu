@@ -19,6 +19,8 @@ library(tidyverse) # For functions like mutate
 library(units)
 
 alpha <- .05
+
+
 ```
 
 {{< pagebreak >}}
@@ -90,7 +92,7 @@ $$
 
 ## Measurement Metric
 
-There are two type of courses in competitive swimming: long course and short course. Olympic competition happens in long course format where each lap is 50 meters (LCM). Internationally, short courses are 25 meters (SCM) (so 1 LCM = 2 x SCM). In the US, most competitive swimming up through college uses 25-yard short courses (SCY) and 50-meter long courses (LCM), (so 1 LCM \~=2.18722 SCY). This study uses an SCY pool.
+There are two type of courses in competitive swimming: long course and short course. Olympic competition happens in long course format where each lap is 50 meters (LCM). Internationally, short courses are 25 meters (SCM) (so 1 LCM = 2 x SCM). In the US, most competitive swimming up through college uses 25-yard short courses (SCY) and 50-meter long courses (LCM), (so 1 LCM $\approx$ 2.18722 x SCY). This study uses an SCY pool.
 
 ## Selection of Events
 
@@ -118,7 +120,7 @@ For US non-collegiate swimming, LCM courses are mostly only available during sum
 
 ## Rest Times
 
-The swimmer will be fatigued after each swim event. For us to conduct our study, we must give the swimmer adequate time to rest between each timed event. @NeivaPassiveRest recommends 10 minutes of passive recovery for a 200 FR SCM and not to exceed 20 minutes. We can use this study as a baseline for rest time because @RatelMetabolicProfile observed that prepubertal children have recovery profiles comparable to well-trained adult endurance athletes (given that our population are competitive prepubertal children, we expect them to have faster recovery times that average prepubertal children.) For our experiment, we will implement the following rest times to prevent spillover between different timed tests:
+The swimmer will be fatigued after each swim event. For us to conduct our study, we must give the swimmer adequate time to rest between each timed event. @NeivaPassiveRest recommends 10 minutes of passive recovery for a 200 FR SCM and not to exceed 20 minutes. We can use this study as a baseline for rest time because @RatelMetabolicProfile observed that prepubertal children have recovery profiles comparable to well-trained adult endurance athletes (given that our population are competitive prepubertal children, we expect them to have faster recovery times that average prepubertal children.) For our experiment, we will implement the following target rest times to prevent spillover between different timed tests while ensuring that we are able to collect data in a timely manner:
 
 ::: {tbl-colwidths="[15,15,70]"}
 | **Event** | **Target Rest** | **Reason** |
@@ -126,7 +128,7 @@ The swimmer will be fatigued after each swim event. For us to conduct our study,
 | 100 IM SCY | 10 minutes | The 100 IM is more challenging than a 100 FR. However, @NeivaPassiveRest conducted a study with 200 FR, so a 10 minute rest is reasonable . Also, the swimmer will only swim 3/4 of the 100 IM because breaststroke is the 3rd lap. |
 | 50 BR SCY | 7 minutes | This swim is 1/2 the length an IM and a BR requires the least energy output [@KachunovEnergetics]. |
 | 25 BR SCY | 4 minutes | This time was informed when collecting the exploratory data set. |
-: Rest Times between Timed Tests {#tbl-rest_times}
+: Target Rest Times between Timed Tests {#tbl-rest_times}
 :::
 
 ## Warm-Ups
@@ -138,19 +140,23 @@ Ahead of each session, the swimmer should swim the following 700-yard warm-up ro
 1. 4x 25 SCY. Broken 100 IM SCY. Pace: Sprint. Rest 30 seconds after every of the first three sets, one minute rest after final set.
 1. 1x 100 SCY. BR. Pace: Easy. Rest 10 minutes before starting timed tests.
 
+
+## Applications of Belmont Principles
+Given the swimmer is a minor engaged in a strenuous physical activity, there are safety considerations. Therefore, additional rest times beyond those defined in @tbl-rest_times will be granted upon the swimmer's request and this information will be reflected in the data.
+
 # Model Building
 
-## Causal Theory and Hypothesis
+## Causal Theory and Null Hypothesis
 
 We opt for the explanatory mode for model building because we are primarily interested in deriving $S_C$.
 
 @Craig1979, @Vorontsov1991, @Vorontsov2002, @JurimaeBestPredictors and many other studies have shown a causal relationship between a stroke statistic and its effect on $T_{Lap}$. Since $S_C$ has a mathematical relationship to those stroke statistics, then $S_C$ has a causal relationship with $T_{Lap}$. We want to see if there is a tighter causal relationship centered around an optimal $S_C$ and define our Null Hypothesis as:
 
-> **$H_0$**: Given an $S_{C_{Optimal}}$ ~ $T_{lap_{Optimal}}$, there is no difference of at least .5 second between $T_{lap_{Optimal}}$ and $T_{lap_{-2}}$ and $T_{lap_{Optimal}}$ and $T_{lap_{+2}}$ where $T_{lap_{-2}}$ ~ $S_{C_{Optimal}} - 2$ strokes and $T_{lap_{+2}}$ ~ $S_{C_{Optimal}} + 2$ strokes.
+> **$H_0$**: $\left| T_{Lap_{Optimal}} - T_{Lap_{-2}} \right| \le 500$ and $\left| T_{Lap_{Optimal}} - T_{Lap_{+2}} \right| \le 500$ where $T_{Lap_{Optimal}} \sim S_{C_{Optimal}}$, $T_{Lap_{-2}} \sim S_{C_{Optimal}} - 2$ strokes, and $T_{Lap_{+2}} \sim S_{C_{Optimal}} + 2$ strokes.
 
 For example, if we determine that the optimal $S_{C}$ for a given swimmer is 17 with a corresponding time of 20 seconds, then **$H_0$** asserts that there is not a .5 second difference from 20 seconds if the swimmer swims 15 or 19 strokes.
 
-We choose .5 second for our 25-yard lap because the difference between a top and second -tier national swimmer[^6] for a 50 BR SCY is $\le$ 2 seconds[^7]. A .5 second for each lap would equal a 1 second improvement for 50 SCY and the swimmer can work on glide time and turns to improve the time by another second.
+We choose .5 second for our 25 SCY lap because the difference between a top and second -tier national swimmer[^6] for a 50 BR SCY is $\le$ 2 seconds[^7]. A .5 second for each lap would equal a 1 second improvement for 50 SCY and the swimmer can work on glide time and turns to improve the time by another second.
 
 [^6]: A AAAA-ranked swimmer is in the top 2% of swimmers in their age group, their same-sex, in that stroke and distance. A AAA-ranked swimmer is in the top 6% of swimmers in their age group, their same-sex, in that stroke and distance. \
     **Source:** Central California Swimming. (2024). 2024-2028 Motivational Standards Age Group. <https://www.gomotionapp.com/team/caraa/page/system/res/102429>
@@ -241,7 +247,7 @@ exploratory_data_file2 <- read.csv("data/20251111_-8.csv")
 
 exploratory_data <- rbind(exploratory_data_file1, exploratory_data_file2)
 
-# prepped_data <- mutate(
+# prepped_exploratory_data <- mutate(
 #   exploratory_data,
 #   # Create the new grouping variable
 #   swim_group = case_when(
@@ -252,21 +258,21 @@ exploratory_data <- rbind(exploratory_data_file1, exploratory_data_file2)
 #   time_seconds = as.numeric(ms(elapsed_time))
 # )
 
-prepped_data <- mutate(
+prepped_exploratory_data <- mutate(
   exploratory_data,
   time_milliseconds = set_units(set_units(.data$elapsed_time, "s"), "ms")
 )
 
 # test_time_seconds <- set_units(set_units(elapsed_time, "s"), "ms")
 
-# summary_stats <- summarize(group_by(prepped_data, swim_group), mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
+# summary_exploratory_data_stats <- summarize(group_by(prepped_exploratory_data, swim_group), mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
 
-# summary_stats <- summarize(prepped_data, mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
+# summary_exploratory_data_stats <- summarize(prepped_exploratory_data, mean_time = mean(time_seconds), standard_deviation=sd(time_seconds))
 
-summary_stats <- summarize(group_by(prepped_data, stroke_count), mean_time = as.numeric(mean(time_milliseconds)), standard_deviation=sd(time_milliseconds))
+summary_exploratory_data_stats <- summarize(group_by(prepped_exploratory_data, stroke_count), mean_time = as.numeric(mean(time_milliseconds)), standard_deviation=sd(time_milliseconds))
 
 knitr::kable(
-  summary_stats,
+  summary_exploratory_data_stats,
   caption = "Summary Statistics for Elapsed Time (in milliseconds) by Stroke Count {#tbl-summary_statistics_exploratory_data}",
   col.names = c("**$\\mathbf{S_C}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
   
@@ -277,14 +283,27 @@ knitr::kable(
 
 
 ```{r plot_exploratory_data}
-#| label: fig-exploratory_data_stroke_count_elapsed_time_plot 
-#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
-#| fig-pos: H
 #| echo: false
+#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
+#| fig-cap-location: top
+#| fig-pos: H
+#| label: fig-exploratory_data_stroke_count_elapsed_time_plot 
 #| message: false
 #| warning: false
-ggplot(exploratory_data, aes(x = factor(prepped_data$stroke_count), y = prepped_data$time_milliseconds)) +
-geom_jitter(width = 0.2, alpha = 0.7) + # `alpha` adds transparency
+
+exploratory_data_y_min <- 25000
+exploratory_data_y_max <- 28000
+exploratory_data_y_seq <- seq(from = exploratory_data_y_min, to = exploratory_data_y_max, by = 500)
+
+ggplot(exploratory_data, aes(
+  x = factor(prepped_exploratory_data$stroke_count),
+  # y = prepped_exploratory_data$time_milliseconds)) +
+  y = as.numeric(prepped_exploratory_data$time_milliseconds))) +
+geom_point(width = 0.2, alpha = 0.7) + # `alpha` adds transparency
+scale_y_continuous(
+  breaks = exploratory_data_y_seq,      # Forces labels at 0, 10000, ... 80000
+  limits = c(exploratory_data_y_min, exploratory_data_y_max) # Forces the graph to start/end exactly there
+) +
 labs(
   # title = "Elapsed Lap Time by Stroke Count",
   x = expression(bold(S[C])),
@@ -299,7 +318,7 @@ We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
 
-stats_with_sd <- summary_stats[!is.na(summary_stats$standard_deviation), ]
+stats_with_sd <- summary_exploratory_data_stats[!is.na(summary_exploratory_data_stats$standard_deviation), ]
 
 make_data_from_exploratory_data <- function(n) { 
   df_ <- data.frame(
@@ -328,7 +347,7 @@ power_analysis <- function(simulation_count, data_size) {
 }
 
 power_analysis_simulation_count <- 1000
-power_analysis_data_size <- 17
+power_analysis_data_size <- 16
 
 exploratory_data_power <- power_analysis(simulation_count=power_analysis_simulation_count, data_size=power_analysis_data_size)
 ```
@@ -336,6 +355,68 @@ exploratory_data_power <- power_analysis(simulation_count=power_analysis_simulat
 We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
 
 ## Data Collection
+
+Jadzia Vo swam Y laps over X sessions. Each session happened on a different day.
+
+```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
+main_data_file1 <- read.csv("data/20251112_-8.csv")
+main_data_file2 <- read.csv("data/20251120_-8.csv")
+
+main_data <- rbind(main_data_file1, main_data_file2)
+
+prepped_main_data <- mutate(
+  main_data,
+  time_milliseconds = set_units(set_units(.data$elapsed_time, "s"), "ms")
+)
+
+summary_main_data_stats <- summarize(group_by(prepped_main_data, stroke_count), mean_time = as.numeric(mean(time_milliseconds)), standard_deviation=sd(time_milliseconds))
+```
+
+```{r plot_main_data}
+#| echo: false
+#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count by data_entry_type"
+#| fig-height: 6
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: fig-main_data_stroke_count_elapsed_time_plot
+#| message: false
+#| warning: false
+
+main_data_y_min <- 24000
+main_data_y_max <- 32000
+main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
+
+main_data_plot_custom_shapes <- c("25" = 3, "50L1" = 4, "50L2" = 15, "100IM" = 17)
+main_data_plot_custom_colors <- c("25" = "blue", "50L1" = "blue", "50L2" = "green", "100IM" = "red")
+
+
+ggplot(main_data, aes(x = factor(prepped_main_data$stroke_count),
+                      y = as.numeric(prepped_main_data$time_milliseconds),
+                      color = prepped_main_data$data_entry_type, 
+                      shape = prepped_main_data$data_entry_type)) +
+geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) + # Increased size slightly for visibility
+scale_color_manual(values = main_data_plot_custom_colors) +
+scale_shape_manual(values = main_data_plot_custom_shapes) +
+scale_y_continuous(
+  breaks = main_data_y_seq,      # Forces labels at 0, 10000, ... 80000
+  limits = c(main_data_y_min, main_data_y_max) # Forces the graph to start/end exactly there
+) +
+labs(
+  # title = "Elapsed Lap Time by Stroke Count",
+  x = expression(bold(S[C])),
+  y = expression(bold(T[lap])),
+  color = "data_entry_type", # Legend Title
+  shape = "data_entry_type"  # Legend Title (must match color title to combine legends)
+) +
+theme(legend.position = "bottom")
+
+### Explanation of the Shapes
+# In R's `ggplot2`, shapes are mapped to integer codes. I used the following for your request:
+# * **Shape 16:** Filled Circle (Dot) $\rightarrow$ Used for "25" and "50L1".
+# * **Shape 4:** Cross (X) $\rightarrow$ Used for "50L2".
+# * **Shape 17:** Filled Triangle $\rightarrow$ Used for "100IM".
+
+```
 
 # Analysis
 
@@ -364,9 +445,9 @@ After the grouping by the Data Entry Type, we group by the stroke count so we ca
 
 Choosing the optimal stroke for each swimmer will likely require understanding their swimming style, personality, and maturity. For example, all of the following scenarios are possible for a given swimmer:
 
-* $SC_1$ is associated with the two fastest times.
-* $SC_2$ is associated with the fastest $\bar{x}$, but the third biggest $s$.
-* $SC_3$ is associated with the second fastest $\bar{x}$, but the smallest $s$.
+* $S_{C_1}$ is associated with the two fastest times.
+* $S_{C_2}$ is associated with the fastest $\bar{x}$, but the third biggest $s$.
+* $S_{C_3}$ is associated with the second fastest $\bar{x}$, but the smallest $s$.
 
 Once we've selected the $T_{Target}$, we calculate the desired $S_C$ for each of the three scenarios:
 
@@ -451,11 +532,6 @@ To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia
 
 # Future Work
 
-## SCM and LCM & BK, FL, and FR
-We limited our study to SCY because that's the prevailing courses available during the time of the study in the US. We could expand the study to encompass LCM and SCM events and include longer distance events like 1500 FR LCM.
-
-We also limited our study to breaststroke. There are three other competitive strokes we can analyze.
-
 ## Glide Time is a Confounder
 Glide time is an important consideration when trying to minimize $T_{Lap}$. It is also a confounder because it directly affects both $T_{Lap}$ and $S_C$. A very good swimmer can swim nearly 1/2 of an SCY lap with a fast glide, reducing both $T_{Lap}$ and $S_C$.
 
@@ -480,13 +556,18 @@ To properly model an optimal glide time would likely require several additional 
 <!-- | Number of competitions | Good swimmers know their bodies and swim styles. The more experience they have at competition, the more ability they have to feel how their body interacts with water. This variable could be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{Fastest}$. -->
 <!-- ::: -->
 
-## Optimizing $T_{Lap}$'s for 50, 100, and 200 BR's
+## Use Varying Coefficients for 50, 100, and 200 BR's
 Our current model is a per-lap model and assumes that the penalties $\gamma$ and $\delta$ are constants calculated as the average across different $S_C$'s for the first lap. The best we can do with the model is to optimize for each lap independently. For a young competitive swimmer, this assumption is sufficient, especially given that there are no qualifying times for 100 or 200 BR for swimmers under 9-years-old. For a more complete model, we would need to have $\gamma$ and $\delta$ be functions of $S_C$ of the first lap and, analogously, for additional laps as we increase the length to 100 and 200 BR's.
+
+## SCM and LCM & BK, FL, and FR
+We limited our study to SCY because that's the prevailing courses available during the time of the study in the US. We could expand the study to encompass LCM and SCM events and include longer distance events like 1500 FR LCM.
+
+We also limited our study to breaststroke. There are three other competitive strokes we can analyze.
 
 ## Non-Linear Interaction Term for IM's
 Our model assumes that the interaction term for a 100 IM is $delta_{100IM}S_CI_{100IM}$. Logically, we think that there should be another term $\delta_{100IM_2}{S_C}^2I_{100IM}$ because the cost of additional strokes, and therefore additional energy, is incredibly punishing for any young competitive swimmer who's not a strong breaststroker (as evident by @tbl-power_points_jadzia_vo is a relatively weak breaststroker). However, we lack the data to have sufficient conviction to add this term. Therefore, in the interest of parsimony, we opted for a linear interaction term.
 
-## Stroke Count Variance
+## $S_C$ Heteroskedasticity
 Our quadratic equation gives us two solution for a given $T_{Target}$ if $T_{Target} \neq T_{Fastest}$. A reason to consider $T_{Target} \neq T_{Fastest}$ is if $\sigma^2[T_{Target}] \ll \sigma^2[T_{Fastest}]$ and $T_{Target} \approx T_{Fastest}$.
 If $S_{C_{Less}}$ and $S_{C_{More}}$ results in the same $T_{Target}$, $S_{C_{Less}}$ would require less energy, and therefore be preferable. However $S_{C_{Less}}$ would also require much more precision in the kick and streamline, and thus likely to have a higher variance. There seems to be heteroscedasticity with variance of stroke counts, especially for younger swimmers that have not mastered precision. It would be useful to test the correlation between $S_C$ and $\sigma^2[T_{Lap}]$ with Spearman's Correlation Test. If $\rho \approx 1$ and $p < \alpha$, then it would be very beneficial for the swimmer to train for precision.
 Qualitatively, Jadzia Vo's swim coaches have confirmed that Jadzia's kicks are not consistently narrow, which explains the variance seen in @fig-exploratory_data_stroke_count_elapsed_time_plot.
