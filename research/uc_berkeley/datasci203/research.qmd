@@ -391,10 +391,10 @@ make_data_from_exploratory_data <- function(summary_df, total_n) {
 }
 
 # # Test
-# exploratory_data_simulated_data<- make_data_from_exploratory_data(exploratory_summary, 1000) 
+ exploratory_data_simulated_data<- make_data_from_exploratory_data(exploratory_summary, 1000) 
 
 
-power_analysis <- function(simulation_count, summary_df, total_n) {
+power_analysis <- function(simulation_count, summary_df, total_n, alpha) {
   reject_vector <- NA
   
   for (i in 1 : simulation_count) {
@@ -407,12 +407,14 @@ power_analysis <- function(simulation_count, summary_df, total_n) {
   return (mean(reject_vector))
 }
 
-power_analysis_simulation_count <- 1000
+power_analysis_simulation_count <- 3000
 power_analysis_data_size <- 51
+alpha <- 0.05
 
 exploratory_data_power <- power_analysis(power_analysis_simulation_count,
                                          exploratory_summary , 
-                                         power_analysis_data_size)
+                                         power_analysis_data_size,
+                                         0.05)
 ```
 
 We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
