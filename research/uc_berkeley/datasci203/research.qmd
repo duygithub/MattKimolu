@@ -351,21 +351,19 @@ We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of
 exploratory_summary <- summary_stats2
 
 make_data_from_exploratory_data <- function(summary_df, total_n) { 
-  
-  set.seed(1)
+
   
   # Number of groups
   G <- nrow(summary_df)
   
-  # Get pooled SD (assume it's the same for all rows, use the first)
-  sd_pooled <- summary_df$pooled_sd[1]
+  # Get pooled SD 
+  pooled_sd <- summary_df$Pooled_SD[1]
   
    group_probs <- rep(1 / G, G)
    
   # Determine n per group using a multinomial draw
   n_group <- as.numeric(rmultinom(1, size = total_n, prob = group_probs))
-  
-  pooled_sd <- summary_df$Pooled_SD[1]
+
   
   # Simulate values for each group
   sim_list <- lapply(seq_len(G), function(i) {
@@ -392,26 +390,29 @@ make_data_from_exploratory_data <- function(summary_df, total_n) {
   
 }
 
+# # Test
+# exploratory_data_simulated_data<- make_data_from_exploratory_data(exploratory_summary, 1000) 
 
-exploratory_data_simulated_data<- make_data_from_exploratory_data(summary_stats2, 1000) 
 
-
-power_analysis <- function(simulation_count, exploratory_data_simulated_data) {
+power_analysis <- function(simulation_count, summary_df, total_n) {
   reject_vector <- NA
   
   for (i in 1 : simulation_count) {
-    # exploratory_data_simulated_data <- make_data_from_exploratory_data(data_size, input_data)
+    exploratory_data_simulated_data <- make_data_from_exploratory_data( exploratory_summary,
+                                                                       total_n)
     model <- lm(t_lap ~ strokes + I(strokes^2), data = exploratory_data_simulated_data)
     reject_vector[i] <- broom::tidy(anova(model))[1, "p.value"] < alpha
   }
-  
+  print(mean(reject_vector))
   return (mean(reject_vector))
 }
 
 power_analysis_simulation_count <- 1000
-# power_analysis_data_size <- 17
+power_analysis_data_size <- 51
 
-exploratory_data_power <- power_analysis(simulation_count=power_analysis_simulation_count, exploratory_data_simulated_data)
+exploratory_data_power <- power_analysis(power_analysis_simulation_count,
+                                         exploratory_summary , 
+                                         power_analysis_data_size)
 ```
 
 We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
