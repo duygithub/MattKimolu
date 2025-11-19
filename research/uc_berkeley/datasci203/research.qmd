@@ -142,7 +142,9 @@ Ahead of each session, the swimmer should swim the following 700-yard warm-up ro
 
 
 ## Applications of Belmont Principles
-Given the swimmer is a minor engaged in a strenuous physical activity, there are safety considerations. Therefore, additional rest times beyond those defined in @tbl-rest_times will be granted upon the swimmer's request and this information will be reflected in the data.
+Given the swimmer is a minor engaged in a strenuous physical activity, there are safety considerations. Therefore additional rest times beyond those defined in @tbl-rest_times will be granted upon the swimmer's request and this information will be reflected in the data.
+
+Also, because swimming is a year-round sport with no "off season", there are likely competitions happening during the study. During the study we discovered that a large reason why the $T_{Lap}$ is heteroskedastic is because of the kick, so we asked the swimmer to focus on narrower kicks because it benefits them during the competition to ensure that the subject benefits from the study as much as possible. Since we make this adjustment after the exploratory data set and before the collection of the primary data, we do not expect there to be an impact on the study.
 
 # Model Building
 
@@ -178,7 +180,11 @@ It's clear that $S_C$ for any subsequent lap is not independent of $S_C$ for the
 Our regression model is defined as
 
 $$
-T_{Lap} = \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \gamma_{50L2} I_{50L2} + \gamma_{100IM} I_{100IM} + \delta_{50L2}S_CI_{50L2} + \delta_{100IM}S_CI_{100IM} + \epsilon
+\begin{split}
+T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 \\
+& + \gamma_{50L2} I_{50L2} + \delta_{50L2}S_CI_{50L2} + \zeta_{50L2}{S_C}^2I_{50L2} \\
+& + \gamma_{100IM} I_{100IM}  + \delta_{100IM}S_CI_{100IM}  + \zeta_{100IM}{S_C}^2I_{100IM} + \epsilon
+\end{split}
 $$ {#eq-linear_regression_model}
 
 ::: {tbl-colwidths="[20,80]"}
@@ -191,9 +197,11 @@ $$ {#eq-linear_regression_model}
 | $\gamma_{50L2}$, $\gamma_{100IM}$ | $\gamma$'s operationalizes the combined lap penalty (e.g. for the previous lap in 50L2 and the previous two laps in 100IM) where the swimmer has to turn and pullout (which will always be slower than a good dive and start pullout), thereby increasing the base time $\beta_0$. |
 | $I_{50L2Y}$ | An indicator variable; 1 if this is the 2nd leg of a 50 Breaststroke SCY event and 0 otherwise. |
 | $I_{100IM}$ | An indicator variable; 1 if this is the breaststroke leg of a 100 Individual Medley SCY event and 0 otherwise. |
-| $\delta_{50L2}$, $\delta_{100IM}$ | $\delta$'s operationalizes the fatigue from previous laps, thereby changing the slope of the model based on the change in the cost or benefit of each additional stroke.  |
+| $\delta_{50L2}$, $\delta_{100IM}$, $\zeta_{50L2}$, $\zeta_{100IM}$ | $\delta$'s operationalizes the fatigue from previous laps, thereby changing the slope of the model based on the change in the cost or benefit of each additional stroke. |
 | $S_CI_{50L2}$ | An interaction variable that applies only if this is the 2nd leg of a 50 BR SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
 | $S_CI_{100IM}$ | An interaction variable that applies only if this is the breaststroke leg of a 100 IM SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
+| $S_CI_{50L2}$, ${S_C}^2I_{50L2}$ | An interaction variable that applies only if this is the 2nd leg of a 50 BR SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
+| $S_CI_{100IM}$, ${S_C}^2I_{100IM}$ | An interaction variable that applies only if this is the breaststroke leg of a 100 IM SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
 | $\epsilon$ | The residual of the actual observed time vs that predicted by the model. Because we are building a explanatory model and not a predictive model, we are not interested in this value. |
 : Definition of Linear Model Components {#tbl-definition_of_linear_model_components}
 :::
@@ -359,8 +367,8 @@ We ran `r power_analysis_simulation_count` simulations and determined that our s
 Jadzia Vo swam Y laps over X sessions. Each session happened on a different day.
 
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
-main_data_file1 <- read.csv("data/20251112_-8.csv")
-main_data_file2 <- read.csv("data/20251120_-8.csv")
+main_data_file1 <- read.csv("data/20251118_-8.csv")
+#main_data_file2 <- read.csv("data/20251120_-8.csv")
 
 main_data <- rbind(main_data_file1, main_data_file2)
 
@@ -504,7 +512,7 @@ We can use USA Swimming's Power Points to determine what is likely the swimmer's
 | 50 FR SCY | 8 | 39.22 | 241 |
 | 100 FR SCY | 8 | 1:30.30 | 131 |
 | 200 FR SCY | 7 | 3:34:65 | 16 |
-| 500 FR SCY | 7 | 8:57.53	| 76 |
+| 500 FR SCY | 8 | 8:21.35	| 157 |
 | 50 BK SCY | 8 | 44.96 | 242 |
 | 100 BK SCY | 7 | 1:50.41 | 62 |
 | 50 BR SCY | 8 | 52.63	| 207 |
@@ -564,8 +572,8 @@ We limited our study to SCY because that's the prevailing courses available duri
 
 We also limited our study to breaststroke. There are three other competitive strokes we can analyze.
 
-## Non-Linear Interaction Term for IM's
-Our model assumes that the interaction term for a 100 IM is $delta_{100IM}S_CI_{100IM}$. Logically, we think that there should be another term $\delta_{100IM_2}{S_C}^2I_{100IM}$ because the cost of additional strokes, and therefore additional energy, is incredibly punishing for any young competitive swimmer who's not a strong breaststroker (as evident by @tbl-power_points_jadzia_vo is a relatively weak breaststroker). However, we lack the data to have sufficient conviction to add this term. Therefore, in the interest of parsimony, we opted for a linear interaction term.
+<!-- ## Non-Linear Interaction Term for IM's -->
+<!-- Our model assumes that the interaction term for a 100 IM is $\delta_{100IM}S_CI_{100IM}$. Logically, we think that there should be another term $\delta_{100IM_2}{S_C}^2I_{100IM}$ because the cost of additional strokes, and therefore additional energy, is incredibly punishing for any young competitive swimmer who's not a strong breaststroker (as evident by @tbl-power_points_jadzia_vo is a relatively weak breaststroker). However, we lack the data to have sufficient conviction to add this term. Therefore, in the interest of parsimony, we opted for a linear interaction term. -->
 
 ## $S_C$ Heteroskedasticity
 Our quadratic equation gives us two solution for a given $T_{Target}$ if $T_{Target} \neq T_{Fastest}$. A reason to consider $T_{Target} \neq T_{Fastest}$ is if $\sigma^2[T_{Target}] \ll \sigma^2[T_{Fastest}]$ and $T_{Target} \approx T_{Fastest}$.

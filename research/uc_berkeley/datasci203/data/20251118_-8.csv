@@ -1,0 +1,7 @@
+event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,note
+1,17:37:00,30.72,14,one thousand bananas,50L1,
+2,17:13:45,33.88,15,one thousand bananas,50L2,
+3,17:18:50,,,one thousand bananas,100IM,
+4,17:18:50,,,purple,50L1,
+5,17:18:50,,,purple,50L2,
+6,17:18:50,,,purple,100IM,
