@@ -1,6 +1,6 @@
-event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,note
-1,17:19:00,26.34,15,potatoes,25,
-2,17:23:55,27.87,11,one thousand potatoes,25,
-3,17:28:55,26.07,18,,25,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
-4,17:35:00,26.34,14,one one thousand one,25,
-5,17:38:40,26.15,9,,25,Instructed swimmer to swim as few strokes as possible while keeping glide time constant.
+event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,unwell_feedback,note
+1,17:19:00,26.34,15,potatoes,25,0,
+2,17:23:55,27.87,11,one thousand potatoes,25,0,
+3,17:28:55,26.07,18,,25,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
+4,17:35:00,26.34,14,one one thousand one,25,0,
+5,17:38:40,26.15,9,,25,0,Instructed swimmer to swim as few strokes as possible while keeping glide time constant.

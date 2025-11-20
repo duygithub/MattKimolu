@@ -1,7 +1,6 @@
-event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,note
-1,17:37:00,30.72,14,one thousand bananas,50L1,
-2,17:13:45,33.88,15,one thousand bananas,50L2,
-3,17:18:50,,,one thousand bananas,100IM,
-4,17:18:50,,,purple,50L1,
-5,17:18:50,,,purple,50L2,
-6,17:18:50,,,purple,100IM,
+event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,unwell_feedback,note
+1,17:36:00,30.72,14,one thousand bananas,50L1,1,At start of experiment swimmer said she was sleepy.
+2,,33.88,15,one thousand bananas,50L2,1,
+3,17:46:00,35.17,19,one thousand bananas,100IM,1,
+4,17:58:50,29.67,19,purple,50L1,1,
+5,,33.65,21,purple,50L2,1,
