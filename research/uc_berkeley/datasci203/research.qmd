@@ -9,6 +9,7 @@ editor: source
 bibliography: references.bib
 csl: https://www.zotero.org/styles/apa
 toc: true
+engine: knitr
 ---
 
 
@@ -133,6 +134,9 @@ The swimmer will be fatigued after each swim event. For us to conduct our study,
 : Target Rest Times between Timed Tests {#tbl-rest_times}
 :::
 
+## Mental Cues, Not Stroke Counts {#section-mental_cues_not_stroke_counts}
+Because these swimmers are young, it is difficult to set a target $S_C$. Therefor, we instruct the swimmer to use a specific mental cue that roughly maps to $S_{C_{Target}}$. We collect the mental cue for each lap as outlined in @tbl-definition_input_parameters.
+
 ## Warm-Ups
 Ahead of each session, the swimmer should swim the following 700-yard warm-up routine:
 
@@ -154,9 +158,9 @@ Also, because swimming is a year-round sport with no "off season", there are lik
 
 We opt for the explanatory mode for model building because we are primarily interested in deriving $S_C$.
 
-@Craig1979, @Vorontsov1991, @Vorontsov2002, @JurimaeBestPredictors and many other studies have shown a causal relationship between a stroke statistic and its effect on $T_{Lap}$. Since $S_C$ has a mathematical relationship to those stroke statistics, then $S_C$ has a causal relationship with $T_{Lap}$. We want to see if there is a tighter causal relationship centered around an optimal $S_C$ and define our Null Hypothesis as:
+@Craig1979, @Vorontsov1991, @Vorontsov2002, @JurimaeBestPredictors and many other studies have shown a causal relationship between a stroke statistic and its effect on $T_{Lap}$. Since $S_C$ has a mathematical relationship to those stroke statistics, then $S_C$ has a causal relationship with $T_{Lap}$. We want to see if there is a tighter causal relationship centered around an $S_{C_{Optimal}}$ and define our Null Hypothesis as:
 
-> **$H_0$**: $\left| T_{Lap_{Optimal}} - T_{Lap_{-2}} \right| \le 500$ and $\left| T_{Lap_{Optimal}} - T_{Lap_{+2}} \right| \le 500$ where $T_{Lap_{Optimal}} \sim S_{C_{Optimal}}$, $T_{Lap_{-2}} \sim S_{C_{Optimal}} - 2$ strokes, and $T_{Lap_{+2}} \sim S_{C_{Optimal}} + 2$ strokes.
+> **$H_0$**: Given event_type and  $U$; $\left| T_{Lap_{Optimal}} - T_{Lap_{-2}} \right| \le 500$ and $\left| T_{Lap_{Optimal}} - T_{Lap_{+2}} \right| \le 500$ where $T_{Lap_{Optimal}} \sim S_{C_{Optimal}}$, $T_{Lap_{-2}} \sim S_{C_{Optimal}} - 2$ strokes, and $T_{Lap_{+2}} \sim S_{C_{Optimal}} + 2$ strokes.
 
 For example, if we determine that the optimal $S_{C}$ for a given swimmer is 17 with a corresponding time of 20 seconds, then **$H_0$** asserts that there is not a .5 second difference from 20 seconds if the swimmer swims 15 or 19 strokes.
 
@@ -207,7 +211,7 @@ $$ {#eq-regression_model}
 | $S_CI_{100IM}$ | An interaction variable that applies only if this is the breaststroke leg of a 100 IM SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
 | $S_CI_{50L2}$, ${S_C}^2I_{50L2}$ | An interaction variable that applies only if this is the 2nd leg of a 50 BR SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
 | $S_CI_{100IM}$, ${S_C}^2I_{100IM}$ | An interaction variable that applies only if this is the breaststroke leg of a 100 IM SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
-| $\eta U$ | $U$ operationalizes if the swimmer is feeling undwell and $\eta$ is the corresponding regression coefficient. |
+| $\eta U$ | $U$ operationalizes if the swimmer is feeling unwell and $\eta$ is the corresponding regression coefficient. |
 | $\theta_0 O$, $\theta_1 O^2$ | $O$ is the event_ordinal from the data file and $\theta$'s are the corresponding regression coefficient. Operationalizes the tradeoff between fatigue over numerous trials vs flow state. |
 | $\epsilon$ | The residual of the actual observed time vs that predicted by the model. Because we are building a explanatory model and not a predictive model, we are not interested in this value. |
 : Definition of Model Components {#tbl-definition_of_model_components}
@@ -230,7 +234,7 @@ We will collect data in csv files with the title format YYYY_MM_DD_-8.csv where 
 | stroke_count | The number of strokes the swimmer took to complete the lap. |
 | mental_cue | A way to help our swimmer track when to start the next stroke and help them establish their tempo. For example, if we instruct the swimmer to mentally say "purple" before starting the next stroke, then we expect the swimmer to have a higher $S_C$ than mentally saying "one one thousand two". |
 | data_entry_type | One of \{25, 50L1, 50L2, 100IM\}. |
-| unwell_feedback | Operationalizes if the swimmer is not feeling well, usually because they are tired or are not in the mood to swim. Captured as $U$ in the model. Defaults to 0. 1 means they are unwell and -1 means they are feeling great. |
+| unwell_feedback | Operationalizes if the swimmer is not feeling well, usually because they are tired, hurt, or are not in the mood to swim. Captured as $U$ in the model. Defaults to 0. 1 means they are unwell and -1 means they are feeling great. |
 | note | Optional value describing the data. Not used in the model. |
 : Definition of Input Parameters {#tbl-definition_input_parameters}
 :::
@@ -273,9 +277,9 @@ knitr::kable(
 
 ```{r plot_exploratory_data}
 #| echo: false
-#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
+#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count in 25 BR"
 #| fig-cap-location: top
-#| fig-height: 6
+#| fig-height: 7
 #| fig-pos: H
 #| label: fig-exploratory_data_stroke_count_elapsed_time_plot 
 #| message: false
@@ -295,8 +299,8 @@ ggplot(exploratory_data,
            shape = factor(prepped_exploratory_data$data_entry_type))) +
 geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) +
 geom_text(aes(label = prepped_exploratory_data$event_ordinal), 
-          nudge_x = 0.1,      # Move slightly to the right
-          nudge_y = -100,     # Move slightly down (Adjust this value based on your Y scale!)
+          nudge_x = 0.25,     # Move slightly to the right
+          nudge_y = -40,      # Move slightly down (Adjust this value based on your Y scale!)
           size = 3,           # Make font smaller than the dots
           color = "black",    # Keep text black so it's readable
           fontface = "bold",
@@ -336,7 +340,7 @@ Jadzia Vo swam Y laps over X sessions. Each session happened on a different day.
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/compile_main_data.R")
 
-data_files_names <- c("20251118_-8.csv")
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv")
 main_data <- compile_data_files(data_files_names)
 prepped_main_data <- prep_data(main_data)
 
@@ -348,7 +352,7 @@ summary_main_data_stats <- summarize(
 
 ```{r plot_main_data}
 #| echo: false
-#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count by data_entry_type"
+#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
 #| fig-height: 8
 #| fig-pos: H
 #| fig-cap-location: top
@@ -356,8 +360,8 @@ summary_main_data_stats <- summarize(
 #| message: false
 #| warning: false
 
-main_data_y_min <- 24000
-main_data_y_max <- 36000
+main_data_y_min <- 23000
+main_data_y_max <- 38000
 main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
 
 
@@ -368,8 +372,8 @@ ggplot(main_data,
            shape = prepped_main_data$data_entry_type)) +
 geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) +
 geom_text(aes(label = prepped_main_data$event_ordinal), 
-          nudge_x = 0.1,      # Move slightly to the right
-          nudge_y = -220,     # Move slightly down (Adjust this value based on your Y scale!)
+          nudge_x = 0.15,     # Move slightly to the right
+          nudge_y = -180,     # Move slightly down (Adjust this value based on your Y scale!)
           size = 3,           # Make font smaller than the dots
           color = "black",    # Keep text black so it's readable
           fontface = "bold",
@@ -499,14 +503,14 @@ We can use USA Swimming's Power Points to determine what is likely the swimmer's
 | :--- | :--- | :--- | :--- |
 | 50 FR SCY | 8 | 39.22 | 241 |
 | 100 FR SCY | 8 | 1:30.30 | 131 |
-| 200 FR SCY | 7 | 3:34:65 | 16 |
+| 200 FR SCY | 8 | 3:09:35 | 161 |
 | 500 FR SCY | 8 | 8:21.35	| 157 |
 | 50 BK SCY | 8 | 44.96 | 242 |
-| 100 BK SCY | 7 | 1:50.41 | 62 |
+| 100 BK SCY | 8 | 1:40.19 | 209 |
 | 50 BR SCY | 8 | 52.63	| 207 |
 | 100 BR SCY | 7 | 1:57.03 | 188 |
 | 50 FL SCY | 8 | 43.56 | 242 |
-| 100 FL SCY | 7 | 2:21.39 | 1 |
+| 100 FL SCY | 8 | 1:52.12 | 82 |
 | 100 IM SCY | 8 | 1:36.42 | 269 |
 | 200 IM SCY | 7 | 3:50.64 | 84 |
 | 50 FR LCM | 7 | 48.85 | 97 |
@@ -525,6 +529,10 @@ We can use USA Swimming's Power Points to determine what is likely the swimmer's
 : USA Swimming Power Points for Jadzia Vo {#tbl-power_points_jadzia_vo}
 
 To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia's breaststroke is the her weakest (BR=207) whereas her other three strokes are effectively equally strong (FR=241, BK=242, FL=242). We would want to optimize her times for the other three strokes. The challenge will be to find $T_{Target}$ for breaststroke (third leg) that is as fast as possible without materially impacting $T_{Target}$ for freestyle (fourth and final leg). Once we've defined $T_{Target}$ for breaststroke, we can use @eq-stroke_count_for_target_time_100IM to find $S_C$ for breaststroke that is a good minimizer for the 100 IM.
+
+# Conclusion
+
+
 
 # Future Work
 
@@ -553,7 +561,7 @@ To properly model an optimal glide time would likely require several additional 
 <!-- ::: -->
 
 ## Use Varying Coefficients for 50, 100, and 200 BR's
-Our current model is a per-lap model and assumes that the penalties $\gamma$ and $\delta$ are constants calculated as the average across different $S_C$'s for the first lap. The best we can do with the model is to optimize for each lap independently. For a young competitive swimmer, this assumption is sufficient, especially given that there are no qualifying times for 100 or 200 BR for swimmers under 9-years-old. For a more complete model, we would need to have $\gamma$ and $\delta$ be functions of $S_C$ of the first lap and, analogously, for additional laps as we increase the length to 100 and 200 BR's.
+Our current model is a per-lap model and assumes that the penalties $\gamma$ and $\delta$ are constants calculated as the average across different $S_C$'s for the first lap. The best we can do with the model is to optimize for each lap independently. For a young competitive swimmer, this assumption is sufficient, especially given that there are no qualifying times for 100 or 200 BR for swimmers under 9-years-old. Moreover, and especially because [we use mental cues and not $S_{C_{Target}}$](#section-mental_cues_not_stroke_counts), it is likely too difficult for younger swimmers to vary their mental cues for different laps. For a more complete model, we would need to have $\gamma$ and $\delta$ be functions of $S_C$ of the first lap and, analogously, for additional laps as we increase the length to 100 and 200 BR's.
 
 ## SCM and LCM & BK, FL, and FR
 We limited our study to SCY because that's the prevailing courses available during the time of the study in the US. We could expand the study to encompass LCM and SCM events and include longer distance events like 1500 FR LCM.

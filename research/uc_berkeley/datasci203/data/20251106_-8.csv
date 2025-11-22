@@ -1,8 +1,8 @@
 event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,unwell_feedback,note
 1,17:09:30,26.16,19,,25,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
 2,17:13:45,26.71,8,,25,0,Instructed swimmer to swim as few strokes as possible while keeping glide time constant.
-3,17:18:50,26.35,18,purple,25,0,
-4,17:24:35,25.3,14,one one thousand one,25,1,Swimmer asked for extra rest time before the start of the timed trial
+3,17:18:50,26.35,18,purple,25,1,
+4,17:24:35,25.3,14,one one thousand one,25,0,Swimmer asked for extra rest time before the start of the timed trial
 5,17:30:05,27.14,11,one one thousand two one thousand,25,0,
 6,17:35:10,27.07,9,one one thousand two one thousand three one thousand,25,0
 7,17:39:30,25.24,14,one one thousand one,25,0,

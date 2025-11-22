@@ -1,0 +1,8 @@
+event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,unwell_feedback,note
+1,17:27:00,28.92,12,low variance low time,50L1,1,Swimmer says her ankle hurts before warmup
+2,,34.75,13,low variance low time,50L2,1,
+3,17:35:30,28.45,15,low variance low time,25,1,
+4,17:41:00,35.05,20,low variance low time,100IM,1,
+5,17:47:30,28.79,10,one one thousand two one thousand three one thousand,50L1,1,
+6,,33.87,11,one one thousand two one thousand three one thousand,50L2,1,
+7,17:51:00,27.07,17,one thousand,25,1,
