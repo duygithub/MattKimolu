@@ -1,5 +1,15 @@
 event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,unwell_feedback,note
-1,,,,,100IM,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
-2,,,,,50L1,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
-3,,,,,50L2,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
-4,,,,,25,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
+1,10:56:00,35.95,22,,100IM,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant. Swimmer started the day saying her ankle hurts. She elected to swim with her team for 1 hour 20 minutes. Aftewards we got lunch and she said she's feeling ok.
+2,11:09:00,30.00,23,,50L1,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
+3,,36.85,25,,50L2,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
+4,11:19:30,29.08,19,,25,0,Instructed swimmer to swim as many strokes as possible while keeping glide time constant.
+5,11:29:30,36.30,14,one one thousand two one thousand,100IM,1,Swimmer getting sleepy. Been up since 0745
+6,11:41:30,30.98,13,one one thousand two one thousand,50L1,1,
+7,,35.01,13,one one thousand two one thousand,50L2,1,
+8,11:58:00,30.75,21,purple,50L1,1,
+9,,37.42,24,purple,50L2,1,
+10,12:15:00,29.49,17,million bazillion,50L1,1,
+11,,34.09,20,million bazillion,50L2,1,
+12,12:27:30,32.10,12,one thousand two one thousand three one thousand,50L1,1,
+13,,36.20,13,one one thousand two one thousand three one thousand,50L2,1,
+14,12:35:30,28.40,18,one thousand bananas,25,1,

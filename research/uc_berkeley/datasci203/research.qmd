@@ -340,7 +340,7 @@ Jadzia Vo swam Y laps over X sessions. Each session happened on a different day.
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/compile_main_data.R")
 
-data_files_names <- c("20251118_-8.csv", "20251121_-8.csv")
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv")
 main_data <- compile_data_files(data_files_names)
 prepped_main_data <- prep_data(main_data)
 
