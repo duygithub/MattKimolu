@@ -17,11 +17,7 @@ engine: knitr
 library(ggplot2)  # For plots
 library(readr)    # For loading your CSV file (read_csv)
 library(tidyverse) # For functions like mutate
-library(dplyr)
-library(tidyr)
 library(units)
-library(knitr)
-library(broom)
 
 alpha <- .05
 
@@ -193,12 +189,10 @@ Our regression model is defined as
 
 $$
 \begin{split}
-T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 \\
+T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 \\
 & + \gamma_{50L2} I_{50L2} + \delta_{50L2}S_CI_{50L2} + \zeta_{50L2}{S_C}^2I_{50L2} \\
 & + \gamma_{100IM} I_{100IM}  + \delta_{100IM}S_CI_{100IM}  + \zeta_{100IM}{S_C}^2I_{100IM} \\
-& + \eta_{unwell} (U_{unwell} ) + \eta_{unwell} (U_{unwell} S_C ) + \eta_{unwell} (U_{unwell} {S_C}^2) \\\
-& + \eta_{well} (U_{well} ) + \eta_{well} (U_{well} S_C) + \eta_{well} (U_{well} {S_C}^2)\\
-& + \epsilon
+& + \eta U + \theta_0 O + \theta_1 O^2 + \epsilon
 \end{split}
 $$ {#eq-regression_model}
 
@@ -274,11 +268,10 @@ knitr::kable(
   summary_exploratory_data_stats,
   caption = "Summary Statistics for Elapsed Time (in milliseconds) by Stroke Count {#tbl-summary_statistics_exploratory_data}",
   col.names = c("**$\\mathbf{S_C}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
-
-  # Tell table to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.
+  
+  # Tell table to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.  
   escape = FALSE
 )
-
 ```
 
 
@@ -335,12 +328,7 @@ guides(shape = "none")
 We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-regression_model. We use the summary statistics, excluding those without standard deviations, in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$. This allows us to execute our power analysis.
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
-
-
 source("source/exploratory_data_power_analysis.R")
-
-
-
 ```
 
 We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
@@ -425,7 +413,6 @@ theme(legend.position = "bottom",
 Once we've collected the data and used OLS to calculate the regression coefficients, we end up with the equation
 
 $$
-
 \begin{split}
 T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 \\
 & + \gamma_{50L2} I_{50L2} + \delta_{50L2}S_CI_{50L2} + \zeta_{50L2}{S_C}^2I_{50L2} \\
@@ -434,8 +421,6 @@ T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 
 & + \eta_{well} (U_{well} ) + \eta_{well} (U_{well} S_C) + \eta_{well} (U_{well} {S_C}^2)\\
 & + \epsilon
 \end{split}
-
-
 $$ {#eq-fitted_regression_model}
 
 
@@ -521,7 +506,8 @@ kable(model1_coef_tbl2, digits = 3, caption = "Model 1 Summary")
 
 ```
 
-<!-- with
+
+<!--with
 
 | **Coefficient** | **Value** |
 | :--- | :--- |
@@ -571,7 +557,6 @@ The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is
 ### Case Study: Jadzia Bao Tran Vo
 
 Based on the following data set, we have computed the following for Jadzia Vo:
-
 
 ``` {r descriptive analysis by data entry type, 25 or 50L1}
 
@@ -664,7 +649,7 @@ kable(summary_data_entry_type_100IM , digits = 1,
 
 | **$S_C$** | **$\bar{x}$** | **$x_{Fastest}$** | **$s$** | **$x_{Slowest}$** | **$\tilde{x}$** |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-: Jadzia Vo's Stroke Count Analysis for 100IM Entries -->
+: Jadzia Vo's Stroke Count Analysis for 100IM Entries  -->
 
 
 #### Limited Applicability to Individual Medley (IM) Events
