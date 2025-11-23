@@ -196,8 +196,8 @@ $$
 T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 \\
 & + \gamma_{50L2} I_{50L2} + \delta_{50L2}S_CI_{50L2} + \zeta_{50L2}{S_C}^2I_{50L2} \\
 & + \gamma_{100IM} I_{100IM}  + \delta_{100IM}S_CI_{100IM}  + \zeta_{100IM}{S_C}^2I_{100IM} \\
-& + \eta_{unwell} (U_{unwell} ) + \eta_{unwell} (U_{unwell} S_C ) + \eta_{unwell} (U_{unwell} S_C^2) \\\
-& + \eta_{well} (U_{well} ) + \eta_{well} (U_{well} S_C) + \eta_{well} (U_{well} S_C^2)\\
+& + \eta_{unwell} (U_{unwell} ) + \eta_{unwell} (U_{unwell} S_C ) + \eta_{unwell} (U_{unwell} {S_C}^2) \\\
+& + \eta_{well} (U_{well} ) + \eta_{well} (U_{well} S_C) + \eta_{well} (U_{well} {S_C}^2)\\
 & + \epsilon
 \end{split}
 $$ {#eq-regression_model}
@@ -268,69 +268,15 @@ The swimmer had 3-4 minutes of rest time between the timed trials and we use thi
 The swimmer's name is Jadzia Bao Tran Vo (<https://www.swimcloud.com/swimmer/2555077/>) and is the daughter of Duy Bao Vo.
 
 ```{r analyze_exploratory_data, echo=FALSE, message=FALSE, warning=FALSE}
-# source("source/analyze_exploratory_data.R")
-# 
-# knitr::kable(
-#   summary_exploratory_data_stats,
-#   caption = "Summary Statistics for Elapsed Time (in milliseconds) by Stroke Count {#tbl-summary_statistics_exploratory_data}",
-#   col.names = c("**$\\mathbf{S_C}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
-#   
-#   # Tell table to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.  
-#   escape = FALSE
-# )
+source("source/analyze_exploratory_data.R")
 
-exploratory_data_file1 <- read.csv("data/20251106_-8.csv")
-exploratory_data_file2 <- read.csv("data/20251111_-8.csv")
-
-exploratory_data <- rbind(exploratory_data_file1, exploratory_data_file2)
-
-prepped_exploratory_data <- mutate(
-  exploratory_data,
-  time_milliseconds = set_units(set_units(.data$elapsed_time, "s"), "ms")
-)
-
-
-
-  summary_stats2 <-prepped_exploratory_data %>%
-    group_by(stroke_count) %>%
-    summarize(n=length((event_ordinal)),
-              Mean = mean(elapsed_time, na.rm = TRUE),
-              SD=sd(elapsed_time, na.rm = TRUE),
-              SE = sd(elapsed_time, na.rm = TRUE)/sqrt(length(elapsed_time)),
-              Min=quantile(elapsed_time,probs = 0,type=2,na.rm = TRUE) ,
-              Q1=quantile(elapsed_time,probs = 0.25,type=2,na.rm = TRUE),
-              Median= median(elapsed_time, na.rm = TRUE),
-              Q3=quantile(elapsed_time,probs = 0.75,type=2,na.rm = TRUE),
-              Max=quantile(elapsed_time,probs = 1,type=2,na.rm = TRUE)
-    )
-  
-  
-  ## Calculate Pooled SD
-  summary_stats2_sd <- summary_stats2 %>%
-    filter(!is.na(SD))
-  
-  pooled_sd <- with(summary_stats2_sd, sqrt(sum((n - 1) * SD^2) / sum(n - 1)))
-  
-  summary_stats2$Pooled_SD <- pooled_sd 
-  
-  
-  summary_exploratory_data_stats <- summary_stats2
-  
 knitr::kable(
- summary_exploratory_data_stats,
-  caption = "Summary Statistics for Elapsed Time (in milliseconds) by Stroke Count",
-  col.names = c("**$\\mathbf{S_C}$**", 
-                "**$\\mathbf{n}$**", 
-                "**$\\mathbf{mean}$**", 
-                "**$\\mathbf{SD}$**",
-                "**$\\mathbf{SE}$**",
-                "**$\\mathbf{min}$**",
-                "**$\\mathbf{Q1}$**",
-                "**$\\mathbf{Median}$**",
-                "**$\\mathbf{Q3}$**",
-                "**$\\mathbf{max}$**",
-                "**$\\mathbf{Pooled SD}$**"
-                ), escape = FALSE
+  summary_exploratory_data_stats,
+  caption = "Summary Statistics for Elapsed Time (in milliseconds) by Stroke Count {#tbl-summary_statistics_exploratory_data}",
+  col.names = c("**$\\mathbf{S_C}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
+
+  # Tell table to pass the raw LaTeX code (like $\mathbf...$) instead of converting it to plain text.
+  escape = FALSE
 )
 
 ```
@@ -393,19 +339,6 @@ We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of
 
 # source("source/exploratory_data_power_analysis.R")
 
-source("source/exploratory_data_power_analysis2.R")
-
-# # Test
-
-exploratory_summary <- summary_exploratory_data_stats
-power_analysis_simulation_count <- 1000
-power_analysis_data_size <- 45
-alpha <- 0.05
-
-exploratory_data_power <- power_analysis(power_analysis_simulation_count,
-                                         exploratory_summary ,
-                                         power_analysis_data_size,
-                                         0.05)
 
 
 ```
@@ -492,21 +425,32 @@ theme(legend.position = "bottom",
 Once we've collected the data and used OLS to calculate the regression coefficients, we end up with the equation
 
 $$
+
 \begin{split}
-\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
- & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
- & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM} \\
- & + \hat{\eta} U + \hat{\theta}_0 O + \hat{\theta}_1 O^2 
+T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 \\
+& + \gamma_{50L2} I_{50L2} + \delta_{50L2}S_CI_{50L2} + \zeta_{50L2}{S_C}^2I_{50L2} \\
+& + \gamma_{100IM} I_{100IM}  + \delta_{100IM}S_CI_{100IM}  + \zeta_{100IM}{S_C}^2I_{100IM} \\
+& + \eta_{unwell} (U_{unwell} ) + \eta_{unwell} (U_{unwell} S_C ) + \eta_{unwell} (U_{unwell} {S_C}^2) \\\
+& + \eta_{well} (U_{well} ) + \eta_{well} (U_{well} S_C) + \eta_{well} (U_{well} {S_C}^2)\\
+& + \epsilon
 \end{split}
+
+
 $$ {#eq-fitted_regression_model}
 
 
 ```{r Model 1}
 
+#| echo: false
+#| message: false
+#| warning: false
+
 # Convert variable types:
 prepped_main_data2 <- prepped_main_data %>%
+  mutate(data_entry_type = ifelse(data_entry_type %in% c("25", "50L1"), 
+                                  "25 or 50L1", data_entry_type) ) %>%
   mutate(data_entry_type = factor(data_entry_type,
-                              levels = c("25", "50L2", "100IM")),
+                              levels = c("25 or 50L1", "50L2", "100IM")),
          unwell_feedback = as.character(unwell_feedback),
          unwell_feedback = factor(unwell_feedback,
                               levels = c("0", "-1", "1")),
@@ -540,7 +484,9 @@ prepped_main_data2 <- prepped_main_data %>%
  model2 <- lm(time_milliseconds ~ 
                 stroke_count + 
                 I(stroke_count^2) + 
-                data_entry_type , 
+                data_entry_type+
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type , 
               data = prepped_main_data2  )
 
  summary( model2)
@@ -569,7 +515,7 @@ model2_coef_tbl2 <- model2_coef_tbl %>%
 
 
 kable(model1_coef_tbl2, digits = 3, caption = "Model 1 Summary")
-kable(model2_coef_tbl2, digits = 3, caption = "Model 2 Summary")
+# kable(model2_coef_tbl2, digits = 3, caption = "Model 2 Summary")
 
  
 
@@ -627,11 +573,15 @@ The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is
 Based on the following data set, we have computed the following for Jadzia Vo:
 
 
-``` {r descriptive analysis by data entry type}
+``` {r descriptive analysis by data entry type, 25 or 50L1}
 
+#| echo: false
+#| message: false
+#| warning: false
 
-summary_data_entry_type <-prepped_main_data2 %>%
-    group_by(data_entry_type) %>%
+summary_data_entry_type_25_50L1 <-prepped_main_data2 %>%
+  filter(data_entry_type == "25 or 50L1") %>%
+    group_by(data_entry_type, stroke_count) %>%
     summarize(n=length((event_ordinal)),
               Mean = mean(time_milliseconds, na.rm = TRUE),
               SD=sd(time_milliseconds, na.rm = TRUE),
@@ -644,7 +594,60 @@ summary_data_entry_type <-prepped_main_data2 %>%
     )
   
 
-kable(summary_data_entry_type , digits = 1, caption = "Descriptive summary by data entry types")
+summary_data_entry_type_50L2 <-prepped_main_data2 %>%
+  filter(data_entry_type == "50L2") %>%
+    group_by(data_entry_type, stroke_count) %>%
+    summarize(n=length((event_ordinal)),
+              Mean = mean(time_milliseconds, na.rm = TRUE),
+              SD=sd(time_milliseconds, na.rm = TRUE),
+              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
+              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
+              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
+              Median= median(time_milliseconds, na.rm = TRUE),
+              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
+              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
+    )
+
+
+
+summary_data_entry_type_50L2 <-prepped_main_data2 %>%
+  filter(data_entry_type == "50L2") %>%
+    group_by(data_entry_type, stroke_count) %>%
+    summarize(n=length((event_ordinal)),
+              Mean = mean(time_milliseconds, na.rm = TRUE),
+              SD=sd(time_milliseconds, na.rm = TRUE),
+              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
+              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
+              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
+              Median= median(time_milliseconds, na.rm = TRUE),
+              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
+              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
+    )
+
+
+summary_data_entry_type_100IM <-prepped_main_data2 %>%
+  filter(data_entry_type == "100IM") %>%
+    group_by(data_entry_type, stroke_count) %>%
+    summarize(n=length((event_ordinal)),
+              Mean = mean(time_milliseconds, na.rm = TRUE),
+              SD=sd(time_milliseconds, na.rm = TRUE),
+              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
+              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
+              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
+              Median= median(time_milliseconds, na.rm = TRUE),
+              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
+              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
+    )
+
+
+kable(summary_data_entry_type_25_50L1 , digits = 1, 
+      caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 25 and 50L1 Entries")
+
+kable(summary_data_entry_type_50L2 , digits = 1, 
+      caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 50L2 Entries")
+
+kable(summary_data_entry_type_100IM , digits = 1, 
+      caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 100MI Entries")
 
 
 ```
