@@ -337,7 +337,7 @@ We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
 
 
-# source("source/exploratory_data_power_analysis.R")
+source("source/exploratory_data_power_analysis.R")
 
 
 
