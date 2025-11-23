@@ -18,6 +18,7 @@ library(ggplot2)  # For plots
 library(readr)    # For loading your CSV file (read_csv)
 library(tidyverse) # For functions like mutate
 library(units)
+library(knitr)
 
 alpha <- .05
 
@@ -461,7 +462,7 @@ prepped_main_data2 <- prepped_main_data %>%
                 I(stroke_count^2) * unwell_feedback, 
               data = prepped_main_data2  )
 
- summary( model1)
+#  summary( model1)
 
 
  
@@ -474,9 +475,9 @@ prepped_main_data2 <- prepped_main_data %>%
                 I(stroke_count^2) * data_entry_type , 
               data = prepped_main_data2  )
 
- summary( model2)
+#  summary( model2)
 
-anova(model2, model1)  
+# anova(model2, model1)  
  
 
 model1_coef_tbl <- as.data.frame(summary(model1)$coefficients)
@@ -576,7 +577,8 @@ summary_data_entry_type_25_50L1 <-prepped_main_data2 %>%
               Median= median(time_milliseconds, na.rm = TRUE),
               Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
               Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
-    )
+    ) %>%
+  rename(`Stroke Count` = stroke_count)
   
 
 summary_data_entry_type_50L2 <-prepped_main_data2 %>%
@@ -591,14 +593,15 @@ summary_data_entry_type_50L2 <-prepped_main_data2 %>%
               Median= median(time_milliseconds, na.rm = TRUE),
               Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
               Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
-    )
+    ) %>%
+  rename(`Stroke Count` = stroke_count)
 
 
 
 
 summary_data_entry_type_100IM <-prepped_main_data2 %>%
   filter(data_entry_type == "100IM") %>%
-    group_by(data_entry_type, stroke_count) %>%
+    group_by( stroke_count) %>%
     summarize(n=length((event_ordinal)),
               Mean = mean(time_milliseconds, na.rm = TRUE),
               SD=sd(time_milliseconds, na.rm = TRUE),
@@ -608,7 +611,8 @@ summary_data_entry_type_100IM <-prepped_main_data2 %>%
               Median= median(time_milliseconds, na.rm = TRUE),
               Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
               Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
-    )
+    ) %>%
+  rename(`Stroke Count` = stroke_count)
 
 
 kable(summary_data_entry_type_25_50L1 , digits = 1, 
