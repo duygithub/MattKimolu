@@ -424,7 +424,7 @@ T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 
 $$ {#eq-fitted_regression_model}
 
 
-```{r Model 1}
+```{r Model 1, echo=FALSE, message=FALSE, warning=FALSE}
 
 #| echo: false
 #| message: false
@@ -558,7 +558,7 @@ The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is
 
 Based on the following data set, we have computed the following for Jadzia Vo:
 
-``` {r descriptive analysis by data entry type, 25 or 50L1}
+``` {r descriptive analysis by data entry type, echo=FALSE, message=FALSE, warning=FALSE}
 
 #| echo: false
 #| message: false
@@ -566,7 +566,7 @@ Based on the following data set, we have computed the following for Jadzia Vo:
 
 summary_data_entry_type_25_50L1 <-prepped_main_data2 %>%
   filter(data_entry_type == "25 or 50L1") %>%
-    group_by(data_entry_type, stroke_count) %>%
+    group_by( stroke_count) %>%
     summarize(n=length((event_ordinal)),
               Mean = mean(time_milliseconds, na.rm = TRUE),
               SD=sd(time_milliseconds, na.rm = TRUE),
@@ -581,7 +581,7 @@ summary_data_entry_type_25_50L1 <-prepped_main_data2 %>%
 
 summary_data_entry_type_50L2 <-prepped_main_data2 %>%
   filter(data_entry_type == "50L2") %>%
-    group_by(data_entry_type, stroke_count) %>%
+    group_by( stroke_count) %>%
     summarize(n=length((event_ordinal)),
               Mean = mean(time_milliseconds, na.rm = TRUE),
               SD=sd(time_milliseconds, na.rm = TRUE),
@@ -594,20 +594,6 @@ summary_data_entry_type_50L2 <-prepped_main_data2 %>%
     )
 
 
-
-summary_data_entry_type_50L2 <-prepped_main_data2 %>%
-  filter(data_entry_type == "50L2") %>%
-    group_by(data_entry_type, stroke_count) %>%
-    summarize(n=length((event_ordinal)),
-              Mean = mean(time_milliseconds, na.rm = TRUE),
-              SD=sd(time_milliseconds, na.rm = TRUE),
-              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
-              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
-              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
-              Median= median(time_milliseconds, na.rm = TRUE),
-              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
-              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
-    )
 
 
 summary_data_entry_type_100IM <-prepped_main_data2 %>%
