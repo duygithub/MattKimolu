@@ -340,7 +340,7 @@ Jadzia Vo swam Y laps over X sessions. Each session happened on a different day.
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/compile_main_data.R")
 
-data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv")
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv")
 main_data <- compile_data_files(data_files_names)
 prepped_main_data <- prep_data(main_data)
 
@@ -579,3 +579,36 @@ Qualitatively, Jadzia Vo's swim coaches have confirmed that Jadzia's kicks are n
 {{< pagebreak >}}
 
 # References
+
+::: {#refs}
+:::
+
+# Appendix A - Evolution of Regression Model
+This section details how our regression model evolved over time.
+
+## Initial Model
+
+$$
+\begin{split}
+\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
+ & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
+ & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM}
+\end{split}
+$$ {#eq-regression_model_v1}
+
+Our initial model simply broke up the various events into three groups and included the appropriate interaction terms.
+
+## Model Included unwell_feedback and event_ordinal
+
+$$
+\begin{split}
+\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
+ & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
+ & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM} \\
+ & + \hat{\gamma}_{unwell} I_{unwell}  + \hat{\delta}_{unwell}S_CI_{unwell} + \hat{\zeta}_{unwell}{S_C}^2I_{unwell} \\
+ & + \hat{\gamma}_{well} I_{well}  + \hat{\delta}_{well}S_CI_{well} + \hat{\zeta}_{well}{S_C}^2I_{well} \\
+ & + \hat{\eta}_0 O + \hat{\eta}_1 O^2 
+\end{split}
+$$ {#eq-regression_model_v}
+
+The next iteration of our test incorporated the unwell_feedback and event_ordinal. Compared to @eq-regression_model_v1, we achieved a smaller residual, but with variables that have much higher $p$ values, indicating that this model suffers from overfitting.
