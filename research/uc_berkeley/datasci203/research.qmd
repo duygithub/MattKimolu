@@ -18,6 +18,7 @@ library(ggplot2)  # For plots
 library(readr)    # For loading your CSV file (read_csv)
 library(tidyverse) # For functions like mutate
 library(units)
+library(knitr)
 
 alpha <- .05
 
@@ -414,20 +415,106 @@ Once we've collected the data and used OLS to calculate the regression coefficie
 
 $$
 \begin{split}
-\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
- & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
- & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM} \\
- & + \hat{\eta} U + \hat{\theta}_0 O + \hat{\theta}_1 O^2 
+T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 \\
+& + \gamma_{50L2} I_{50L2} + \delta_{50L2}S_CI_{50L2} + \zeta_{50L2}{S_C}^2I_{50L2} \\
+& + \gamma_{100IM} I_{100IM}  + \delta_{100IM}S_CI_{100IM}  + \zeta_{100IM}{S_C}^2I_{100IM} \\
+& + \eta_{unwell} (U_{unwell} ) + \eta_{unwell} (U_{unwell} S_C ) + \eta_{unwell} (U_{unwell} {S_C}^2) \\\
+& + \eta_{well} (U_{well} ) + \eta_{well} (U_{well} S_C) + \eta_{well} (U_{well} {S_C}^2)\\
+& + \epsilon
 \end{split}
 $$ {#eq-fitted_regression_model}
 
-with
+
+```{r Model 1, echo=FALSE, message=FALSE, warning=FALSE}
+
+#| echo: false
+#| message: false
+#| warning: false
+
+# Convert variable types:
+prepped_main_data2 <- prepped_main_data %>%
+  mutate(data_entry_type = ifelse(data_entry_type %in% c("25", "50L1"), 
+                                  "25 or 50L1", data_entry_type) ) %>%
+  mutate(data_entry_type = factor(data_entry_type,
+                              levels = c("25 or 50L1", "50L2", "100IM")),
+         unwell_feedback = as.character(unwell_feedback),
+         unwell_feedback = factor(unwell_feedback,
+                              levels = c("0", "-1", "1")),
+         stroke_count = as.numeric(stroke_count),
+         event_ordinal = as.numeric(event_ordinal),
+         time_milliseconds = as.numeric(time_milliseconds)
+  )
+
+
+
+
+# fit linear model:
+ model1 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                I(event_ordinal^2) +
+                unwell_feedback +
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type +
+                stroke_count * unwell_feedback  + 
+                I(stroke_count^2) * unwell_feedback, 
+              data = prepped_main_data2  )
+
+#  summary( model1)
+
+
+ 
+ # Another simpler model
+ model2 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type+
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type , 
+              data = prepped_main_data2  )
+
+#  summary( model2)
+
+# anova(model2, model1)  
+ 
+
+model1_coef_tbl <- as.data.frame(summary(model1)$coefficients)
+model1_coef_tbl <- rownames_to_column(model1_coef_tbl, var = "Coefficient")
+
+model1_coef_tbl2 <- model1_coef_tbl %>%
+  select("Coefficient", "Estimate" ,     "Pr(>|t|)"  ) %>%
+  rename(Value = `Estimate`,
+         Pvalue = `Pr(>|t|)`)
+
+
+
+model2_coef_tbl <- as.data.frame(summary(model2)$coefficients)
+model2_coef_tbl <- rownames_to_column(model2_coef_tbl, var = "Coefficient")
+
+model2_coef_tbl2 <- model2_coef_tbl %>%
+  select("Coefficient", "Estimate" ,     "Pr(>|t|)"  ) %>%
+  rename(Value = `Estimate`,
+         Pvalue = `Pr(>|t|)`)
+
+
+
+kable(model1_coef_tbl2, digits = 3, caption = "Model 1 Summary")
+# kable(model2_coef_tbl2, digits = 3, caption = "Model 2 Summary")
+
+ 
+
+```
+
+
+<!--with
 
 | **Coefficient** | **Value** |
 | :--- | :--- |
 | $\hat{\beta}_0$ | |
 | $\hat{\beta}_1$ | |
-: Coefficient Values
+: Coefficient Values -->
 
 Next, we group the times first by the Data Entry Type as defined in @tbl-definition_input_parameters
 
@@ -472,7 +559,77 @@ The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is
 
 Based on the following data set, we have computed the following for Jadzia Vo:
 
-| **$S_C$** | **$\bar{x}$** | **$x_{Fastest}$** | **$s$** | **$x_{Slowest}$** | **$\tilde{x}$** |
+``` {r descriptive analysis by data entry type, echo=FALSE, message=FALSE, warning=FALSE}
+
+#| echo: false
+#| message: false
+#| warning: false
+
+summary_data_entry_type_25_50L1 <-prepped_main_data2 %>%
+  filter(data_entry_type == "25 or 50L1") %>%
+    group_by( stroke_count) %>%
+    summarize(n=length((event_ordinal)),
+              Mean = mean(time_milliseconds, na.rm = TRUE),
+              SD=sd(time_milliseconds, na.rm = TRUE),
+              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
+              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
+              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
+              Median= median(time_milliseconds, na.rm = TRUE),
+              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
+              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
+    ) %>%
+  rename(`Stroke Count` = stroke_count)
+  
+
+summary_data_entry_type_50L2 <-prepped_main_data2 %>%
+  filter(data_entry_type == "50L2") %>%
+    group_by( stroke_count) %>%
+    summarize(n=length((event_ordinal)),
+              Mean = mean(time_milliseconds, na.rm = TRUE),
+              SD=sd(time_milliseconds, na.rm = TRUE),
+              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
+              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
+              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
+              Median= median(time_milliseconds, na.rm = TRUE),
+              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
+              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
+    ) %>%
+  rename(`Stroke Count` = stroke_count)
+
+
+
+
+summary_data_entry_type_100IM <-prepped_main_data2 %>%
+  filter(data_entry_type == "100IM") %>%
+    group_by( stroke_count) %>%
+    summarize(n=length((event_ordinal)),
+              Mean = mean(time_milliseconds, na.rm = TRUE),
+              SD=sd(time_milliseconds, na.rm = TRUE),
+              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
+              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
+              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
+              Median= median(time_milliseconds, na.rm = TRUE),
+              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
+              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
+    ) %>%
+  rename(`Stroke Count` = stroke_count)
+
+
+kable(summary_data_entry_type_25_50L1 , digits = 1, 
+      caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 25 and 50L1 Entries")
+
+kable(summary_data_entry_type_50L2 , digits = 1, 
+      caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 50L2 Entries")
+
+kable(summary_data_entry_type_100IM , digits = 1, 
+      caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 100MI Entries")
+
+
+```
+
+
+
+<!-- | **$S_C$** | **$\bar{x}$** | **$x_{Fastest}$** | **$s$** | **$x_{Slowest}$** | **$\tilde{x}$** |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 : Jadzia Vo's Stroke Count Analysis for 25 and 50L1 Entries
 
@@ -482,7 +639,7 @@ Based on the following data set, we have computed the following for Jadzia Vo:
 
 | **$S_C$** | **$\bar{x}$** | **$x_{Fastest}$** | **$s$** | **$x_{Slowest}$** | **$\tilde{x}$** |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-: Jadzia Vo's Stroke Count Analysis for 100IM Entries
+: Jadzia Vo's Stroke Count Analysis for 100IM Entries  -->
 
 
 #### Limited Applicability to Individual Medley (IM) Events
