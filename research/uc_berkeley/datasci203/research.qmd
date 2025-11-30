@@ -3,6 +3,8 @@ title: "Explanatory Linear Model Framework for Optimal Breaststroke Stroke Count
 authors: 
   - name: "Duy Bao Vo"
     email: "duyvo@ischool.berkeley.edu"
+  - name: "Eric Wang"
+    email: "bo_wang@ischool.berkeley.edu"    
 date: today
 format: pdf
 editor: source
@@ -15,10 +17,13 @@ engine: knitr
 
 ```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
 library(ggplot2)  # For plots
+library(knitr)
 library(readr)    # For loading your CSV file (read_csv)
+library(sandwich)
+library(stargazer)
 library(tidyverse) # For functions like mutate
 library(units)
-library(knitr)
+
 
 alpha <- .05
 
@@ -265,7 +270,7 @@ The swimmer's name is Jadzia Bao Tran Vo (<https://www.swimcloud.com/swimmer/255
 ```{r analyze_exploratory_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/analyze_exploratory_data.R")
 
-knitr::kable(
+kable(
   summary_exploratory_data_stats,
   caption = "Summary Statistics for Elapsed Time (in milliseconds) by Stroke Count {#tbl-summary_statistics_exploratory_data}",
   col.names = c("**$\\mathbf{S_C}$**", "**$\\mathbf{\\bar{x}}$**", "**$\\mathbf{s}$**"),
@@ -343,10 +348,11 @@ source("source/compile_main_data.R")
 
 data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv")
 main_data <- compile_data_files(data_files_names)
-prepped_main_data <- prep_data(main_data)
+main_data_for_plotting <- prep_data_for_plotting(main_data)
+main_data_for_modeling <- prep_data_for_modeling(main_data)
 
 summary_main_data_stats <- summarize(
-  group_by(prepped_main_data, stroke_count),
+  group_by(main_data_for_plotting, stroke_count),
   mean_time = as.numeric(mean(time_milliseconds)),
   standard_deviation=sd(time_milliseconds))
 ```
@@ -367,12 +373,12 @@ main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
 
 
 ggplot(main_data,
-       aes(x = factor(prepped_main_data$stroke_count),
-           y = as.numeric(prepped_main_data$time_milliseconds),
-           color = factor(prepped_main_data$unwell_feedback), 
-           shape = prepped_main_data$data_entry_type)) +
+       aes(x = factor(main_data_for_plotting$stroke_count),
+           y = as.numeric(main_data_for_plotting$time_milliseconds),
+           color = factor(main_data_for_plotting$unwell_feedback), 
+           shape = main_data_for_plotting$data_entry_type)) +
 geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) +
-geom_text(aes(label = prepped_main_data$event_ordinal), 
+geom_text(aes(label = main_data_for_plotting$event_ordinal), 
           nudge_x = 0.15,     # Move slightly to the right
           nudge_y = -180,     # Move slightly down (Adjust this value based on your Y scale!)
           size = 3,           # Make font smaller than the dots
@@ -425,87 +431,9 @@ T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 
 $$ {#eq-fitted_regression_model}
 
 
-```{r Model 1, echo=FALSE, message=FALSE, warning=FALSE}
-
-#| echo: false
-#| message: false
-#| warning: false
-
-# Convert variable types:
-prepped_main_data2 <- prepped_main_data %>%
-  mutate(data_entry_type = ifelse(data_entry_type %in% c("25", "50L1"), 
-                                  "25 or 50L1", data_entry_type) ) %>%
-  mutate(data_entry_type = factor(data_entry_type,
-                              levels = c("25 or 50L1", "50L2", "100IM")),
-         unwell_feedback = as.character(unwell_feedback),
-         unwell_feedback = factor(unwell_feedback,
-                              levels = c("0", "-1", "1")),
-         stroke_count = as.numeric(stroke_count),
-         event_ordinal = as.numeric(event_ordinal),
-         time_milliseconds = as.numeric(time_milliseconds)
-  )
-
-
-
-
-# fit linear model:
- model1 <- lm(time_milliseconds ~ 
-                stroke_count + 
-                I(stroke_count^2) + 
-                data_entry_type + 
-                event_ordinal + 
-                I(event_ordinal^2) +
-                unwell_feedback +
-                stroke_count * data_entry_type + 
-                I(stroke_count^2) * data_entry_type +
-                stroke_count * unwell_feedback  + 
-                I(stroke_count^2) * unwell_feedback, 
-              data = prepped_main_data2  )
-
-#  summary( model1)
-
-
- 
- # Another simpler model
- model2 <- lm(time_milliseconds ~ 
-                stroke_count + 
-                I(stroke_count^2) + 
-                data_entry_type+
-                stroke_count * data_entry_type + 
-                I(stroke_count^2) * data_entry_type , 
-              data = prepped_main_data2  )
-
-#  summary( model2)
-
-# anova(model2, model1)  
- 
-
-model1_coef_tbl <- as.data.frame(summary(model1)$coefficients)
-model1_coef_tbl <- rownames_to_column(model1_coef_tbl, var = "Coefficient")
-
-model1_coef_tbl2 <- model1_coef_tbl %>%
-  select("Coefficient", "Estimate" ,     "Pr(>|t|)"  ) %>%
-  rename(Value = `Estimate`,
-         Pvalue = `Pr(>|t|)`)
-
-
-
-model2_coef_tbl <- as.data.frame(summary(model2)$coefficients)
-model2_coef_tbl <- rownames_to_column(model2_coef_tbl, var = "Coefficient")
-
-model2_coef_tbl2 <- model2_coef_tbl %>%
-  select("Coefficient", "Estimate" ,     "Pr(>|t|)"  ) %>%
-  rename(Value = `Estimate`,
-         Pvalue = `Pr(>|t|)`)
-
-
-
-kable(model1_coef_tbl2, digits = 3, caption = "Model 1 Summary")
-# kable(model2_coef_tbl2, digits = 3, caption = "Model 2 Summary")
-
- 
-
-```
+# ```{r Model 1, echo=FALSE, message=FALSE, warning=FALSE}
+# 
+# ```
 
 
 <!--with
@@ -565,7 +493,7 @@ Based on the following data set, we have computed the following for Jadzia Vo:
 #| message: false
 #| warning: false
 
-summary_data_entry_type_25_50L1 <-prepped_main_data2 %>%
+summary_data_entry_type_25_50L1 <- main_data_for_modeling %>%
   filter(data_entry_type == "25 or 50L1") %>%
     group_by( stroke_count) %>%
     summarize(n=length((event_ordinal)),
@@ -581,7 +509,7 @@ summary_data_entry_type_25_50L1 <-prepped_main_data2 %>%
   rename(`Stroke Count` = stroke_count)
   
 
-summary_data_entry_type_50L2 <-prepped_main_data2 %>%
+summary_data_entry_type_50L2 <- main_data_for_modeling %>%
   filter(data_entry_type == "50L2") %>%
     group_by( stroke_count) %>%
     summarize(n=length((event_ordinal)),
@@ -599,7 +527,7 @@ summary_data_entry_type_50L2 <-prepped_main_data2 %>%
 
 
 
-summary_data_entry_type_100IM <-prepped_main_data2 %>%
+summary_data_entry_type_100IM <- main_data_for_modeling %>%
   filter(data_entry_type == "100IM") %>%
     group_by( stroke_count) %>%
     summarize(n=length((event_ordinal)),
@@ -743,7 +671,11 @@ Qualitatively, Jadzia Vo's swim coaches have confirmed that Jadzia's kicks are n
 # Appendix A - Evolution of Regression Model
 This section details how our regression model evolved over time.
 
-## Initial Model
+```{r setup_model_summary, echo=FALSE}
+source("source/model_summary.R")
+```
+
+## Model V1: Basic Model with Three Event Types
 
 $$
 \begin{split}
@@ -755,7 +687,23 @@ $$ {#eq-regression_model_v1}
 
 Our initial model simply broke up the various events into three groups and included the appropriate interaction terms.
 
-## Model Included unwell_feedback and event_ordinal
+```{r summary_regression_model_v1, echo=FALSE}
+ model_v1 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type,
+              data = main_data_for_modeling)
+
+model_v1_summary_data <- calculate_model_coefficients_summary(model_v1)
+
+knitr::kable(model_v1_summary_data$table_summary_data, digits = 3, caption = "Model v1 Summary")
+```
+
+We achieved a smaller $R^2$ (`r model_v1_summary_data$r_squared`), but much lower adjusted $R^2$ (`r model_v1_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.
+
+## Model V2: Include unwell_feedback and event_ordinal
 
 $$
 \begin{split}
@@ -766,6 +714,39 @@ $$
  & + \hat{\gamma}_{well} I_{well}  + \hat{\delta}_{well}S_CI_{well} + \hat{\zeta}_{well}{S_C}^2I_{well} \\
  & + \hat{\eta}_0 O + \hat{\eta}_1 O^2 
 \end{split}
-$$ {#eq-regression_model_v}
+$$ {#eq-regression_model_v2}
 
-The next iteration of our test incorporated the unwell_feedback and event_ordinal. Compared to @eq-regression_model_v1, we achieved a smaller residual, but with variables that have much higher $p$ values, indicating that this model suffers from overfitting.
+The next iteration of our test incorporated the unwell_feedback and event_ordinal.
+
+```{r summary_regression_model_v2, echo=FALSE, results='asis'}
+ model_v2 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                I(event_ordinal^2) +
+                unwell_feedback +
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type +
+                stroke_count * unwell_feedback  + 
+                I(stroke_count^2) * unwell_feedback, 
+              data = main_data_for_modeling  )
+
+model_v2_summary_data <- calculate_model_coefficients_summary(model_v2)
+
+knitr::kable(model_v2_summary_data$table_summary_data, digits = 3, caption = "Model v2 Summary")
+
+# stargazer(model_v2, 
+#           type = "latex",
+#           se = list(sqrt(diag(vcovHC(model, type = "HC1")))),
+#           title = "Predicting General Votes based on Candidate Party and Funding",
+#           dep.var.labels = "General Votes",
+#           covariate.labels = c("Total Disbursement",
+#                                "Candidate Party: Other Party", 
+#                                "Candidate Party: Republican",
+#                                "Candidate Party: Democrat (baseline)"),
+#           notes.label = "Significance:"
+# )
+```
+
+Compared to @eq-regression_model_v1, we achieved an incrementally larger $R^2$ (`r model_v2_summary_data$r_squared`), but much lower adjusted $R^2$ (`r model_v2_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.`
