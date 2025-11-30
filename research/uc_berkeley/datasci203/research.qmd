@@ -30,6 +30,7 @@ alpha <- .05
 data_plot_custom_shapes <- c("25" = 3, "50L1" = 4, "50L2" = 15, "100IM" = 17)
 data_plot_custom_colors <- c("1" = "red", "0" = "blue", "-1" = "green")
 
+source("source/model_summary.R")
 ```
 
 {{< pagebreak >}}
@@ -430,20 +431,6 @@ T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 
 \end{split}
 $$ {#eq-fitted_regression_model}
 
-
-# ```{r Model 1, echo=FALSE, message=FALSE, warning=FALSE}
-# 
-# ```
-
-
-<!--with
-
-| **Coefficient** | **Value** |
-| :--- | :--- |
-| $\hat{\beta}_0$ | |
-| $\hat{\beta}_1$ | |
-: Coefficient Values -->
-
 Next, we group the times first by the Data Entry Type as defined in @tbl-definition_input_parameters
 
 * 25 and 50L1 are grouped together
@@ -487,61 +474,12 @@ The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is
 
 Based on the following data set, we have computed the following for Jadzia Vo:
 
-``` {r descriptive analysis by data entry type, echo=FALSE, message=FALSE, warning=FALSE}
-
-#| echo: false
-#| message: false
-#| warning: false
-
-summary_data_entry_type_25_50L1 <- main_data_for_modeling %>%
-  filter(data_entry_type == "25 or 50L1") %>%
-    group_by( stroke_count) %>%
-    summarize(n=length((event_ordinal)),
-              Mean = mean(time_milliseconds, na.rm = TRUE),
-              SD=sd(time_milliseconds, na.rm = TRUE),
-              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
-              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
-              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
-              Median= median(time_milliseconds, na.rm = TRUE),
-              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
-              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
-    ) %>%
-  rename(`Stroke Count` = stroke_count)
-  
-
-summary_data_entry_type_50L2 <- main_data_for_modeling %>%
-  filter(data_entry_type == "50L2") %>%
-    group_by( stroke_count) %>%
-    summarize(n=length((event_ordinal)),
-              Mean = mean(time_milliseconds, na.rm = TRUE),
-              SD=sd(time_milliseconds, na.rm = TRUE),
-              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
-              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
-              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
-              Median= median(time_milliseconds, na.rm = TRUE),
-              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
-              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
-    ) %>%
-  rename(`Stroke Count` = stroke_count)
+``` {r descriptive_analysis_by_data_entry_type, echo=FALSE, message=FALSE, warning=FALSE}
 
 
-
-
-summary_data_entry_type_100IM <- main_data_for_modeling %>%
-  filter(data_entry_type == "100IM") %>%
-    group_by( stroke_count) %>%
-    summarize(n=length((event_ordinal)),
-              Mean = mean(time_milliseconds, na.rm = TRUE),
-              SD=sd(time_milliseconds, na.rm = TRUE),
-              SE = sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
-              Min=quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
-              Q1=quantile(time_milliseconds,probs = 0.25,type=2,na.rm = TRUE),
-              Median= median(time_milliseconds, na.rm = TRUE),
-              Q3=quantile(time_milliseconds,probs = 0.75,type=2,na.rm = TRUE),
-              Max=quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
-    ) %>%
-  rename(`Stroke Count` = stroke_count)
-
+summary_data_entry_type_25_50L1 <- derive_detailed_analysis_by_stroke_count(main_data_for_modeling, "25 or 50L1")
+summary_data_entry_type_50L2 <- derive_detailed_analysis_by_stroke_count(main_data_for_modeling, "50L2")
+summary_data_entry_type_100IM <- derive_detailed_analysis_by_stroke_count(main_data_for_modeling, "100IM")
 
 kable(summary_data_entry_type_25_50L1 , digits = 1, 
       caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 25 and 50L1 Entries")
@@ -554,20 +492,6 @@ kable(summary_data_entry_type_100IM , digits = 1,
 
 
 ```
-
-
-
-<!-- | **$S_C$** | **$\bar{x}$** | **$x_{Fastest}$** | **$s$** | **$x_{Slowest}$** | **$\tilde{x}$** |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-: Jadzia Vo's Stroke Count Analysis for 25 and 50L1 Entries
-
-| **$S_C$** | **$\bar{x}$** | **$x_{Fastest}$** | **$s$** | **$x_{Slowest}$** | **$\tilde{x}$** |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-: Jadzia Vo's Stroke Count Analysis for 50L2 Entries
-
-| **$S_C$** | **$\bar{x}$** | **$x_{Fastest}$** | **$s$** | **$x_{Slowest}$** | **$\tilde{x}$** |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-: Jadzia Vo's Stroke Count Analysis for 100IM Entries  -->
 
 
 #### Limited Applicability to Individual Medley (IM) Events
@@ -671,10 +595,6 @@ Qualitatively, Jadzia Vo's swim coaches have confirmed that Jadzia's kicks are n
 # Appendix A - Evolution of Regression Model
 This section details how our regression model evolved over time.
 
-```{r setup_model_summary, echo=FALSE}
-source("source/model_summary.R")
-```
-
 ## Model V1: Basic Model with Three Event Types
 
 $$
@@ -701,7 +621,7 @@ model_v1_summary_data <- calculate_model_coefficients_summary(model_v1)
 knitr::kable(model_v1_summary_data$table_summary_data, digits = 3, caption = "Model v1 Summary")
 ```
 
-We achieved a smaller $R^2$ (`r model_v1_summary_data$r_squared`), but much lower adjusted $R^2$ (`r model_v1_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.
+We achieved a decent $R^2$ (`r model_v1_summary_data$r_squared`), but our regression coefficients were not statistically significant.
 
 ## Model V2: Include unwell_feedback and event_ordinal
 
