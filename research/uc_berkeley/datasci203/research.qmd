@@ -437,13 +437,15 @@ Next, we group the times first by the Data Entry Type as defined in @tbl-definit
 * 50L2
 * 100IM
 
-After the grouping by the Data Entry Type, we group by the stroke count so we can calculate the following statistic:
+After the grouping by the Data Entry Type, we group by the stroke count so we can calculate the following statistics:
 
+* number of entries ($n$)
 * mean ($\bar{x}$)
 * median ($\tilde{x}$)
 * fastest ($x_{Fastest}$)
 * slowest ($x_{Slowest}$)
 * sample standard deviation ($s$)
+* sample standard error of the mean ($s_{\bar{x}}$)
 
 Choosing the optimal stroke for each swimmer will likely require understanding their swimming style, personality, and maturity. For example, all of the following scenarios are possible for a given swimmer:
 

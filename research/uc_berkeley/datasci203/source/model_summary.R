@@ -14,7 +14,7 @@ derive_detailed_analysis_by_stroke_count <- function(data_frame, data_entry_type
   data_frame %>%
     filter(data_entry_type == data_entry_type_filter_value) %>%
     group_by( stroke_count) %>%
-    summarize(n = length((event_ordinal)),
+    summarize(!!r"($n$)" := length((event_ordinal)),
               !!r"($\bar{x}$)" := mean(time_milliseconds, na.rm = TRUE),
               !!r"($s$)" := sd(time_milliseconds, na.rm = TRUE),
               !!r"($x_{\text{Fastest}}$)" := quantile(time_milliseconds,probs = 0,type=2,na.rm = TRUE) ,
@@ -22,5 +22,5 @@ derive_detailed_analysis_by_stroke_count <- function(data_frame, data_entry_type
               !!r"($s_{\bar{x}}$)" := sd(time_milliseconds, na.rm = TRUE)/sqrt(length(time_milliseconds)),
               !!r"($x_{\text{Slowest}}$)" := quantile(time_milliseconds,probs = 1,type=2,na.rm = TRUE)
     ) %>%
-    rename(!!r"($S_c$)" := stroke_count)
+    rename(!!r"($S_C$)" := stroke_count)
 }
