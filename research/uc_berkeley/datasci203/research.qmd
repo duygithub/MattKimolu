@@ -6,7 +6,10 @@ authors:
   - name: "Eric Wang"
     email: "bo_wang@ischool.berkeley.edu"    
 date: today
-format: pdf
+format: 
+  pdf:
+    number-sections: true
+    number-depth: 3
 editor: source
 bibliography: references.bib
 csl: https://www.zotero.org/styles/apa
@@ -23,6 +26,15 @@ library(sandwich)
 library(stargazer)
 library(tidyverse) # For functions like mutate
 library(units)
+
+# For Causal SEM
+if (!require("lavaan")) install.packages("lavaan")
+if (!require("semPlot")) install.packages("semPlot")
+if (!require("tidySEM")) install.packages("tidySEM")
+
+library(lavaan)
+library(semPlot)
+library(tidySEM)
 
 
 alpha <- .05
@@ -160,6 +172,67 @@ Given the swimmer is a minor engaged in a strenuous physical activity, there are
 Also, because swimming is a year-round sport with no "off season", there are likely competitions happening during the study. During the study we discovered that a large reason why the $T_{Lap}$ is heteroskedastic is because of the kick, so we asked the swimmer to focus on narrower kicks because it benefits them during the competition to ensure that the subject benefits from the study as much as possible. Since we make this adjustment after the exploratory data set and before the collection of the primary data, we do not expect there to be an impact on the study.
 
 # Model Building
+
+## Causal Structural Equation Model
+
+We start with the following base SEM. In @fig-causal_sem, arrows without an origin represents the residual variances of the endogenous variables. 
+
+```{r causal_sem, echo=FALSE, message=FALSE}
+#| label: fig-causal_sem
+#| fig-cap: "Causal SEM"
+#| fig-height: 6
+#| fig-pos: H
+
+source("source/causal_sem.R")
+
+causal_sem_plot_data <- define_causal_sem_plot_data()
+
+semPaths(causal_sem_plot_data$fitted_sem_model,
+  # what = "paths",
+  what = "mod",
+  nodeLabels = causal_sem_plot_data$plot_labels,
+  layout = "spring",
+  style = "lisrel",      # Establishes a clean, academic look
+  sizeMan = 12,          # Adjust box size
+  edge.label.cex = 0.8,
+  width = 16,            # Overall plot width
+  mar = c(3,3,3,3))
+
+# edges <- data.frame(
+#   from = c(
+#     "stroke_count", "glide_distance", "glide_distance", "technique", 
+#     "technique", "glide_time", "fatigue", "flow_state", 
+#     "stroke_count", "stroke_count"
+#   ),
+#   to = c(
+#     "lap_time", "lap_time", "stroke_count", "stroke_count", 
+#     "glide_distance", "glide_distance", "technique", "technique", 
+#     "fatigue", "flow_state"
+#   ),
+#   # Use 'type = "paths"' for single-headed arrows (causal effects)
+#   type = "paths"
+# )
+# 
+# nodes <- data.frame(name = unique(c(edges$from, edges$to)))
+# 
+# graph_sem(
+#   edges = edges,
+#   nodes = nodes,
+#   layout = get_layout(
+#     "fatigue", "technique", "flow_state", 
+#     "stroke_count", "glide_distance", "lap_time",
+#     rows = 2
+#   )
+# )
+```
+
+Our base assumption is that $S_C$ and ${GlideDistance}$ are the two main predictors of $T_{Lap}$.
+
+* As outlined in @sec-glide_distance_is_a_confounder, we are leaving ${GlideDistance}$ and ${GlideTime}$ out of our model.
+* As outlined in @sec-heteroskedasticity_and_technique, we don't directly measure the technique or training because they're too complicated. A swimmer with good technique will have data that is homoskedastic.
+* $S_C$ and how the swimmer feels impacts both fatigue and flow state. We operationalize these concepts with event_ordinal and unwell_feedback. We also note why we don't use varying coefficients in @sec-use_varying_coefficients.
+* While the swim gear varies between competition and practice, the swimmer should use the same swim gear for the duration of the experiment.
+
 
 ## Causal Theory and Null Hypothesis
 
@@ -342,8 +415,6 @@ We ran `r power_analysis_simulation_count` simulations and determined that our s
 
 ## Data Collection
 
-Jadzia Vo swam Y laps over X sessions. Each session happened on a different day.
-
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/compile_main_data.R")
 
@@ -352,11 +423,16 @@ main_data <- compile_data_files(data_files_names)
 main_data_for_plotting <- prep_data_for_plotting(main_data)
 main_data_for_modeling <- prep_data_for_modeling(main_data)
 
+number_of_br_laps <- nrow(main_data)
+number_of_br_sessions <- length(data_files_names)
+
 summary_main_data_stats <- summarize(
   group_by(main_data_for_plotting, stroke_count),
   mean_time = as.numeric(mean(time_milliseconds)),
   standard_deviation=sd(time_milliseconds))
 ```
+
+Jadzia Vo swam `r number_of_br_laps` 25 SCY BR laps over `r number_of_br_sessions` sessions. Each session happened on a different day.
 
 ```{r plot_main_data}
 #| echo: false
@@ -512,32 +588,33 @@ We can use USA Swimming's Power Points to determine what is likely the swimmer's
 
 | **Event** | **Age** | **Best Time** | **Power Points** |
 | :--- | :--- | :--- | :--- |
-| 50 FR SCY | 8 | 39.22 | 241 |
-| 100 FR SCY | 8 | 1:30.30 | 131 |
-| 200 FR SCY | 8 | 3:09:35 | 161 |
-| 500 FR SCY | 8 | 8:21.35	| 157 |
 | 50 BK SCY | 8 | 44.96 | 242 |
-| 100 BK SCY | 8 | 1:40.19 | 209 |
 | 50 BR SCY | 8 | 52.63	| 207 |
-| 100 BR SCY | 7 | 1:57.03 | 188 |
 | 50 FL SCY | 8 | 43.56 | 242 |
-| 100 FL SCY | 8 | 1:52.12 | 82 |
-| 100 IM SCY | 8 | 1:36.42 | 269 |
-| 200 IM SCY | 7 | 3:50.64 | 84 |
-| 50 FR LCM | 7 | 48.85 | 97 |
-| 100 FR LCM | 8 | 1:41.90 | 156 |
-| 200 FR LCM | 8 | 3:37.42 | 142 |
-| 400 FR LCM | 8 | 7:43.73	| 130 |
-| 50 BK LCM | 8 | 54.50 | 164 |
-| 100 BK LCM | 8 | 1:52.15 | 259 |
-| 200 BK LCM | 8 | 4:00.86 | 1 |
-| 50 BR LCM | 8 | 1:01.33	| 198 |
-| 100 BR LCM | 8 | 2:19.21 | 138 |
-| 200 BR LCM | 8 | 4:47.47 | 1 |
-| 50 FL LCM | 8 | 50.22 | 211 |
-| 100 FL LCM | 8 | 2:02.80 | 168 |
-| 200 IM LCM | 8 | 4:06.95 | 189 |
+| 50 FR SCY | 8 | 39.22 | 241 |
 : USA Swimming Power Points for Jadzia Vo {#tbl-power_points_jadzia_vo}
+
+<!-- | 100 FR SCY | 8 | 1:30.30 | 131 | -->
+<!-- | 200 FR SCY | 8 | 3:09:35 | 161 | -->
+<!-- | 500 FR SCY | 8 | 8:21.35	| 157 | -->
+<!-- | 100 BK SCY | 8 | 1:40.19 | 209 | -->
+<!-- | 100 BR SCY | 7 | 1:57.03 | 188 | -->
+<!-- | 100 FL SCY | 8 | 1:52.12 | 82 | -->
+<!-- | 100 IM SCY | 8 | 1:36.42 | 269 | -->
+<!-- | 200 IM SCY | 7 | 3:50.64 | 84 | -->
+<!-- | 50 FR LCM | 7 | 48.85 | 97 | -->
+<!-- | 100 FR LCM | 8 | 1:41.90 | 156 | -->
+<!-- | 200 FR LCM | 8 | 3:37.42 | 142 | -->
+<!-- | 400 FR LCM | 8 | 7:43.73	| 130 | -->
+<!-- | 50 BK LCM | 8 | 54.50 | 164 | -->
+<!-- | 100 BK LCM | 8 | 1:52.15 | 259 | -->
+<!-- | 200 BK LCM | 8 | 4:00.86 | 1 | -->
+<!-- | 50 BR LCM | 8 | 1:01.33	| 198 | -->
+<!-- | 100 BR LCM | 8 | 2:19.21 | 138 | -->
+<!-- | 200 BR LCM | 8 | 4:47.47 | 1 | -->
+<!-- | 50 FL LCM | 8 | 50.22 | 211 | -->
+<!-- | 100 FL LCM | 8 | 2:02.80 | 168 | -->
+<!-- | 200 IM LCM | 8 | 4:06.95 | 189 | -->
 
 To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia's breaststroke is the her weakest (BR=207) whereas her other three strokes are effectively equally strong (FR=241, BK=242, FL=242). We would want to optimize her times for the other three strokes. The challenge will be to find $T_{Target}$ for breaststroke (third leg) that is as fast as possible without materially impacting $T_{Target}$ for freestyle (fourth and final leg). Once we've defined $T_{Target}$ for breaststroke, we can use @eq-stroke_count_for_target_time_100IM to find $S_C$ for breaststroke that is a good minimizer for the 100 IM.
 
@@ -547,8 +624,8 @@ To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia
 
 # Future Work
 
-## Glide Time is a Confounder
-Glide time is an important consideration when trying to minimize $T_{Lap}$. It is also a confounder because it directly affects both $T_{Lap}$ and $S_C$. A very good swimmer can swim nearly 1/2 of an SCY lap with a fast glide, reducing both $T_{Lap}$ and $S_C$.
+## Glide Distance is a Confounder { #sec-glide_distance_is_a_confounder }
+Glide distance is an important consideration when trying to minimize $T_{Lap}$. It is also a confounder because it directly affects both $T_{Lap}$ and $S_C$. A very good swimmer can swim nearly 1/2 of an SCY lap with a fast glide, reducing both $T_{Lap}$ and $S_C$.
 
 A glide has several phases:
 
@@ -559,7 +636,7 @@ A glide has several phases:
 1. The pull down.
 1. The glide after the pull down to the first breaststroke.
 
-To properly model an optimal glide time would likely require several additional variables and well outside of the scope of this study. For this study, we assume that swimmer who has obtained sufficient mastery of breaststroke at competition to not get disqualified will have a sufficiently consistent glide time using the one of the models that they have been taught (e.g. 3-2-1-pull-out). In our model, we imperfectly account for this complex variable as $\beta{0}$.
+To properly model an optimal glide distance would likely require several additional variables and well outside of the scope of this study. For this study, we assume that swimmer who has obtained sufficient mastery of breaststroke at competition to not get disqualified will have a sufficiently consistent glide time using the one of the models that they have been taught (e.g. 3-2-1-pull-out). In our model, we imperfectly account for this complex variable as $\beta{0}$.
 
 <!-- ## Additional Variables -->
 <!-- In addition to considering other strokes, there are additional variables that might improve our model, but are not too onerous to collect. -->
@@ -571,8 +648,8 @@ To properly model an optimal glide time would likely require several additional 
 <!-- | Number of competitions | Good swimmers know their bodies and swim styles. The more experience they have at competition, the more ability they have to feel how their body interacts with water. This variable could be useful for selecting the optimal $S_C$ where associated with a high $s$ but fast $\bar{x}$ or $x_{Fastest}$. -->
 <!-- ::: -->
 
-## Use Varying Coefficients for 50, 100, and 200 BR's
-Our current model is a per-lap model and assumes that the penalties $\gamma$ and $\delta$ are constants calculated as the average across different $S_C$'s for the first lap. The best we can do with the model is to optimize for each lap independently. For a young competitive swimmer, this assumption is sufficient, especially given that there are no qualifying times for 100 or 200 BR for swimmers under 9-years-old. Moreover, and especially because [we use mental cues and not $S_{C_{Target}}$](#section-mental_cues_not_stroke_counts), it is likely too difficult for younger swimmers to vary their mental cues for different laps. For a more complete model, we would need to have $\gamma$ and $\delta$ be functions of $S_C$ of the first lap and, analogously, for additional laps as we increase the length to 100 and 200 BR's.
+## Use Varying Coefficients for 50, 100, and 200 BR's { #sec-use_varying_coefficients }
+Our current model is a per-lap model and assumes that the penalties $\gamma$ and $\delta$ are constants calculated as the average across different $S_C$'s for the first lap. The best we can do with the model is to optimize for each lap independently. Our causal SEM, as defined in @fig-causal_sem, defines the $S_C$ as both a cause and result of fatigue and flow state, so we should use varying coefficients. However, for a young competitive swimmer, our current model is sufficient, especially given that there are no qualifying times for 100 or 200 BR for swimmers under 9-years-old. Moreover, and especially because [we use mental cues and not $S_{C_{Target}}$](#section-mental_cues_not_stroke_counts), it is likely too difficult for younger swimmers to vary their mental cues for different laps. For a more complete model, we would need to have $\gamma$ and $\delta$ be functions of $S_C$ of the first lap and, analogously, for additional laps as we increase the length to 100 and 200 BR's.
 
 ## SCM and LCM & BK, FL, and FR
 We limited our study to SCY because that's the prevailing courses available during the time of the study in the US. We could expand the study to encompass LCM and SCM events and include longer distance events like 1500 FR LCM.
@@ -582,7 +659,7 @@ We also limited our study to breaststroke. There are three other competitive str
 <!-- ## Non-Linear Interaction Term for IM's -->
 <!-- Our model assumes that the interaction term for a 100 IM is $\delta_{100IM}S_CI_{100IM}$. Logically, we think that there should be another term $\delta_{100IM_2}{S_C}^2I_{100IM}$ because the cost of additional strokes, and therefore additional energy, is incredibly punishing for any young competitive swimmer who's not a strong breaststroker (as evident by @tbl-power_points_jadzia_vo is a relatively weak breaststroker). However, we lack the data to have sufficient conviction to add this term. Therefore, in the interest of parsimony, we opted for a linear interaction term. -->
 
-## $S_C$ Heteroskedasticity
+## $S_C$ Heteroskedasticity and Technique { #sec-heteroskedasticity_and_technique }
 Our quadratic equation gives us two solution for a given $T_{Target}$ if $T_{Target} \neq T_{Fastest}$. A reason to consider $T_{Target} \neq T_{Fastest}$ is if $\sigma^2[T_{Target}] \ll \sigma^2[T_{Fastest}]$ and $T_{Target} \approx T_{Fastest}$.
 If $S_{C_{Less}}$ and $S_{C_{More}}$ results in the same $T_{Target}$, $S_{C_{Less}}$ would require less energy, and therefore be preferable. However $S_{C_{Less}}$ would also require much more precision in the kick and streamline, and thus likely to have a higher variance. There seems to be heteroscedasticity with variance of stroke counts, especially for younger swimmers that have not mastered precision. It would be useful to test the correlation between $S_C$ and $\sigma^2[T_{Lap}]$ with Spearman's Correlation Test. If $\rho \approx 1$ and $p < \alpha$, then it would be very beneficial for the swimmer to train for precision.
 Qualitatively, Jadzia Vo's swim coaches have confirmed that Jadzia's kicks are not consistently narrow, which explains the variance seen in @fig-exploratory_data_stroke_count_elapsed_time_plot.
@@ -623,7 +700,7 @@ model_v1_summary_data <- calculate_model_coefficients_summary(model_v1)
 knitr::kable(model_v1_summary_data$table_summary_data, digits = 3, caption = "Model v1 Summary")
 ```
 
-We achieved a decent $R^2$ (`r model_v1_summary_data$r_squared`), but our regression coefficients were not statistically significant.
+We achieved a decent $R^2$ (`r model_v1_summary_data$r_squared`) and adjusted $R^2$ (`r model_v1_summary_data$adjusted_r_squared`), but our regression coefficients were not statistically significant.
 
 ## Model V2: Include unwell_feedback and event_ordinal
 
@@ -671,4 +748,4 @@ knitr::kable(model_v2_summary_data$table_summary_data, digits = 3, caption = "Mo
 # )
 ```
 
-Compared to @eq-regression_model_v1, we achieved an incrementally larger $R^2$ (`r model_v2_summary_data$r_squared`), but much lower adjusted $R^2$ (`r model_v2_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.`
+Compared to @eq-regression_model_v1, we achieved an incrementally larger $R^2$ (`r model_v2_summary_data$r_squared`), but lower adjusted $R^2$ (`r model_v2_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.`
