@@ -718,6 +718,10 @@ $$ {#eq-regression_model_v2}
 The next iteration of our test incorporated the unwell_feedback and event_ordinal.
 
 ```{r summary_regression_model_v2, echo=FALSE, results='asis'}
+
+#| results: "asis"
+#| 
+
  model_v2 <- lm(time_milliseconds ~ 
                 stroke_count + 
                 I(stroke_count^2) + 
@@ -734,6 +738,33 @@ The next iteration of our test incorporated the unwell_feedback and event_ordina
 model_v2_summary_data <- calculate_model_coefficients_summary(model_v2)
 
 knitr::kable(model_v2_summary_data$table_summary_data, digits = 3, caption = "Model v2 Summary")
+
+
+
+
+model_compare <- stargazer(
+   model_v1,  model_v2, model_v3, 
+  type = "latex" ,
+   covariate.labels = c(
+    "Stroke count",
+    "Stroke count$^2$",
+    "Data Type: 50L2",
+    "Data Type: 100IM",
+    "Event Ordinal",
+    "Event Ordinal $^2$",
+    "Wellness: Unwell",
+    "Stroke × 50L2",
+    "Stroke × 100IM",
+    "Stroke$^2$ × 50L2",
+    "Stroke$^2$ × 100IM",
+    "Stroke ×  Wellness: Unwell",
+    "Stroke$^2$ ×  Wellness: Unwell",
+    "Constant"
+  )# ,
+  # escape = FALSE          # allow LaTeX like \beta and ^2
+)
+
+
 
 # stargazer(model_v2, 
 #           type = "latex",
