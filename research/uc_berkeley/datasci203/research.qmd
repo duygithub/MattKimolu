@@ -739,7 +739,11 @@ model_v2_summary_data <- calculate_model_coefficients_summary(model_v2)
 
 knitr::kable(model_v2_summary_data$table_summary_data, digits = 3, caption = "Model v2 Summary")
 
-
+ model_v3 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type, 
+              data = main_data_for_modeling  )
 
 
 model_compare <- stargazer(
