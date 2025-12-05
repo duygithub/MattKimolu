@@ -39,7 +39,7 @@ library(tidySEM)
 
 alpha <- .05
 
-data_plot_custom_shapes <- c("25" = 3, "50L1" = 4, "50L2" = 15, "100IM" = 17)
+data_plot_custom_shapes <- c("25" = 15, "50L1" = 18, "50L2" = 3, "100IM" = 17)
 data_plot_custom_colors <- c("1" = "red", "0" = "blue", "-1" = "green")
 
 source("source/model_summary.R")
@@ -418,7 +418,7 @@ We ran `r power_analysis_simulation_count` simulations and determined that our s
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/compile_main_data.R")
 
-data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv")
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv")
 main_data <- compile_data_files(data_files_names)
 main_data_for_plotting <- prep_data_for_plotting(main_data)
 main_data_for_modeling <- prep_data_for_modeling(main_data)
@@ -444,7 +444,7 @@ Jadzia Vo swam `r number_of_br_laps` 25 SCY BR laps over `r number_of_br_session
 #| message: false
 #| warning: false
 
-main_data_y_min <- 23000
+main_data_y_min <- 26000
 main_data_y_max <- 38000
 main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
 
