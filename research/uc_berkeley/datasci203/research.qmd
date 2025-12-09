@@ -26,6 +26,9 @@ library(sandwich)
 library(stargazer)
 library(tidyverse) # For functions like mutate
 library(units)
+library(dplyr)
+library(tidyr)
+
 
 # For Causal SEM
 if (!require("lavaan")) install.packages("lavaan")
@@ -418,7 +421,7 @@ We ran `r power_analysis_simulation_count` simulations and determined that our s
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/compile_main_data.R")
 
-data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv")
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv")
 main_data <- compile_data_files(data_files_names)
 main_data_for_plotting <- prep_data_for_plotting(main_data)
 main_data_for_modeling <- prep_data_for_modeling(main_data)
@@ -735,6 +738,58 @@ model_v2_summary_data <- calculate_model_coefficients_summary(model_v2)
 
 knitr::kable(model_v2_summary_data$table_summary_data, digits = 3, caption = "Model v2 Summary")
 
+
+ model_v0 <- lm(time_milliseconds ~ 
+                data_entry_type , 
+              data = main_data_for_modeling  )
+ 
+ 
+ model_v3 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type , 
+              data = main_data_for_modeling  )
+ 
+ stargazer(model_v0, model_v3, type = "text")
+ 
+anova(model_v0, model_v1)
+
+compared_result1 <- anova(model_v0, model_v1)
+
+
+ model_v4 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                data_entry_type+
+                stroke_count * data_entry_type, 
+              data = main_data_for_modeling  )
+
+ stargazer(model_v1, model_v2, model_v3,  model_v4,
+           type = "text")
+ 
+ 
+ main_data_for_modeling_subset<- main_data_for_modeling %>%
+   filter(data_entry_type == "25 or 50L1")
+ 
+ 
+  model_v5 <- lm(time_milliseconds ~ 
+                stroke_count +
+                I(stroke_count^2)  , 
+              data = main_data_for_modeling  )
+  
+  
+    model_v6 <- lm(time_milliseconds ~ 
+                poly(stroke_count, degree=2) , 
+              data = main_data_for_modeling  )
+  
+  
+  summary(model_v5)
+
+ 
+ 
+ temp1<- predict(model_v5, newdata = data.frame(stroke_count = 10 : 25))
+  
+  plot2 <-plot(x =10:25, y = temp1)
+  
 # stargazer(model_v2, 
 #           type = "latex",
 #           se = list(sqrt(diag(vcovHC(model, type = "HC1")))),
