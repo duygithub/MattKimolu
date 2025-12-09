@@ -454,7 +454,13 @@ ggplot(main_data,
            y = as.numeric(main_data_for_plotting$time_milliseconds),
            color = factor(main_data_for_plotting$unwell_feedback), 
            shape = main_data_for_plotting$data_entry_type)) +
-geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) +
+geom_jitter(
+    width = 0.3,   # Controls the amount of horizontal jitter (default is 40% of the resolution of the data)
+    alpha = 0.7,   # Makes points semi-transparent to better visualize density
+    size = 3,     # Sets the size of the points
+    size = 2     # Sets the size of the points
+  ) +
+# geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) +
 geom_text(aes(label = main_data_for_plotting$event_ordinal), 
           nudge_x = 0.15,     # Move slightly to the right
           nudge_y = -180,     # Move slightly down (Adjust this value based on your Y scale!)
@@ -748,4 +754,30 @@ knitr::kable(model_v2_summary_data$table_summary_data, digits = 3, caption = "Mo
 # )
 ```
 
-Compared to @eq-regression_model_v1, we achieved an incrementally larger $R^2$ (`r model_v2_summary_data$r_squared`), but lower adjusted $R^2$ (`r model_v2_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.`
+Compared to @eq-regression_model_v1, we achieved a much larger $R^2$ (`r model_v2_summary_data$r_squared`), but incrementally larger adjusted $R^2$ (`r model_v2_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.`
+
+## Model V3: Simplify to get to Stastical Significance
+
+$$
+\begin{split}
+\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
+ & + \hat{\gamma}_{50L2} I_{50L2} \\
+ & + \hat{\gamma}_{100IM} I_{100IM}
+\end{split}
+$$ {#eq-regression_model_v3}
+
+We simplified the model 3 to get to see if we can get to statistical significance.
+
+```{r summary_regression_model_v3, echo=FALSE, results='asis'}
+ model_v3 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type,
+              data = main_data_for_modeling  )
+
+model_v3_summary_data <- calculate_model_coefficients_summary(model_v3)
+
+knitr::kable(model_v3_summary_data$table_summary_data, digits = 3, caption = "Model v3 Summary")
+```
+
+Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we achieved a much larger $R^2$ (`r model_v3_summary_data$r_squared`), but incrementally larger adjusted $R^2$ (`r model_v3_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.`
