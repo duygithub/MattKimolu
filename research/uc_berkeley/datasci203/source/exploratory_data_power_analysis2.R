@@ -50,7 +50,11 @@ power_analysis <- function(simulation_count, summary_df, total_n, alpha) {
     exploratory_data_simulated_data <- make_data_from_exploratory_data( summary_df,
                                                                         total_n)
     model <- lm(t_lap ~ strokes + I(strokes^2), data = exploratory_data_simulated_data)
-    reject_vector[i] <- broom::tidy(anova(model))[1, "p.value"] < alpha
+    # reject_vector[i] <- broom::tidy(anova(model))[1, "p.value"] < alpha
+    ## Extract p-value and compare:
+    fs <- summary(model)$fstatistic
+    pval <- pf(fs["value"], fs["numdf"], fs["dendf"], lower.tail = FALSE)
+    reject_vector[i] <-  pval  < alpha
   }
   print(mean(reject_vector))
   return (mean(reject_vector))
@@ -59,17 +63,17 @@ power_analysis <- function(simulation_count, summary_df, total_n, alpha) {
 
 ### Test
 
-# exploratory_data_simulated_data<- make_data_from_exploratory_data(exploratory_summary, 1000) 
+# exploratory_data_simulated_data<- make_data_from_exploratory_data(exploratory_summary, 1000)
+
+
 # 
+# exploratory_summary <- summary_exploratory_data_stats2
 # 
-# 
-# exploratory_summary <- summary_stats2
-# 
-# power_analysis_simulation_count <- 3000
-# power_analysis_data_size <- 51
+# power_analysis_simulation_count <- 1000
+# power_analysis_data_size <- 64
 # alpha <- 0.05
 # 
 # exploratory_data_power <- power_analysis(power_analysis_simulation_count,
-#                                          exploratory_summary , 
+#                                          exploratory_summary ,
 #                                          power_analysis_data_size,
-#                                          0.05)
+#                                          alpha = 0.05)
