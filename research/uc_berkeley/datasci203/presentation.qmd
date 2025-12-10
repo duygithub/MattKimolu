@@ -1,0 +1,334 @@
+---
+title: "Explanatory Linear Model Framework for Optimal Breaststroke Stroke Count in Different Competitive Swimming Scenarios for Swimmers Under 11-Years-Old"
+authors: 
+  - name: "Duy Bao Vo"
+    email: "duyvo@ischool.berkeley.edu"
+  - name: "Eric Wang"
+    email: "bo_wang@ischool.berkeley.edu"    
+date: today
+format:
+  revealjs:
+    reference-location: document
+    slide-number: true
+    theme: [default, custom_title.scss]
+editor: source
+bibliography: references.bib
+csl: https://www.zotero.org/styles/apa
+toc: true
+engine: knitr
+---
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)  # For plots
+library(knitr)
+library(readr)    # For loading your CSV file (read_csv)
+library(sandwich)
+library(stargazer)
+library(tidyverse) # For functions like mutate
+library(units)
+
+alpha <- .05
+
+data_plot_custom_shapes <- c("25" = 15, "50L1" = 18, "50L2" = 3, "100IM" = 17)
+data_plot_custom_colors <- c("1" = "red", "0" = "blue", "-1" = "green")
+
+source("source/model_summary.R")
+```
+
+# Motivation
+* Swimming is an important life skill and can prevent a significant number of childhood deaths[^1].
+* Swimming is also a great life-long sport[^2] [^3].
+* Competitive swimming can help with academic achievement[^4] and develop important skills like stress management, interpersonal harmony, and goal management[^5].
+
+# Existing Research
+
+@Craig1979 published sports biomechanics research to help improve individual swimming athlete's performance in 1979 and included the formula
+
+$$
+Velocity = Stroke Rate \times Stroke Length
+$$
+
+The importance of stroke-related statistics in predicting swimming performance is well-established. @JurimaeBestPredictors claims that the Stroke Index, $S_I = SwimmerSpeed x S_L$, as one of the three best predictors for performance in a 400-meter freestyle swim starting at 11-years-old
+
+# Research Gap
+
+* No existing peer-research for swimmers under 11 years old.
+* The majority of analysis relies on $S_R$ or $S_L$, both requiring special camera equipment and software that is not easily accessible.
+* Conducting experiements on young swimmers is really hard (first-hand experience).
+
+# Hypothesis
+This study aims to create a framework for deriving an individualized optimal $S_C$ that minimizes the time $T_{Lap}$, measured in milliseconds, to complete a lap.
+
+> **$H_0$**: Given event_type, $\left| T_{Lap_{Optimal}} - T_{Lap_{-2}} \right| \le 500$ and $\left| T_{Lap_{Optimal}} - T_{Lap_{+2}} \right| \le 500$ where $T_{Lap_{Optimal}} \sim S_{C_{Optimal}}$, $T_{Lap_{-2}} \sim S_{C_{Optimal}} - 2$ strokes, and $T_{Lap_{+2}} \sim S_{C_{Optimal}} + 2$ strokes.
+
+
+# Definitions
+
+![Glide Distance and Stroke Count from @Mediterraswim2019](glide_distance_pool_length.png){#fig-glide_distance_pool_length}
+
+$S_C$ is the total number of arm strokes a swimmer takes to complete a specific distance, typically one length of the pool.
+
+# Causal Structural Equation Model
+
+![Casual SEM](presentation_assets/casual_sem.png)
+
+
+# Data Collection
+
+We will collect data in csv files with the title format YYYY_MM_DD_-8.csv.
+
+* event_ordinal
+* start_time
+* elapsed_time
+* stroke_count
+* mental_cue
+* data_entry_type
+* unwell_feedback
+* note
+
+# Exploratory Data Analysis
+
+```{r plot_exploratory_data}
+#| echo: false
+#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count in 25 BR"
+#| fig-cap-location: top
+#| fig-height: 7
+#| fig-pos: H
+#| label: fig-exploratory_data_stroke_count_elapsed_time_plot 
+#| message: false
+#| warning: false
+
+source("source/analyze_exploratory_data.R")
+
+
+exploratory_data_y_min <- 25000
+exploratory_data_y_max <- 28000
+exploratory_data_y_seq <- seq(from = exploratory_data_y_min, to = exploratory_data_y_max, by = 500)
+
+
+
+ggplot(exploratory_data,
+       aes(x = factor(prepped_exploratory_data$stroke_count),
+           # y = prepped_exploratory_data$time_milliseconds)) +
+           y = as.numeric(prepped_exploratory_data$time_milliseconds),
+           color = factor(prepped_exploratory_data$unwell_feedback), 
+           shape = factor(prepped_exploratory_data$data_entry_type))) +
+geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) +
+geom_text(aes(label = prepped_exploratory_data$event_ordinal), 
+          nudge_x = 0.25,     # Move slightly to the right
+          nudge_y = -40,      # Move slightly down (Adjust this value based on your Y scale!)
+          size = 3,           # Make font smaller than the dots
+          color = "black",    # Keep text black so it's readable
+          fontface = "bold",
+          show.legend = FALSE # Don't add 'a' to the legend
+  ) +
+scale_color_manual(values = data_plot_custom_colors) +
+scale_shape_manual(values = data_plot_custom_shapes) +
+scale_y_continuous(
+  breaks = exploratory_data_y_seq,      # Forces labels at 0, 10000, ... 80000
+  limits = c(exploratory_data_y_min, exploratory_data_y_max) # Forces the graph to start/end exactly there
+) +
+labs(
+  # title = "Elapsed Lap Time by Stroke Count",
+  x = expression(bold(S[C])),
+  y = expression(bold(T[lap])),
+  color = "unwell_feedback"
+) +
+theme(legend.position = "bottom") +
+guides(shape = "none")
+
+```
+
+# Power Analysis
+
+We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform our model. We use the summary statistics, excluding those without standard deviations to generate test data from $N(\bar{x}, s)$. This allows us to execute our power analysis.
+
+```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
+source("source/exploratory_data_power_analysis2.R")
+```
+
+We ran 1000 simulations and determined that our swimmer should swim at least 64 laps to achieve a power of at least .8 for $\alpha$ = `r alpha`.
+
+# Main Data
+
+```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
+source("source/compile_main_data.R")
+
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv")
+main_data <- compile_data_files(data_files_names)
+main_data_for_plotting <- prep_data_for_plotting(main_data)
+main_data_for_modeling <- prep_data_for_modeling(main_data)
+
+number_of_br_laps <- nrow(main_data)
+number_of_br_sessions <- length(data_files_names)
+
+summary_main_data_stats <- summarize(
+  group_by(main_data_for_plotting, stroke_count),
+  mean_time = as.numeric(mean(time_milliseconds)),
+  standard_deviation=sd(time_milliseconds))
+```
+
+Jadzia Vo swam `r number_of_br_laps` 25 SCY BR laps over `r number_of_br_sessions` sessions. Each session happened on a different day.
+
+```{r plot_main_data}
+#| echo: false
+#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
+#| fig-height: 8
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: fig-main_data_stroke_count_elapsed_time_plot
+#| message: false
+#| warning: false
+
+main_data_y_min <- 26000
+main_data_y_max <- 38000
+main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
+
+
+ggplot(main_data,
+       aes(x = factor(main_data_for_plotting$stroke_count),
+           y = as.numeric(main_data_for_plotting$time_milliseconds),
+           color = factor(main_data_for_plotting$unwell_feedback), 
+           shape = main_data_for_plotting$data_entry_type)) +
+geom_jitter(
+    width = 0.3,   # Controls the amount of horizontal jitter (default is 40% of the resolution of the data)
+    alpha = 0.7,   # Makes points semi-transparent to better visualize density
+    size = 3,     # Sets the size of the points
+    size = 2     # Sets the size of the points
+  ) +
+# geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) +
+geom_text(aes(label = main_data_for_plotting$event_ordinal), 
+          nudge_x = 0.15,     # Move slightly to the right
+          nudge_y = -180,     # Move slightly down (Adjust this value based on your Y scale!)
+          size = 3,           # Make font smaller than the dots
+          color = "black",    # Keep text black so it's readable
+          fontface = "bold",
+          show.legend = FALSE # Don't add 'a' to the legend
+  ) +  
+scale_color_manual(values = data_plot_custom_colors) +
+scale_shape_manual(values = data_plot_custom_shapes) +
+scale_y_continuous(
+  breaks = main_data_y_seq,      # Forces labels at 0, 10000, ... 80000
+  limits = c(main_data_y_min, main_data_y_max) # Forces the graph to start/end exactly there
+) +
+labs(
+  # title = "Elapsed Lap Time by Stroke Count",
+  x = expression(bold(S[C])),
+  y = expression(bold(T[lap])),
+  color = "unwell_feedback", # Legend Title
+  shape = "data_entry_type", # Legend Title
+  #color = "data_entry_type"  # Legend Title (must match color title to combine legends)
+) +
+theme(legend.position = "bottom",
+      legend.box = "vertical")
+
+### Explanation of the Shapes
+# In R's `ggplot2`, shapes are mapped to integer codes. I used the following for your request:
+# * **Shape 16:** Filled Circle (Dot) $\rightarrow$ Used for "25" and "50L1".
+# * **Shape 4:** Cross (X) $\rightarrow$ Used for "50L2".
+# * **Shape 17:** Filled Triangle $\rightarrow$ Used for "100IM".
+
+```
+
+# Model 1 Definition
+
+$$
+\begin{split}
+\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
+ & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
+ & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM}
+\end{split}
+$$
+
+# Model 1 Analysis
+
+```{r summary_regression_model_v1, echo=FALSE}
+ model_v1 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type,
+              data = main_data_for_modeling)
+
+model_v1_summary_data <- calculate_model_coefficients_summary(model_v1)
+
+knitr::kable(model_v1_summary_data$table_summary_data, digits = 3, caption = "Model v1 Summary")
+```
+
+# Model 2 Definition
+
+$$
+\begin{split}
+\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
+ & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
+ & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM} \\
+ & + \hat{\gamma}_{unwell} I_{unwell}  + \hat{\delta}_{unwell}S_CI_{unwell} + \hat{\zeta}_{unwell}{S_C}^2I_{unwell} \\
+ & + \hat{\gamma}_{well} I_{well}  + \hat{\delta}_{well}S_CI_{well} + \hat{\zeta}_{well}{S_C}^2I_{well} \\
+ & + \hat{\eta}_0 O + \hat{\eta}_1 O^2 
+\end{split}
+$$
+
+# Model 2 Analysis
+
+```{r summary_regression_model_v2, echo=FALSE, results='asis'}
+ model_v2 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                I(event_ordinal^2) +
+                unwell_feedback +
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type +
+                stroke_count * unwell_feedback  + 
+                I(stroke_count^2) * unwell_feedback, 
+              data = main_data_for_modeling  )
+
+model_v2_summary_data <- calculate_model_coefficients_summary(model_v2)
+
+knitr::kable(model_v2_summary_data$table_summary_data, digits = 3, caption = "Model v2 Summary")
+```
+
+# Model 3 Definition
+
+$$
+\begin{split}
+\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
+ & + \hat{\gamma}_{50L2} I_{50L2} \\
+ & + \hat{\gamma}_{100IM} I_{100IM}
+\end{split}
+$$
+
+# Model 3 Analysis
+
+```{r summary_regression_model_v3, echo=FALSE, results='asis'}
+ model_v3 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type,
+              data = main_data_for_modeling  )
+
+model_v3_summary_data <- calculate_model_coefficients_summary(model_v3)
+
+knitr::kable(model_v3_summary_data$table_summary_data, digits = 3, caption = "Model v3 Summary")
+```
+
+# Current Model
+
+# References
+
+[^1]: In the US, drowning is the leading cause of death for children ages 1-4 and the second leading cause of unintentional injury death for children ages 5-15.\
+    **Source:** Centers for Disease Control and Prevention. (n.d.). *Drowning Facts*. Centers for Disease Control and Prevention, Injury Prevention & Control. Retrieved October 31, 2025, from <https://www.cdc.gov/drowning/data-research/facts/index.html>
+
+[^2]: After accounting for other health factors like age, body mass index, and smoking status, swimmers had 49-53% lower mortality risks compared to the other groups.\
+    **Source:** Chase, N. L., Sui, X., & Blair, S. N. (2008). Swimming and all-cause mortality risk compared with running, walking, and sedentary habits in men. *International Journal of Aquatic Research and Education*, *2*(3), 213–223. [https://doi.org/10.25035/ijare.02.03.03](https://www.google.com/search?q=https://doi.org/10.25035/ijare.02.03.03&authuser=1)
+
+[^3]: Swimming provides a combination of buoyancy for a low-impact workout that reduces joint loading and breakdown and water resistance that allows for effective muscle strengthening and cardiovascular conditioning.\
+    **Source:** Song, J.-A., & Oh, J. W. (2022). Effects of aquatic exercises for patients with osteoarthritis: Systematic review with meta-analysis. *Healthcare*, *10*(3), Article 560. [https://doi.org/10.3390/healthcare10030560](https://www.google.com/search?q=https://doi.org/10.3390/healthcare10030560&authuser=1)
+
+[^4]: A study of 254 Spanish swimmers showed a correlation between a higher the level of physical activity to higher average grades achieved. This relationship was especially significant among girls (P=.04).\
+    **Source:** Ayan, C., Cancela Carral, J., & Montero, C. (2014). Academic performance of young competitive swimmers is associated with physical activity intensity and its predominant metabolic pathway: A pilot study. *Journal of Physical Activity and Health*, *11*(6), 1141–1146. [https://doi.org/10.1123/jpah.2012-0402](https://www.google.com/search?q=https://doi.org/10.1123/jpah.2012-0402&authuser=1)
+
+[^5]: Students in the experimental group of a 15-week swimming intervention program showed significant improvements in emotional stability (P = 0.01) and relaxation (P = 0.02). Positive changes were also observed in social adaptation, including interpersonal harmony (P = 0.03) and perceived social support (P = 0.04). Additionally, academic composure (P = 0.02) and goal management ability (P = 0.04) significantly improved.\
+    **Source:** Wang, W., Yu, L., Huang, L., & Gao, X. (2025). Mechanisms of the impact of exercise intervention on college students' mental health: a longitudinal experimental study using swimming as an example. Frontiers in Psychology, 16, 1535214. doi:10.3389/fpsyg.2025.1535214

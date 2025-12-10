@@ -102,7 +102,7 @@ This initial study is exclusively on the breaststroke though its methodologies c
 
 ## Stroke Count
 
-$S_C$ is proportional to $S_R$ and inversely proportional to $S_L$. Accounting for the glide distance (how far the swimmer is able to dive and swim underwater or kick off the wall and swim underwater),
+$S_C$ is the total number of arm strokes a swimmer takes to complete one length of the pool. $S_C$ is proportional to $S_R$ and inversely proportional to $S_L$. Accounting for the glide distance (how far the swimmer is able to dive and swim underwater or kick off the wall and swim underwater),
 
 ![Glide Distance and Stroke Count from @Mediterraswim2019](glide_distance_pool_length.png){#fig-glide_distance_pool_length}
 
@@ -240,7 +240,7 @@ We opt for the explanatory mode for model building because we are primarily inte
 
 @Craig1979, @Vorontsov1991, @Vorontsov2002, @JurimaeBestPredictors and many other studies have shown a causal relationship between a stroke statistic and its effect on $T_{Lap}$. Since $S_C$ has a mathematical relationship to those stroke statistics, then $S_C$ has a causal relationship with $T_{Lap}$. We want to see if there is a tighter causal relationship centered around an $S_{C_{Optimal}}$ and define our Null Hypothesis as:
 
-> **$H_0$**: Given event_type and  $U$; $\left| T_{Lap_{Optimal}} - T_{Lap_{-2}} \right| \le 500$ and $\left| T_{Lap_{Optimal}} - T_{Lap_{+2}} \right| \le 500$ where $T_{Lap_{Optimal}} \sim S_{C_{Optimal}}$, $T_{Lap_{-2}} \sim S_{C_{Optimal}} - 2$ strokes, and $T_{Lap_{+2}} \sim S_{C_{Optimal}} + 2$ strokes.
+> **$H_0$**: Given event_type, $\left| T_{Lap_{Optimal}} - T_{Lap_{-2}} \right| \le 500$ and $\left| T_{Lap_{Optimal}} - T_{Lap_{+2}} \right| \le 500$ where $T_{Lap_{Optimal}} \sim S_{C_{Optimal}}$, $T_{Lap_{-2}} \sim S_{C_{Optimal}} - 2$ strokes, and $T_{Lap_{+2}} \sim S_{C_{Optimal}} + 2$ strokes.
 
 For example, if we determine that the optimal $S_{C}$ for a given swimmer is 17 with a corresponding time of 20 seconds, then **$H_0$** asserts that there is not a .5 second difference from 20 seconds if the swimmer swims 15 or 19 strokes.
 
@@ -408,7 +408,7 @@ guides(shape = "none")
 We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-regression_model. We use the summary statistics, excluding those without standard deviations, in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$. This allows us to execute our power analysis.
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
-source("source/exploratory_data_power_analysis.R")
+source("source/exploratory_data_power_analysis2.R")
 ```
 
 We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
