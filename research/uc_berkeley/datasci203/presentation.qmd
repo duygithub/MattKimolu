@@ -11,6 +11,8 @@ format:
     reference-location: document
     slide-number: true
     theme: [default, custom_title.scss]
+    scrollable: true
+    fontsize: small
 editor: source
 bibliography: references.bib
 csl: https://www.zotero.org/styles/apa
@@ -54,7 +56,7 @@ The importance of stroke-related statistics in predicting swimming performance i
 
 * No existing peer-research for swimmers under 11 years old.
 * The majority of analysis relies on $S_R$ or $S_L$, both requiring special camera equipment and software that is not easily accessible.
-* Conducting experiements on young swimmers is really hard (first-hand experience).
+* Conducting experiments on young swimmers is really hard (first-hand experience).
 
 # Hypothesis
 This study aims to create a framework for deriving an individualized optimal $S_C$ that minimizes the time $T_{Lap}$, measured in milliseconds, to complete a lap.
@@ -141,7 +143,7 @@ guides(shape = "none")
 
 # Power Analysis
 
-We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform our model. We use the summary statistics, excluding those without standard deviations to generate test data from $N(\bar{x}, s)$. This allows us to execute our power analysis.
+We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform our model. We use the summary statistics, excluding those without standard deviations to generate test data from $N(\bar{x}, s)$.
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/exploratory_data_power_analysis2.R")
@@ -154,7 +156,7 @@ We ran 1000 simulations and determined that our swimmer should swim at least 64 
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/compile_main_data.R")
 
-data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv")
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv", "20251211_-8.csv")
 main_data <- compile_data_files(data_files_names)
 main_data_for_plotting <- prep_data_for_plotting(main_data)
 main_data_for_modeling <- prep_data_for_modeling(main_data)
@@ -181,7 +183,7 @@ Jadzia Vo swam `r number_of_br_laps` 25 SCY BR laps over `r number_of_br_session
 #| warning: false
 
 main_data_y_min <- 26000
-main_data_y_max <- 38000
+main_data_y_max <- 39000
 main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
 
 
@@ -256,6 +258,8 @@ model_v1_summary_data <- calculate_model_coefficients_summary(model_v1)
 knitr::kable(model_v1_summary_data$table_summary_data, digits = 3, caption = "Model v1 Summary")
 ```
 
+We achieved a decent $R^2$ (`r model_v1_summary_data$r_squared`) and adjusted $R^2$ (`r model_v1_summary_data$adjusted_r_squared`), but our regression coefficients were not statistically significant.
+
 # Model 2 Definition
 
 $$
@@ -290,13 +294,15 @@ model_v2_summary_data <- calculate_model_coefficients_summary(model_v2)
 knitr::kable(model_v2_summary_data$table_summary_data, digits = 3, caption = "Model v2 Summary")
 ```
 
+Compared to the previous model, we achieved a much larger $R^2$ (`r model_v2_summary_data$r_squared`), but incrementally larger adjusted $R^2$ (`r model_v2_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.`
+
 # Model 3 Definition
 
 $$
 \begin{split}
 \hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
- & + \hat{\gamma}_{50L2} I_{50L2} \\
- & + \hat{\gamma}_{100IM} I_{100IM}
+ & + \hat{\gamma}_{50L2}\\
+ & + \hat{\gamma}_{100IM}
 \end{split}
 $$
 
@@ -313,6 +319,8 @@ model_v3_summary_data <- calculate_model_coefficients_summary(model_v3)
 
 knitr::kable(model_v3_summary_data$table_summary_data, digits = 3, caption = "Model v3 Summary")
 ```
+
+Compared to the previous models, we had a much lower $R^2$ (`r model_v3_summary_data$r_squared`), but the largest adjusted $R^2$ (`r model_v3_summary_data$adjusted_r_squared`) and statistical significance. However, this model doesn't make sense to us because the model is missing interaction terms, which should matter.
 
 # Current Model
 

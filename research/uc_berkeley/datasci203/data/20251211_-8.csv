@@ -1,0 +1,9 @@
+event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,unwell_feedback,note
+1,17:04:00,35.32,26,,100IM,0,Instructed the swimmer to swim as many strokes as possible
+2,17:11:00,28.95,21,,50L1,0,Instructed the swimmer to swim as many strokes as possible
+3,,34.91,23,,50L2,0,Instructed the swimmer to swim as many strokes as possible
+4,17:18:00,30.46,8,,50L1,0,Instructed the swimmer to swim as few strokes as possible
+5,,32.01,8,,50L2,0,Instructed the swimmer to swim as few strokes as possible
+6,17:24:00,38.79,8,,100IM,0,Instructed the swimmer to swim as few strokes as possible
+7,17:30:00,26.5,17,one thousand,50L1,0,
+8,,30.44,18,one thousand,50L2,0,

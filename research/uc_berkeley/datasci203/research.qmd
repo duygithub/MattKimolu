@@ -405,10 +405,10 @@ guides(shape = "none")
 
 ## Power Analysis
 
-We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-regression_model. We use the summary statistics, excluding those without standard deviations, in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$. This allows us to execute our power analysis.
+We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-regression_model. We use the summary statistics, excluding those without standard deviations, in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$.
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
-source("source/exploratory_data_power_analysis2.R")
+source("source/exploratory_data_power_analysis.R")
 ```
 
 We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
@@ -418,7 +418,7 @@ We ran `r power_analysis_simulation_count` simulations and determined that our s
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/compile_main_data.R")
 
-data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv")
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv", "20251211_-8.csv")
 main_data <- compile_data_files(data_files_names)
 main_data_for_plotting <- prep_data_for_plotting(main_data)
 main_data_for_modeling <- prep_data_for_modeling(main_data)
@@ -444,8 +444,8 @@ Jadzia Vo swam `r number_of_br_laps` 25 SCY BR laps over `r number_of_br_session
 #| message: false
 #| warning: false
 
-main_data_y_min <- 26000
-main_data_y_max <- 38000
+main_data_y_min <- 25000
+main_data_y_max <- 40000
 main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
 
 
@@ -780,4 +780,4 @@ model_v3_summary_data <- calculate_model_coefficients_summary(model_v3)
 knitr::kable(model_v3_summary_data$table_summary_data, digits = 3, caption = "Model v3 Summary")
 ```
 
-Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we achieved a much larger $R^2$ (`r model_v3_summary_data$r_squared`), but incrementally larger adjusted $R^2$ (`r model_v3_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.`
+Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we had a much lower $R^2$ (`r model_v3_summary_data$r_squared`), but the largest adjusted $R^2$ (`r model_v3_summary_data$adjusted_r_squared`) and statistical significance. However, this model doesn't make sense to us because the model is missing interaction terms, which should matter.
