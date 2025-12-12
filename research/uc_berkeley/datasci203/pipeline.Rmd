@@ -1,0 +1,627 @@
+
+# TFL Pipeline program
+
+
+```{r Load all needed library}
+
+# List of required packages
+required_packages <- c(
+  "ggplot2", "readr", "dplyr", "tidyr", "tidyverse", 
+  "rmarkdown", "here", "emmeans", "readxl", "data.table",
+ "parsedate", "mmrm", "patchwork",
+  "rstudioapi",
+ "units", "stargazer", "sandwich",
+ "knitr", "modelsummary", "broom",
+ "MASS"
+ 
+)
+
+# Function to check and install missing packages
+install_if_missing <- function(packages) {
+  for (pkg in packages) {
+    if (!require(pkg, character.only = TRUE)) {
+      install.packages(pkg, dependencies = TRUE)
+      library(pkg, character.only = TRUE)
+    }
+  }
+}
+
+# Call the function to install and load the necessary packages
+install_if_missing(required_packages)
+
+# Set the encoding to UTF-8
+Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+#################################################################
+
+
+
+```
+
+```{r, setwd}
+
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+# current_path <- getwd()
+
+
+```
+
+```{r, process data}
+
+
+source("source/compile_main_data.R")
+
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv")
+main_data <- compile_data_files(data_files_names)
+main_data_for_plotting <- prep_data_for_plotting(main_data)
+main_data_for_modeling <- prep_data_for_modeling(main_data)
+
+
+
+
+```
+
+```{r, model}
+
+
+main_data_for_modeling2 <- main_data_for_modeling%>%
+  mutate(record_id = row_number(), .before = 1)
+  
+
+write.csv(main_data_for_modeling2, "combined_data.csv", row.names = FALSE)
+
+ model_v0 <- lm(time_milliseconds ~ 
+                data_entry_type , 
+              data = main_data_for_modeling2  )
+
+
+  model_v1 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type ,
+              data = main_data_for_modeling2  )
+
+summary( model_v1)
+
+  model_v2 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                I(event_ordinal^2) +
+                unwell_feedback +
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type +
+                stroke_count * unwell_feedback  + 
+                I(stroke_count^2) * unwell_feedback, 
+              data = main_data_for_modeling2  )
+
+ 
+ model_v3 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type , 
+              data = main_data_for_modeling2  )
+ 
+ 
+  model_v4 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                data_entry_type+
+                stroke_count * data_entry_type, 
+              data = main_data_for_modeling  )
+  
+
+ 
+ 
+ stargazer(model_v1,model_v2, model_v3,model_v4, type = "text")
+ 
+ 
+ 
+ model_v0 <- lm(time_milliseconds ~ 
+                data_entry_type , 
+              data = main_data_for_modeling2  )
+
+
+  model_v1 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type ,
+              data = main_data_for_modeling2  )
+
+ 
+anova(model_v0 ,  model_v1)
+ 
+ 
+coef_df <- tidy(model) %>%
+  mutate(
+    stars = case_when(
+      p.value < 0.01 ~ "***",
+      p.value < 0.05 ~ "**",
+      p.value < 0.1  ~ "*",
+      TRUE ~ ""
+    )
+  )
+
+# Convert by to seconds:
+
+coef_df2 <- coef_df %>%
+  mutate(across(c("estimate" , "std.error"), ~ .x / 1000))
+
+coef_df3 <- coef_df2  %>%
+  mutate(across(c("estimate" , "std.error"), ~ round(.x, 3)))
+
+coef_df4 <- coef_df3 %>%
+  select(term , estimate, std.error, statistic,  p.value) %>%
+  mutate(estimate = as.character(estimate),
+         term = as.character(term),
+         std.error = as.character(std.error),
+         stars = as.character(stars)) %>%
+  mutate(estimate= paste0(estimate, stars),
+         estimate = paste0(estimate, "\n(", std.error, ")") )%>%
+  select(term , estimate)
+
+
+model_df <- glance(model_v1)
+
+
+model_stats_long <- model_df %>%
+  select(nobs, r.squared, adj.r.squared, sigma, statistic, p.value) %>%
+  tidyr::pivot_longer(everything(), names_to = "metric", values_to = "value") %>%
+  mutate(value = round(value, 4))
+
+
+
+ 
+ 
+#  
+#  
+#  
+#  library(modelsummary)
+# 
+# x<-modelsummary(model_v1, output = "data.frame")
+#  
+#  model_df_base <- data.frame(
+#   nobs = nobs(fit),
+#   r.squared = s$r.squared,
+#   adj.r.squared = s$adj.r.squared,
+#   sigma = s$sigma,
+#   f.statistic = unname(s$fstatistic[1]),
+#   df1 = unname(s$fstatistic[2]),
+#   df2 = unname(s$fstatistic[3]),
+#   f.p.value = pf(s$fstatistic[1], s$fstatistic[2], s$fstatistic[3], lower.tail = FALSE)
+# )
+# 
+# model_df_base
+# 
+#  
+#  
+#  
+#  
+# anova(model_v0, model_v1)
+# 
+#  stargazer(model_v3, type = "text")
+# 
+# 
+# compared_result1 <- anova( model_v1)
+# 
+# 
+#  stargazer(model_v1, model_v2, model_v3,  model_v4,
+#            type = "text")
+#  
+#  
+#  main_data_for_modeling_subset<- main_data_for_modeling %>%
+#    filter(data_entry_type == "25 or 50L1")
+#  
+#  
+#   model_v5 <- lm(time_milliseconds ~ 
+#                 stroke_count +
+#                 I(stroke_count^2)  , 
+#               data = main_data_for_modeling  )
+#   
+#   
+#     model_v6 <- lm(time_milliseconds ~ 
+#                 poly(stroke_count, degree=2) , 
+#               data = main_data_for_modeling  )
+#   
+#   
+#   summary(model_v5)
+# 
+#  
+#  
+#  temp1<- predict(model_v5, newdata = data.frame(stroke_count = 10 : 25))
+#   
+#   plot2 <-plot(x =10:25, y = temp1)
+# 
+
+
+
+```
+
+
+
+
+
+
+```{r, residual }
+
+par(mfrow =c(2,2))
+plot(model_v1, which = 1)
+plot(model_v1, which = 2)
+plot(model_v1, which = 3)
+plot(model_v1, which = 4)
+
+
+op <- par(mfrow = c(2, 2))
+p <- lapply(1:4, function(i) {
+  plot(model_v1, which = i)
+  recordPlot()
+})
+par(op)  # restore old par settings
+
+
+
+```
+
+
+```{r, BOXCOX transfermation}
+
+
+library(MASS)
+BC <- boxcox(model_v1, lambda = seq(0, 10, 1/10), plotit = FALSE)
+
+# Manual plot
+plot(BC$x, BC$y, type = "l", lwd = 2,
+     xlab = expression(lambda),
+     ylab = "Log-Likelihood",
+     main = "Box-Cox Transformation")
+
+# Add optimal λ line
+abline(v = BC$x[which.max(BC$y)], col = "red", lty = 2)
+
+# Add 95% CI threshold
+S <- max(BC$y) - 0.5*qchisq(0.95, 1)
+abline(h = S, col = "blue", lty = 2)
+
+
+
+
+  model_v5 <- lm(time_milliseconds^4~ 
+                stroke_count + 
+                data_entry_type + 
+                stroke_count * data_entry_type,
+              data = main_data_for_modeling2  )
+  
+  summary(model_v5)
+
+# summary(model_v1)
+
+
+df <- main_data_for_modeling2
+
+# Define color mapping
+color_mapping <- c("100IM" = "green", 
+                   "25 or 50L1" = "blue", 
+                   "50L2" = "red")
+
+# Convert unwell_feedback to factor for shape mapping
+# df$unwell_feedback <- as.factor(df$unwell_feedback)
+
+# Define shape mapping
+shape_mapping <- c("-1" = 17, 
+                   "0" = 16, 
+                   "1" = 15)
+
+# Create prediction data for each data_entry_type
+stroke_range <- range(main_data_for_modeling2$stroke_count)
+pred_data <- expand.grid(
+  stroke_count = seq(stroke_range[1], stroke_range[2], length.out = 100),
+  data_entry_type = unique(main_data_for_modeling2$data_entry_type)
+)
+
+# Get predictions with 95% confidence intervals
+pred_results <- predict(model_v5, newdata = pred_data, interval = "confidence", level = 0.95)
+pred_data <- cbind(pred_data, pred_results)
+
+# Create the plot
+ggplot() +
+  # Add 95% CI ribbon
+  geom_ribbon(data = pred_data, 
+              aes(x = stroke_count, 
+                  ymin = lwr, 
+                  ymax = upr, 
+                  fill = data_entry_type), 
+              alpha = 0.2) +
+  # Add prediction lines
+  geom_line(data = pred_data, 
+            aes(x = stroke_count, 
+                y = fit, 
+                color = data_entry_type), 
+            linewidth = 1) +
+  # Add scatter points
+  geom_point(data = df, 
+             aes(x = stroke_count, 
+                 y = time_milliseconds^4, 
+                 color = data_entry_type, 
+                 shape = unwell_feedback), 
+             size = 3) +
+  # Apply color scales
+  scale_color_manual(values = color_mapping) +
+  scale_fill_manual(values = color_mapping) +
+  scale_shape_manual(values = shape_mapping) +
+  # Labels
+  labs(x = "Stroke Count", 
+       y = "Time (milliseconds)",
+       color = "Data Entry Type",
+       fill = "Data Entry Type",
+       shape = "Unwell Feedback") +
+  theme_minimal()+
+  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))# + 
+  # scale_y_continuous(breaks = function(y) seq(floor(min(y)/1000)*1000,
+  #                                              ceiling(max(y)/1000)*1000,
+  #                                              by = 1000))
+
+
+```
+
+
+
+
+
+```{r, outliers}
+
+  model_v1 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                stroke_count * data_entry_type + 
+                I(stroke_count^2) * data_entry_type ,
+              data = main_data_for_modeling2  )
+
+dat3<- main_data_for_modeling2
+dat3$stroke_count_square <- dat3$stroke_count^2
+
+
+dat3$rowid <- 1:length(dat3$record_id)
+
+#residual
+res1 <- dat3$time_milliseconds - (predict(model_v1))
+res1 <- data.frame(res1 )
+res1$rowid <- 1:nrow(res1)
+
+#absolute residual
+abs_res1 <- abs(dat3$time_milliseconds - (predict(model_v1)))
+abs_res1 <- data.frame(abs_res1)
+abs_res1$rowid <- 1:nrow(abs_res1)
+#<-abs_res1[order(abs_res1$abs_res1, decreasing = TRUE),]
+
+#standard residual
+standard_res1<-abs(rstandard(model_v1))
+standard_res1 <- data.frame(standard_res1 )
+standard_res1$rowid <- 1:nrow(standard_res1)
+
+#H Matrix
+
+# X <- as.matrix(cbind(1, dat3$ARM ,dat3$BASE , dat3$AGE,dat3$ETHNIC,dat3$CHOL_bl,dat3$CL_bl,dat3$BASO_bl,dat3$MCHC_bl))
+X <- as.matrix(cbind(1, dat3$data_entry_type ,dat3$stroke_count , dat3$stroke_count_square ))
+H <- X%*%solve(t(X)%*%X)%*%t(X)
+
+data_length <-  nrow(dat3)
+
+H.order <- cbind(c(1:data_length), diag(H))
+H_ii<-as.data.frame(H.order)
+names(H_ii)[names(H_ii) == "V1"] <- "rowid"
+names(H_ii)[names(H_ii) == "V2"] <- "H_ii"
+
+#cook's distance:
+d <- cooks.distance(model_v1)
+d
+d[order(d, decreasing = TRUE)]
+cooks_d <- data.frame(d )
+cooks_d$rowid <- 1:nrow(cooks_d)
+cooks_d
+
+dataset99 <- merge(dat3,res1,by="rowid")
+dataset99 <- merge(dataset99,H_ii,by="rowid")
+dataset99 <- merge(dataset99,cooks_d,by="rowid")
+dataset99 <- merge(dataset99,standard_res1,by="rowid")
+dataset99$deleted_residual<- dataset99$res1 /(1- dataset99$H_ii)
+names(dataset99)[names(dataset99) == "res1"] <- "Residual"
+names(dataset99)[names(dataset99) == "d"] <- "Cooks_d"
+
+
+
+dfbetas_result <- data.frame(dfbetas(model_v1))
+dfbetas_result$rowid <- 1:nrow(dfbetas_result)
+
+dffits_result <- data.frame(dffits(model_v1))
+dffits_result$rowid <- 1:nrow(dffits_result)
+
+#dataset99 = subset(dataset99, select = -c(time,pub,citation,salary) )
+
+#dataset99 <- merge(dataset99,dfbetas_result,by="rowid")
+dataset99 <- merge(dataset99,dffits_result,by="rowid")
+
+head(dataset99)
+#names(dataset99)[names(dataset99) == "X.Intercept."] <- "X.Intercept.dfbetas"
+
+
+
+# Define n and p for your model
+n <- nrow(dat3)  # sample size (119 in your case)
+p <- length(coef(model_v1))  # number of parameters
+
+# --- 1. INFLUENTIAL POINTS (DFFITS) ---
+dffits_cutoff <- 2 * sqrt(p / n)
+dataset99$influential_dffits <- abs(dataset99$dffits.model_v1.) > dffits_cutoff
+
+# View influential points by DFFITS
+influential_points <- dataset99[dataset99$influential_dffits == TRUE, ]
+print("Influential Points (DFFITS):")
+print(influential_points[, c("rowid", "dffits.model_v1.")])
+
+# --- 2. LEVERAGE POINTS ---
+leverage_cutoff <- 2 * p / n  # or use 3 * p / n for stricter criterion
+dataset99$high_leverage <- dataset99$H_ii > leverage_cutoff
+
+# View leverage points
+leverage_points <- dataset99[dataset99$high_leverage == TRUE, ]
+print("Leverage Points:")
+print(leverage_points[, c("rowid", "H_ii")])
+
+# --- 3. OUTLIERS (Standardized Residuals) ---
+outlier_cutoff <- 2  # or use 3 for stricter criterion
+dataset99$outlier <- dataset99$standard_res1 > outlier_cutoff
+
+# View outliers
+outliers <- dataset99[dataset99$outlier == TRUE, ]
+print("Outliers:")
+print(outliers[, c("rowid", "standard_res1")])
+
+# --- BONUS: Cook's Distance ---
+cooks_cutoff <- 4 / n  # common cutoff
+dataset99$influential_cooks <- dataset99$Cooks_d > cooks_cutoff
+
+# View influential by Cook's D
+cooks_influential <- dataset99[dataset99$influential_cooks == TRUE, ]
+print("Influential Points (Cook's D):")
+print(cooks_influential[, c("rowid", "Cooks_d")])
+
+
+
+dataset99_influential <- dataset99 %>%
+  filter(influential_cooks == TRUE) %>%
+  mutate(outlier_type = "Influential Point")
+
+dataset99_outlier <- dataset99 %>%
+  filter(outlier == TRUE) %>%
+  mutate(outlier_type = "Outlier")
+
+
+dataset99_none <- dataset99 %>%
+  filter(outlier == FALSE &
+           influential_dffits== FALSE &
+           influential_cooks == FALSE &
+           high_leverage == FALSE ) %>%
+  mutate(outlier_type = "Non-Outlier,Leverage,Influential")
+
+
+dataset101 <- bind_rows(dataset99_influential,
+                        dataset99_outlier,
+                        dataset99_none)
+
+dataset102 <- dataset101 %>%
+  mutate(point_label = ifelse(outlier_type == "Non-Outlier,Leverage,Influential",
+                              "", record_id))
+
+
+```
+
+```{r plot 4}
+
+
+library(ggplot2)
+
+
+df <- dataset102
+
+# Define color mapping
+color_mapping <- c(
+                   "25 or 50L1" = "blue", 
+                   "50L2" = "red",
+                   "100IM" = "darkgreen")
+
+# Convert unwell_feedback to factor for shape mapping
+# df$unwell_feedback <- as.factor(df$unwell_feedback)
+
+# Define shape mapping
+shape_mapping <- c(  "Non-Outlier,Leverage,Influential" = 16, 
+                     "Leverage Point"=3,
+                     "Influential Point"=4,
+                      "Outlier"=1
+
+)
+
+# scale_shape_manual(name="Point Status",values=c(
+#     "Non-Outlier,Leverage,Influential"=16,
+#     "Leverage Point"=3,
+#     "Influential Point(diffit)"=4,
+#     "Outlier"=1
+
+
+
+# Create prediction data for each data_entry_type
+stroke_range <- range(main_data_for_modeling2$stroke_count)
+pred_data <- expand.grid(
+  stroke_count = seq(stroke_range[1], stroke_range[2], length.out = 100),
+  data_entry_type = unique(main_data_for_modeling2$data_entry_type)
+)
+
+# Get predictions with 95% confidence intervals
+pred_results <- predict(model_v1, newdata = pred_data, interval = "confidence", level = 0.95)
+pred_data <- cbind(pred_data, pred_results)
+
+# Create the plot
+ggplot() +
+  # Add 95% CI ribbon
+  geom_ribbon(data = pred_data, 
+              aes(x = stroke_count, 
+                  ymin = lwr, 
+                  ymax = upr, 
+                  fill = data_entry_type), 
+              alpha = 0.2) +
+  # Add prediction lines
+  geom_line(data = pred_data, 
+            aes(x = stroke_count, 
+                y = fit, 
+                color = data_entry_type), 
+            linewidth = 1) +
+  # Add scatter points
+  geom_point(data = df, 
+             aes(x = stroke_count, 
+                 y = time_milliseconds, 
+                 color = data_entry_type, 
+                 shape = outlier_type,
+                 label = point_label), 
+             size = 3) +
+  # Apply color scales
+  scale_color_manual(values = color_mapping) +
+  scale_fill_manual(values = color_mapping) +
+  scale_shape_manual(values = shape_mapping) +
+  # Labels
+  labs(x = "Stroke Count", 
+       y = "Time (milliseconds)",
+       color = "Data Entry Type",
+       fill = "Data Entry Type",
+       shape = "Outlier Type") +
+  theme_minimal()+
+  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+ 
+  # scale_y_continuous(breaks = function(y) seq(floor(min(y)/1000)*1000,
+  #                                              ceiling(max(y)/1000)*1000,
+  #                                              by = 1000))+ 
+  scale_y_continuous(breaks = function(y) seq(24000,
+                                               42000,
+                                               by = 1000))+
+  coord_cartesian(ylim = c(24000,42000))+
+  theme(legend.position = "top") 
+```
+
+
+
+```{r, no outlier}
+
+
+dataset201 <- dataset102 %>%
+  filter(outlier_type == "Non-Outlier,Leverage,Influential")
+
+model_v6 <- lm(formula = time_milliseconds ~ stroke_count + I(stroke_count^2) + 
+    data_entry_type + stroke_count * data_entry_type + I(stroke_count^2) * 
+    data_entry_type, data =dataset201 )
+
+summary(model_v6)
+
+
+```

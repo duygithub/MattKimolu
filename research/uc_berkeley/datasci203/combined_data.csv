@@ -1,0 +1,43 @@
+"record_id","event_ordinal","start_time","elapsed_time","stroke_count","mental_cue","data_entry_type","unwell_feedback","note","time_milliseconds"
+1,1,"17:36:00",30.72,14,"one thousand bananas","25 or 50L1","1","At start of experiment swimmer said she was sleepy.",30720
+2,2,"",33.88,15,"one thousand bananas","50L2","1","",33880
+3,3,"17:46:00",35.17,19,"one thousand bananas","100IM","1","",35170
+4,4,"17:58:50",29.67,19,"purple","25 or 50L1","1","",29670
+5,5,"",33.65,21,"purple","50L2","1","",33650
+6,1,"17:27:00",28.92,12,"low variance low time","25 or 50L1","1","Swimmer says her ankle hurts before warmup",28920
+7,2,"",34.75,13,"low variance low time","50L2","1","",34750
+8,3,"17:35:30",28.45,15,"low variance low time","25 or 50L1","1","",28450
+9,4,"17:41:00",35.05,20,"low variance low time","100IM","1","",35050
+10,5,"17:47:30",28.79,10,"one one thousand two one thousand three one thousand","25 or 50L1","1","",28790
+11,6,"",33.87,11,"one one thousand two one thousand three one thousand","50L2","1","",33870
+12,7,"17:51:00",27.07,17,"one thousand","25 or 50L1","1","",27070
+13,1,"10:56:00",35.95,22,"","100IM","0","Instructed swimmer to swim as many strokes as possible while keeping glide time constant. Swimmer started the day saying her ankle hurts. She elected to swim with her team for 1 hour 20 minutes. Aftewards we got lunch and she said she's feeling ok.",35950
+14,2,"11:09:00",30,23,"","25 or 50L1","0","Instructed swimmer to swim as many strokes as possible while keeping glide time constant.",30000
+15,3,"",36.85,25,"","50L2","0","Instructed swimmer to swim as many strokes as possible while keeping glide time constant.",36850
+16,4,"11:19:30",29.08,19,"","25 or 50L1","0","Instructed swimmer to swim as many strokes as possible while keeping glide time constant.",29080
+17,5,"11:29:30",36.3,14,"one one thousand two one thousand","100IM","1","Swimmer getting sleepy. Been up since 0745",36300
+18,6,"11:41:30",30.98,13,"one one thousand two one thousand","25 or 50L1","1","",30980
+19,7,"",35.01,13,"one one thousand two one thousand","50L2","1","",35010
+20,8,"11:58:00",30.75,21,"purple","25 or 50L1","1","",30750
+21,9,"",37.42,24,"purple","50L2","1","",37420
+22,10,"12:15:00",29.49,17,"million bazillion","25 or 50L1","1","",29490
+23,11,"",34.09,20,"million bazillion","50L2","1","",34090
+24,12,"12:27:30",32.1,12,"one thousand two one thousand three one thousand","25 or 50L1","1","",32100
+25,13,"",36.2,13,"one one thousand two one thousand three one thousand","50L2","1","",36200
+26,14,"12:35:30",28.4,18,"one thousand bananas","25 or 50L1","1","",28400
+27,1,"10:15:00",37.72,17,"one thousand bananas","100IM","1",NA,37720
+28,2,"10:24:00",28.74,15,"one thousand bananas","25 or 50L1","1",NA,28740
+29,3,"",35.47,17,"one thousand bananas","50L2","1",NA,35470
+30,1,"16:56:00",29.45,15,"one one thousand two one thousand","25 or 50L1","-1","Swimmer said she is feeling good and asked to do more trials with less rest time",29450
+31,2,"",34.15,16,"one one thousand two one thousand","50L2","-1","",34150
+32,3,"16:59:00",29.29,17,"one thousand bananas","25 or 50L1","-1","",29290
+33,4,"",33.73,20,"one one thousand two one thousand","50L2","-1","",33730
+34,5,"17:03:00",29.65,19,"one thousand bananas","25 or 50L1","-1","",29650
+35,6,"",34.02,21,"one one thousand two one thousand","50L2","-1","",34020
+36,7,"17:08:00",30.1,11,"one one thousand two one thousand three one thousand","25 or 50L1","-1","",30100
+37,8,"",34.3,12,"one one thousand two one thousand three one thousand","50L2","-1","",34300
+38,1,"17:27:00",29.92,18,"purple","25 or 50L1","0","Swimmer asked if she can swim faster so she can hang out with her friends",29920
+39,2,"",34.44,21,"purple","50L2","0","",34440
+40,3,"17:33:00",28.47,17,"one thousand","25 or 50L1","0","",28470
+41,4,"",24.45,20,"one thousand","50L2","0","",24450
+42,5,"17:37:30",35.47,18,"one thousand","100IM","0","",35470
