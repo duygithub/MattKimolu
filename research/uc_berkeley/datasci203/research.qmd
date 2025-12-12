@@ -26,6 +26,8 @@ library(sandwich)
 library(stargazer)
 library(tidyverse) # For functions like mutate
 library(units)
+library(dplyr)
+library(tidyr)
 
 # For Causal SEM
 if (!require("lavaan")) install.packages("lavaan")
@@ -408,7 +410,25 @@ guides(shape = "none")
 We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-regression_model. We use the summary statistics, excluding those without standard deviations, in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$.
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
-source("source/exploratory_data_power_analysis.R")
+# source("source/exploratory_data_power_analysis.R")
+
+## Updated by Eric, 2025-12-09, replaced with another power analysis function:
+ source("source/descriptive_summary.R")
+ source("source/exploratory_data_power_analysis2.R")
+
+
+exploratory_summary <- descriptive_summary(prepped_exploratory_data)
+
+power_analysis_simulation_count <- 1000
+power_analysis_data_size <- 64
+alpha <- 0.05
+
+exploratory_data_power <- power_analysis(power_analysis_simulation_count,
+                                         exploratory_summary ,
+                                         power_analysis_data_size,
+                                         alpha = 0.05)
+
+
 ```
 
 We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
