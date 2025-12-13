@@ -1,0 +1,124 @@
+
+# TFL Pipeline program
+
+
+```{r Load all needed library}
+
+# List of required packages
+required_packages <- c(
+  "ggplot2", "readr", "dplyr", "tidyr", "tidyverse", 
+  "rmarkdown", "here", "emmeans", "readxl", "data.table",
+ "parsedate", "mmrm", "patchwork",
+  "rstudioapi",
+ "units", "stargazer", "sandwich",
+ "knitr", "modelsummary", "broom", "rlang",
+ "MASS"
+ 
+)
+
+# Function to check and install missing packages
+install_if_missing <- function(packages) {
+  for (pkg in packages) {
+    if (!require(pkg, character.only = TRUE)) {
+      install.packages(pkg, dependencies = TRUE)
+      library(pkg, character.only = TRUE)
+    }
+  }
+}
+
+# Call the function to install and load the necessary packages
+install_if_missing(required_packages)
+
+# Set the encoding to UTF-8
+Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+#################################################################
+
+
+
+```
+
+```{r, setwd}
+
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+# current_path <- getwd()
+
+
+```
+
+```{r, process data}
+
+
+source("source/compile_main_data.R")
+
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv", "20251211_-8.csv","20251213_-8.csv")
+main_data <- compile_data_files(data_files_names)
+main_data_for_plotting <- prep_data_for_plotting(main_data)
+main_data_for_modeling <- prep_data_for_modeling(main_data)
+
+
+
+
+```
+
+```{r, data}
+
+
+main_data_for_modeling2 <- main_data_for_modeling%>%
+  mutate(record_id = row_number(), .before = 1)
+  
+
+
+```
+
+
+```{r, variable selection}
+
+library(leaps)
+# ?regsubsets
+
+df <- main_data_for_modeling2 %>%
+  mutate(stroke_count_squre = stroke_count ^2,
+         event_ordinal_square = event_ordinal ^2)
+
+# all <- regsubsets(x=cbind(stroke_count,
+#                           data_entry_type,
+#                           unwell_feedback,
+#                           event_ordinal), 
+#                   y=time_milliseconds,  
+#                   method = "exhaustive", 
+#                   all.best = FALSE, 
+#                   nbest = 6)
+
+all <- regsubsets(time_milliseconds ~ 
+                    (stroke_count + 
+                    stroke_count_squre + 
+                    data_entry_type + 
+                    event_ordinal + 
+                    event_ordinal_square +
+                    unwell_feedback)^2 ,
+                  data=df,
+                  method = "exhaustive",
+                  nvmax=20)
+
+
+summary(all)
+Cp <- summary(all)$cp # Mallows’s Cp Statistic: Models with small Cp values are desirable. Note, that we need a reliable estimate of σ2 to compute the Cp statistic. Often, the MSRes of the full model is used for this purpose.
+AdjR2 <- summary(all)$adjr2
+SSRes <- summary(all)$rss
+R2 <- summary(all)$rsq
+Matrix <- summary(all)$which
+
+# Adding more model related summary with some trickery
+p <- apply(Matrix,1, sum)
+n <- nrow(df)
+MSRes <- SSRes/(n-p)
+
+# Make a nice table
+output <- cbind(p, Matrix, SSRes, R2, AdjR2, MSRes, Cp)
+
+output2 <- as.data.frame(output )
+
+write.csv(output2, "test_variable_selection.csv", row.names = FALSE)
+
+```
