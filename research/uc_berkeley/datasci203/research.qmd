@@ -1113,7 +1113,7 @@ model_v6 <- lm(formula = time_milliseconds ~ stroke_count + I(stroke_count^2) +
     data_entry_type + stroke_count * data_entry_type + I(stroke_count^2) * 
     data_entry_type, data =dataset201 )
 
-summary(model_v6)
+# summary(model_v6)
 
 
 ```

@@ -60,7 +60,7 @@ modelSummary2df <- function(model_summary_list) {
     
     ###########################################
     ## Process Model summary
-    model_df <- glance(model_v1)
+    model_df <- glance(model)
     
     model_stats_long <- model_df %>%
       dplyr::select(nobs, r.squared, adj.r.squared, sigma, statistic, p.value) %>%
