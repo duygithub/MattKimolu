@@ -414,13 +414,13 @@ We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of
 
 ## Updated by Eric, 2025-12-09, replaced with another power analysis function:
  source("source/descriptive_summary.R")
- source("source/exploratory_data_power_analysis2.R")
+ source("source/exploratory_data_power_analysis.R")
 
 
 exploratory_summary <- descriptive_summary(prepped_exploratory_data)
 
 power_analysis_simulation_count <- 1000
-power_analysis_data_size <- 64
+power_analysis_data_size <- 60
 alpha <- 0.05
 
 exploratory_data_power <- power_analysis(power_analysis_simulation_count,
@@ -438,7 +438,7 @@ We ran `r power_analysis_simulation_count` simulations and determined that our s
 ```{r compile_main_data, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/compile_main_data.R")
 
-data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv", "20251211_-8.csv")
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv", "20251211_-8.csv","20251213_-8.csv")
 main_data <- compile_data_files(data_files_names)
 main_data_for_plotting <- prep_data_for_plotting(main_data)
 main_data_for_modeling <- prep_data_for_modeling(main_data)
@@ -515,6 +515,32 @@ theme(legend.position = "bottom",
 ```
 
 # Analysis
+
+```{r group_modeling}
+# data_for_modeling_group_2550L1 <- prep_data_for_modeling_group_2550L1(main_data)
+data_for_modeling_group_2550L1 <- main_data_for_modeling %>%
+  filter(data_entry_type == '25 or 50L1')
+model_subgroup_2550L1 <-lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2),
+                data_for_modeling_group_2550L1)
+
+data_for_modeling_group_50L2 <- main_data_for_modeling %>%
+  filter(data_entry_type == '50L2')
+model_subgroup_50L2 <-lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) +
+                I(stroke_count^3),
+                data_for_modeling_group_50L2)
+
+data_for_modeling_group_100IM <- main_data_for_modeling %>%
+  filter(data_entry_type == '100IM')
+model_subgroup_100IM <-lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2),
+                data_for_modeling_group_100IM)
+
+```
 
 ## Hypothesis Testing
 
