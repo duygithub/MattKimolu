@@ -893,7 +893,7 @@ knitr::kable(model_compare_df_1 , digits = 3, caption = "Model Comparison")
 main_data_for_modeling2 <- main_data_for_modeling%>%
   mutate(record_id = row_number(), .before = 1)
 
-write.csv(main_data_for_modeling2, "combined_data.csv", row.names = FALSE)
+write.csv(main_data_for_modeling2, "data/combined_data.csv", row.names = FALSE)
 
   model_v1 <- lm(time_milliseconds ~ 
                 stroke_count + 
@@ -938,11 +938,11 @@ names(H_ii)[names(H_ii) == "V2"] <- "H_ii"
 
 #cook's distance:
 d <- cooks.distance(model_v1)
-d
+
 d[order(d, decreasing = TRUE)]
 cooks_d <- data.frame(d )
 cooks_d$rowid <- 1:nrow(cooks_d)
-cooks_d
+
 
 dataset99 <- merge(dat3,res1,by="rowid")
 dataset99 <- merge(dataset99,H_ii,by="rowid")
@@ -964,9 +964,6 @@ dffits_result$rowid <- 1:nrow(dffits_result)
 
 #dataset99 <- merge(dataset99,dfbetas_result,by="rowid")
 dataset99 <- merge(dataset99,dffits_result,by="rowid")
-
-head(dataset99)
-#names(dataset99)[names(dataset99) == "X.Intercept."] <- "X.Intercept.dfbetas"
 
 
 
@@ -1200,7 +1197,7 @@ bc_plot <- ggplot(BC_df, aes(x = lambda, y = logLik)) +
   ) +
   theme_minimal()
 
-
+bc_plot 
 
 # 
 # ## Testing on transformed new model:
