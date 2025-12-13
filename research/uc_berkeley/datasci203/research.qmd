@@ -1100,7 +1100,7 @@ ggplot() +
                                                42000,
                                                by = 1000))+
   coord_cartesian(ylim = c(24000,42000))+
-  theme(legend.position = "top") 
+  theme(legend.position = "right") 
 
 
 
@@ -1133,7 +1133,7 @@ We compared the full data and subset data fits by examining (i) overall model si
 
 #| echo: false
 #| fig-cap: "Boxcox Transformation"
-#| fig-height: 8
+#| fig-height: 10
 #| fig-pos: H
 #| fig-cap-location: top
 #| label: plot_boxcox
