@@ -92,7 +92,7 @@ modelSummary2df <- function(model_summary_list) {
       model_summary_df <- combined_model_summary
     } else {
       model_summary_df  <- model_summary_df  %>%
-        left_join(combined_model_summary, by = "term")
+        full_join(combined_model_summary, by = "term")
     }
     
     
