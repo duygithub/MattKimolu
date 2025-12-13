@@ -29,3 +29,9 @@ prep_data_for_modeling <- function(data) {
     )
   return (data_for_modeling)
 }
+
+prep_data_for_modeling_group_2550L1 <- function(data) {
+  data_for_modeling_group_2550L1 <- prep_data_for_plotting(data) %>%
+    filter(data_entry_type == "25 or 50L1")
+  return (data_for_modeling_group_2550L1)
+}

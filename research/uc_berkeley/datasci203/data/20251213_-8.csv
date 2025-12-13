@@ -1,0 +1,17 @@
+event_ordinal,start_time,elapsed_time,stroke_count,mental_cue,data_entry_type,unwell_feedback,note
+1,10:22:00,29.09,13,one one thousand two one thousand three,50L1,0,Swimmer swam practice from 8 - 9:20. Grabbed burger king lunch and came back to do trials.
+2,,33.68,12,one one thousand two one thousand three,50L2,0,
+3,10:33:30,36.27,15,one one thousand two one thousand three,100IM,1,Swimmer said she's tired
+4,10:43:00,29.12,18,pink,50L1,0,Swimmer asked for extra rest time
+5,,33.93,21,pink,50L2,0,
+4,10:54:00,29.91,16,million bazillion,50L1,0,Swimmer asked for more time to rest
+5,,33.96,16,million bazillion,50L2,0,
+6,11:08:30,36.88,18,one thousand,100IM,1,Swimmer asked for additional time to rest
+7,11:21:30,30.37,18,one thousand,50L1,1,Swimmer asked for additional time to rest
+8,,33.46,17,one thousand,50L2,1,
+9,11:31:30,30.90,15,one one thousand two one thousand,50L1,1,Swimmer asked for additional time to rest
+10,,34.37,15,one one thousand two one thousand,50L2,1,
+11,11:42:00,31.76,12,one one thousand two one thousand three one thousand,50L1,1,Swimmer says she's very very very tired
+12,,36.07,12,one one thousand two one thousand three one thousand,50L2,1,
+13,11:49:00,29.09,18,purple,50L1,1,Swimmer says she's very very very tired
+14,,33.48,21,purple,50L2,1,
