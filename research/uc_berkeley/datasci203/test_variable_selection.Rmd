@@ -109,7 +109,7 @@ SSRes <- summary(all)$rss
 R2 <- summary(all)$rsq
 Matrix <- summary(all)$which
 
-# Adding more model related summary with some trickery
+# Adding MSRes(Mean Squared Residuals)
 p <- apply(Matrix,1, sum)
 n <- nrow(df)
 MSRes <- SSRes/(n-p)
