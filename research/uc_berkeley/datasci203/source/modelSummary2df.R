@@ -52,7 +52,8 @@ modelSummary2df <- function(model_summary_list) {
              std.error = as.character(std.error),
              stars = as.character(stars)) %>%
       mutate(estimate= paste0(estimate, stars),
-             estimate = paste0(estimate, "\n(", std.error, ")") )%>%
+             # estimate = paste0(estimate, "\n(", std.error, ")")
+             )%>%
       dplyr::select(term , estimate)
     
     

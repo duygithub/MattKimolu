@@ -830,7 +830,9 @@ knitr::kable(model_v3_summary_data$table_summary_data, digits = 3, caption = "Mo
 
 Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we had a much lower $R^2$ (`r model_v3_summary_data$r_squared`), but the largest adjusted $R^2$ (`r model_v3_summary_data$adjusted_r_squared`) and statistical significance. However, this model doesn't make sense to us because the model is missing interaction terms, which should matter.
 
-```{r compare models, echo=FALSE, results='asis'}
+{{< pagebreak >}}
+
+```{r compare models, echo=FALSE, message=FALSE, warning=FALSE}
  
 source("source/modelSummary2df.R")
 
@@ -875,7 +877,7 @@ knitr::kable(model_compare_df_1 , digits = 3, caption = "Model Comparison")
 
 ## Model without Outliers, Leverage Points and Influential points
 
-```{r, Outlier,Leverage,Influential}
+```{r, Outlier,Leverage,Influential, echo=FALSE, message=FALSE, warning=FALSE}
 
 #| echo: false
 #| fig-cap: "Model without Outliers, Leverage Points and Influential points"
@@ -1129,19 +1131,23 @@ We compared the full data and subset data fits by examining (i) overall model si
 
 ## Boxcox Transformation
 
-```{r boxcox transformation}
+```{r boxcox transformation, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+#| echo: false
+#| fig-cap: "Boxcox Transformation"
+#| fig-height: 8
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_boxcox
+#| message: false
+#| warning: false
+
 
 if (!require("MASS")) install.packages("MASS")
 library(MASS)
 
-#| echo: false
-#| fig-cap: "Model without Outliers, Leverage Points and Influential points"
-#| fig-height: 8
-#| fig-pos: H
-#| fig-cap-location: top
-#| label: plot_model_v1_no_outliers
-#| message: false
-#| warning: false
+
 
 ## Model v1, without transformed stroke count
  model_v1 <- lm(time_milliseconds ~ 
