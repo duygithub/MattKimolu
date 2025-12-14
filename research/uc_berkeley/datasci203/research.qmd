@@ -724,7 +724,7 @@ ordinal_seq <- with(main_data_for_modeling, seq.int(min(event_ordinal, na.rm = T
                                                    max(event_ordinal, na.rm = TRUE),
                                                    by = 1))
 
-type_seq <- unique(main_data_for_modeling2$data_entry_type)
+type_seq <- unique(main_data_for_modeling$data_entry_type)
 
 pred_data <- expand.grid(
   event_ordinal    = ordinal_seq,
