@@ -680,11 +680,186 @@ To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia
 ```{r, hypothesis testing results}
   
 
+model_v4 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling  )
 
+
+test1 <- anova(model_v0, model_v1)
+
+hypothesis_p_value <- unique(test1$`Pr(>F)`)
+hypothesis_p_value <- round(na.omit(hypothesis_p_value)[1],4)
 
 
 ```
 
+### Result 1: Stroke count significantly affected swimming time.
+
+To test if stroke count significantly affects swimming time, we have compared 2 models by using the ANOVA test. The reduced model is model_v0 which will be used as baseline model, it only includes “data_entry_type” and “ordinal_events”. And the full model will be model_v4 which includes “stroke_count”, its quadratic term and other interaction terms with “data_entry_type” and “ordinal_events”.
+
+The result of the F-test from ANOVA gave us a p-value of `hypothesis_p_value` which is significant, so we reject null hypothesis. This result indicates that stroke count is meaningful for predicting swim time. 
+
+### Result 2: Optimal Stroke count per data type and ordinal events
+
+
+```{r optimal Stroke count}
+
+## Simulate testing data:
+
+stroke_seq  <- with(main_data_for_modeling, seq.int(min(stroke_count, na.rm = TRUE),
+                                                   max(stroke_count, na.rm = TRUE),
+                                                   by = 1))
+
+ordinal_seq <- with(main_data_for_modeling, seq.int(min(event_ordinal, na.rm = TRUE),
+                                                   max(event_ordinal, na.rm = TRUE),
+                                                   by = 1))
+
+type_seq <- unique(main_data_for_modeling2$data_entry_type)
+
+pred_data <- expand.grid(
+  event_ordinal    = ordinal_seq,
+  stroke_count     = stroke_seq,
+  data_entry_type  = type_seq,
+  KEEP.OUT.ATTRS   = FALSE,
+  stringsAsFactors = FALSE
+)
+
+# Get predictions with 95% confidence intervals
+pred_results <- predict(model , newdata = pred_data, interval = "confidence", level = 0.95)
+pred_data2 <- cbind(pred_data, pred_results)
+ 
+
+predicted_summary <- pred_data2  %>%
+    group_by(data_entry_type, event_ordinal ) %>%
+    summarize(
+              Min=quantile(fit,probs = 0,type=2,na.rm = TRUE)
+    )
+
+pred_data3 <- pred_data2 %>%
+  left_join(predicted_summary, by = c("data_entry_type", "event_ordinal")) %>%
+  mutate(is_min = ifelse(fit == Min, "Yes", "No")) %>%
+  filter(is_min == "Yes") %>%
+  dplyr::select(data_entry_type, event_ordinal, stroke_count,
+         Min) %>%
+  mutate(Min = round(Min,0)) %>%
+  rename(`Data Entry Type` = data_entry_type,
+         `Event Ordinal` = event_ordinal,
+         `Optimal stroke Count` = stroke_count,
+         `Best Swim Time` = Min)
+
+
+knitr::kable(pred_data3, digits = 3, caption = "Optimal Stroke count per data type and ordinal events")
+
+```
+
+We have attached table here for optimal stroke count for each data entry type and each ordinal event. Notice that when the ordinal event is lower than 6, the result indicates that the fewer the stroke count is, the lower the swim time is. This is because of we had interaction terms in the model, such as stroke count by ordinal event, and also stroke count square by ordinal event. 
+
+
+```{r optimal stroke count plot}
+
+#| echo: false
+#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
+#| fig-height: 8
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_optimal_stroke_count
+#| message: false
+#| warning: false
+
+model <- model_v4
+
+main_data_y_min <- 25000
+main_data_y_max <- 40000
+main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
+
+color_mapping <- c(
+                   "25 or 50L1" = "blue",
+                   "50L2" = "red",
+                   "100IM" = "darkgreen")
+
+
+# Create prediction data for each data_entry_type
+stroke_range <- range(main_data_for_modeling$stroke_count)
+
+ordinal_mean <- ceiling(mean(main_data_for_modeling$event_ordinal))
+
+
+pred_data <- expand.grid(
+  event_ordinal = seq(ordinal_mean,ordinal_mean, length.out = 1),
+  stroke_count = seq(stroke_range[1], stroke_range[2], length.out = 100),
+  data_entry_type = unique(main_data_for_modeling$data_entry_type)
+)
+
+pred_results <- predict(model , newdata = pred_data, interval = "confidence", level = 0.95)
+pred_data <- cbind(pred_data, pred_results)
+
+
+ggplot(main_data_for_modeling,
+       aes(x = as.numeric(stroke_count),
+           y = as.numeric(time_milliseconds),
+           color = factor(data_entry_type))) +
+  # Add prediction lines
+  geom_line(data = pred_data,
+            aes(x = stroke_count,
+                y = fit,
+                color = data_entry_type),
+            linewidth = 1) +
+  geom_ribbon(data = pred_data,
+              aes(x = stroke_count,
+                  ymin = lwr,
+                  ymax = upr,
+                  fill = data_entry_type),
+              alpha = 0.1,
+              inherit.aes = FALSE)+
+geom_jitter(
+    width = 0.3,   # Controls the amount of horizontal jitter (default is 40% of the resolution of the data)
+    alpha = 0.7,   # Makes points semi-transparent to better visualize density
+    size = 3,     # Sets the size of the points
+    size = 2     # Sets the size of the points
+  ) +
+# geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) +
+geom_text(aes(label = main_data_for_plotting$event_ordinal), 
+          nudge_x = 0.15,     # Move slightly to the right
+          nudge_y = -180,     # Move slightly down (Adjust this value based on your Y scale!)
+          size = 3,           # Make font smaller than the dots
+          color = "black",    # Keep text black so it's readable
+          fontface = "bold",
+          show.legend = FALSE # Don't add 'a' to the legend
+  ) +  
+scale_color_manual(values = color_mapping) +
+scale_fill_manual(values = color_mapping) +
+# scale_shape_manual(values = data_plot_custom_shapes) +
+scale_y_continuous(
+  breaks = main_data_y_seq,      # Forces labels at 0, 10000, ... 80000
+  limits = c(main_data_y_min, main_data_y_max) # Forces the graph to start/end exactly there
+) +
+labs(
+  title = "Model_v4: Optimal Stroke Count (Average Ordinal Event = 6)",
+  x = expression(bold(S[C])),
+  y = expression(bold(T[lap])),
+  # color = "unwell_feedback", # Legend Title
+  # shape = "data_entry_type", # Legend Title
+  color = "data_entry_type"  # Legend Title (must match color title to combine legends)
+) +
+  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+
+theme(legend.position = "bottom",
+      legend.box = "vertical")
+
+### Explanation of the Shapes
+# In R's `ggplot2`, shapes are mapped to integer codes. I used the following for your request:
+# * **Shape 16:** Filled Circle (Dot) $\rightarrow$ Used for "25" and "50L1".
+# * **Shape 4:** Cross (X) $\rightarrow$ Used for "50L2".
+# * **Shape 17:** Filled Triangle $\rightarrow$ Used for "100IM".
+
+
+
+
+```
 
 
 
