@@ -695,7 +695,7 @@ model_v4 <- lm(time_milliseconds ~
               data = main_data_for_modeling  )
 
 
-test1 <- anova(model_v0, model_v1)
+test1 <- anova(model_v0, model_v4)
 
 hypothesis_p_value <- unique(test1$`Pr(>F)`)
 hypothesis_p_value <- round(na.omit(hypothesis_p_value)[1],4)
