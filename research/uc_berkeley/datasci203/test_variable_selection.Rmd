@@ -65,9 +65,33 @@ main_data_for_modeling <- prep_data_for_modeling(main_data)
 
 
 main_data_for_modeling2 <- main_data_for_modeling%>%
-  mutate(record_id = row_number(), .before = 1)
+  mutate(record_id = row_number(), .before = 1) %>%
+  mutate(stroke_count_square = stroke_count ^2)
   
 
+
+model_v4 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling  )
+
+summary(model_v4)
+
+
+
+model_v0 <- lm(time_milliseconds ~ 
+                data_entry_type + 
+                event_ordinal,  
+              data = main_data_for_modeling  )
+
+summary(model_v0)
+
+
+anova(model_v0,model_v4 )
 
 ```
 

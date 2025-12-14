@@ -65,7 +65,11 @@ modelSummary2df <- function(model_summary_list) {
     model_stats_long <- model_df %>%
       dplyr::select(nobs, r.squared, adj.r.squared, sigma, statistic, p.value) %>%
       tidyr::pivot_longer(everything(), names_to = "term", values_to = "estimate") %>%
-      mutate(estimate = round(estimate, 3))
+      mutate(estimate = round(estimate, 4)) %>%
+      mutate(estimate = as.character(estimate),
+             estimate = ifelse(estimate == "0", "<.0001", estimate))
+    
+
     
     ##########################################
     ## Combine them:
@@ -95,6 +99,17 @@ modelSummary2df <- function(model_summary_list) {
         full_join(combined_model_summary, by = "term")
     }
     
+    ## Sorting
+    keep_last <- c("n", "r.squared", "adj.r.squared",
+                   "sigma", "statistic", "p.value")
+    
+
+    model_summary_df <- model_summary_df %>%
+      arrange(
+        term %in% keep_last,
+        if_else(term %in% keep_last, match(term, keep_last), 0L),
+        term
+      )
     
   }
   
@@ -107,9 +122,9 @@ modelSummary2df <- function(model_summary_list) {
 ######################################################
 ## Testing:
 
-# model_summary_list<- rlang::set_names(
-#   list(model_v1, model_v2),
-#   c("model_v1", "model_v2")
-# )
-# 
-# test2 <- modelSummary2df(model_summary_list)
+model_summary_list<- rlang::set_names(
+  list(model_v1, model_v2),
+  c("model_v1", "model_v2")
+)
+
+test2 <- modelSummary2df(model_summary_list)

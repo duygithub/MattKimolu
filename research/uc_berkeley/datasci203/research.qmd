@@ -30,6 +30,7 @@ library(dplyr)
 library(tidyr)
 library(broom)
 library(rlang)
+library(kableExtra)
 
 # For Causal SEM
 if (!require("lavaan")) install.packages("lavaan")
@@ -674,6 +675,28 @@ To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia
 
 # Conclusion
 
+## Hypothesis Testing Results
+
+```{r, hypothesis testing results}
+  
+
+
+model_v4 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling  )
+
+
+
+
+```
+
+
+
 
 
 # Future Work
@@ -830,6 +853,44 @@ knitr::kable(model_v3_summary_data$table_summary_data, digits = 3, caption = "Mo
 
 Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we had a much lower $R^2$ (`r model_v3_summary_data$r_squared`), but the largest adjusted $R^2$ (`r model_v3_summary_data$adjusted_r_squared`) and statistical significance. However, this model doesn't make sense to us because the model is missing interaction terms, which should matter.
 
+
+## Model V4: Added interaction term with event ordinal
+
+$$
+\begin{split}
+\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
+ & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
+ & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM} \\
+ & + \hat{\eta}_0 O + \hat{\eta}_0 O S_C + \hat{\eta}_0 O {S_C}^2 \\
+ 
+\end{split}
+$$ {#eq-regression_model_v4}
+
+We added variable event ordinal and also added interaction of storke count with event ordinal to get to see if we can get to statistical significance.
+
+```{r summary_regression_model_v4, echo=FALSE, results='asis'}
+
+model_v4 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling  )
+
+model_v4_summary_data <- calculate_model_coefficients_summary(model_v4)
+
+knitr::kable(model_v4_summary_data$table_summary_data, digits = 3, caption = "Model v4 Summary")
+```
+
+Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we had a much lower $R^2$ (`r model_v3_summary_data$r_squared`), but the largest adjusted $R^2$ (`r model_v3_summary_data$adjusted_r_squared`) and statistical significance. However, this model doesn't make sense to us because the model is missing interaction terms, which should matter.
+
+
+
+
+
+
 {{< pagebreak >}}
 
 ```{r compare models, echo=FALSE, message=FALSE, warning=FALSE}
@@ -838,15 +899,28 @@ source("source/modelSummary2df.R")
 
 
 model_summary_list<- rlang::set_names(
-  list(model_v1, model_v2, model_v3),
-  c("model_v1", "model_v2", "model_v3")
+  list(model_v1, model_v2, model_v3, model_v4),
+  c("model_v1", "model_v2", "model_v3", "model_v4")
 )
 
 model_compare_df_1 <- modelSummary2df(model_summary_list)
 
 
-knitr::kable(model_compare_df_1 , digits = 3, caption = "Model Comparison")
+# knitr::kable(model_compare_df_1 , digits = 3, caption = "Model Comparison")
 
+keep_last_n <- 6
+cut_row <- nrow(df) - keep_last_n  # line goes BEFORE row (cut_row + 1)
+
+kbl(
+  df,
+  format = if (knitr::is_latex_output()) "latex" else "html",
+  booktabs = TRUE
+) %>%
+  kable_styling(full_width = FALSE) %>%
+  # HTML: black horizontal line before last 6 rows
+  row_spec(cut_row + 1, extra_css = "border-top: 2px solid black;") %>%
+  # PDF/LaTeX: horizontal rule before last 6 rows
+  row_spec(cut_row + 1, extra_latex_before = "\\midrule")
 
 
 ```
@@ -862,7 +936,7 @@ knitr::kable(model_compare_df_1 , digits = 3, caption = "Model Comparison")
 ## Test Beta distribution (Pending)
 
 
-# Apeendix C - Post-hoc Analysis
+# Appendix C - Post-hoc Analysis
 
 ## Model without Outliers, Leverage Points and Influential points
 
