@@ -707,12 +707,12 @@ hypothesis_p_value <- round(na.omit(hypothesis_p_value)[1],4)
 
 To test if stroke count significantly affects swimming time, we have compared 2 models by using the ANOVA test. The reduced model is model_v0 which will be used as baseline model, it only includes “data_entry_type” and “ordinal_events”. And the full model will be model_v4 which includes “stroke_count”, its quadratic term and other interaction terms with “data_entry_type” and “ordinal_events”.
 
-The result of the F-test from ANOVA gave us a p-value of `hypothesis_p_value` which is significant, so we reject null hypothesis. This result indicates that stroke count is meaningful for predicting swim time. 
+The result of the F-test from ANOVA gave us a p-value of `r hypothesis_p_value` which is significant, so we reject null hypothesis. This result indicates that stroke count is meaningful for predicting swim time. 
 
 ### Result 2: Optimal Stroke count per data type and ordinal events
 
 
-```{r optimal Stroke count}
+```{r optimal Stroke count, echo=FALSE, message=FALSE, warning=FALSE}
 
 ## Simulate testing data:
 
@@ -767,7 +767,7 @@ knitr::kable(pred_data3, digits = 3, caption = "Optimal Stroke count per data ty
 We have attached table here for optimal stroke count for each data entry type and each ordinal event. Notice that when the ordinal event is lower than 6, the result indicates that the fewer the stroke count is, the lower the swim time is. This is because of we had interaction terms in the model, such as stroke count by ordinal event, and also stroke count square by ordinal event. 
 
 
-```{r optimal stroke count plot}
+```{r optimal stroke count plot, echo=FALSE, message=FALSE, warning=FALSE}
 
 #| echo: false
 #| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
