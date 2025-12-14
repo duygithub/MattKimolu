@@ -1102,7 +1102,7 @@ model_compare_df_2 <- beta_rename %>%
         term
       )
 
-knitr::kable(model_compare_df_1 , digits = 3, caption = "Model Comparison")
+knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 
 
 ```
