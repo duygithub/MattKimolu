@@ -677,7 +677,7 @@ To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia
 
 ## Hypothesis Testing Results
 
-```{r, hypothesis testing results}
+```{r, hypothesis testing results, echo=FALSE, message=FALSE, warning=FALSE}
   
 
 model_v0 <- lm(time_milliseconds ~ 
@@ -700,6 +700,9 @@ test1 <- anova(model_v0, model_v4)
 hypothesis_p_value <- unique(test1$`Pr(>F)`)
 hypothesis_p_value <- round(na.omit(hypothesis_p_value)[1],4)
 
+hypothesis_p_value2 <- ifelse(hypothesis_p_value< 0.0001, 
+                              "<0.0001", hypothesis_p_value)
+
 
 ```
 
@@ -707,7 +710,7 @@ hypothesis_p_value <- round(na.omit(hypothesis_p_value)[1],4)
 
 To test if stroke count significantly affects swimming time, we have compared 2 models by using the ANOVA test. The reduced model is model_v0 which will be used as baseline model, it only includes “data_entry_type” and “ordinal_events”. And the full model will be model_v4 which includes “stroke_count”, its quadratic term and other interaction terms with “data_entry_type” and “ordinal_events”.
 
-The result of the F-test from ANOVA gave us a p-value of `r hypothesis_p_value` which is significant, so we reject null hypothesis. This result indicates that stroke count is meaningful for predicting swim time. 
+The result of the F-test from ANOVA gave us a p-value of `r hypothesis_p_value2` which is significant, so we reject null hypothesis. This result indicates that stroke count is meaningful for predicting swim time. 
 
 ### Result 2: Optimal Stroke count per data type and ordinal events
 
@@ -771,7 +774,8 @@ We have attached table here for optimal stroke count for each data entry type an
 
 #| echo: false
 #| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
-#| fig-height: 8
+#| fig-width: 7
+#| fig-height: 10
 #| fig-pos: H
 #| fig-cap-location: top
 #| label: plot_optimal_stroke_count
