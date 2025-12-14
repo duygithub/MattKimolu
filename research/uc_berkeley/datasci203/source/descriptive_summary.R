@@ -3,7 +3,7 @@ descriptive_summary <- function(prepped_data)  {
   
   summary_stats2 <-prepped_data %>%
     group_by(stroke_count) %>%
-    summarize(n=length(unique(event_ordinal)),
+    summarize(n=length(event_ordinal),
               Mean = mean(elapsed_time, na.rm = TRUE),
               SD=sd(elapsed_time, na.rm = TRUE),
               SE = sd(elapsed_time, na.rm = TRUE)/sqrt(length(elapsed_time)),

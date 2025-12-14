@@ -1,0 +1,26 @@
+old_name,new_name
+(Intercept),Intercept
+I(event_ordinal^2),Event Ordinal^2
+I(stroke_count^2),Stroke Count^2
+I(stroke_count^2):data_entry_type100IM,Stroke Count^2 x Data Entry Type: 100IM
+I(stroke_count^2):data_entry_type50L2,Stroke Count^2 x Data Entry Type: 50L2
+I(stroke_count^2):event_ordinal,Stroke Count^2 x Event Ordinal
+I(stroke_count^2):unwell_feedback-1,Stroke Count^2 x Wellness: well
+I(stroke_count^2):unwell_feedback1,Stroke Count^2 x Wellness: unwell
+data_entry_type100IM,Data Entry Type: 100IM
+data_entry_type50L2,Data Entry Type: 50L2
+event_ordinal,Event Ordinal
+stroke_count,Stroke Count
+stroke_count:data_entry_type100IM,Stroke Count x Data Entry Type: 100IM
+stroke_count:data_entry_type50L2,Stroke Count x Data Entry Type: 50L2
+stroke_count:event_ordinal,Stroke Count x Event Ordinal
+stroke_count:unwell_feedback-1,Stroke Count x Wellness: well
+stroke_count:unwell_feedback1,Stroke Count x Wellness: unwell
+unwell_feedback-1,Wellness: well
+unwell_feedback1,Wellness: unwell
+n,[Sample Size]
+r.squared,[R^2]
+adj.r.squared,[Adjusted R^2]
+sigma,[RSE]
+statistic,[Test Statistic]
+p.value,[P-value]
