@@ -1032,18 +1032,16 @@ Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we had a much l
 
 ## Model V4: Added interaction term with event ordinal
 
-```{r, model 4}
 
-# This is the latex code for model 4, But I am not able to render this one.
-
+$$
 # \begin{split}
 # \hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
 #  & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
 #  & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM} \\
 #  & + \hat{\eta}_0 O + \hat{\eta}_0 O S_C + \hat{\eta}_0 O {S_C}^2 
 # \end{split}
+$$
 
-```
 
 We added variable event ordinal and also added interaction of storke count with event ordinal to get to see if we can get to statistical significance.
 
