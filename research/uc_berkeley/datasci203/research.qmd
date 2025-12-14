@@ -680,6 +680,11 @@ To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia
 ```{r, hypothesis testing results}
   
 
+model_v0 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                event_ordinal  , 
+              data = main_data_for_modeling  )
+
 model_v4 <- lm(time_milliseconds ~ 
                 stroke_count + 
                 I(stroke_count^2) + 
