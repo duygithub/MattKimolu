@@ -716,6 +716,8 @@ The result of the F-test from ANOVA gave us a p-value of `hypothesis_p_value` wh
 
 ## Simulate testing data:
 
+model <- model_v4
+
 stroke_seq  <- with(main_data_for_modeling, seq.int(min(stroke_count, na.rm = TRUE),
                                                    max(stroke_count, na.rm = TRUE),
                                                    by = 1))
