@@ -1034,16 +1034,17 @@ Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we had a much l
 
 
 $$
-# \begin{split}
-# \hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
-#  & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
-#  & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM} \\
-#  & + \hat{\eta}_0 O + \hat{\eta}_0 O S_C + \hat{\eta}_0 O {S_C}^2 
-# \end{split}
+\begin{split}
+\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
+  & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
+  & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM} \\
+  & + \hat{\eta}_0 O + \hat{\eta}_0 O S_C + \hat{\eta}_0 O {S_C}^2
+ \end{split}
 $$
 
 
 We added variable event ordinal and also added interaction of storke count with event ordinal to get to see if we can get to statistical significance.
+
 
 ```{r summary_regression_model_v4, echo=FALSE, results='asis'}
 
@@ -1064,9 +1065,13 @@ knitr::kable(model_v4_summary_data$table_summary_data, digits = 3, caption = "Mo
 
 {{< pagebreak >}}
 
+## MCompare between Models
+
 ```{r compare models, echo=FALSE, message=FALSE, warning=FALSE}
  
 source("source/modelSummary2df.R")
+
+beta_rename <- read.csv("source/beta_rename.csv")
 
 
 model_summary_list<- rlang::set_names(
@@ -1076,22 +1081,28 @@ model_summary_list<- rlang::set_names(
 
 model_compare_df_1 <- modelSummary2df(model_summary_list)
 
+model_compare_df_2 <- beta_rename %>%
+  left_join(model_compare_df_1, by = c("old_name" = "term")) %>%
+  dplyr::select(-old_name ) %>%
+  rename(term = new_name)
+
+    ## Sorting
+    keep_last <- c("[Sample Size]", 
+                   "[R^2]", 
+                   "[Adjusted R^2]",
+                   "[RSE]", 
+                   "[Test Statistic]", 
+                   "[P-value]")
+    
+
+    model_compare_df_2 <- model_compare_df_2 %>%
+      arrange(
+        term %in% keep_last,
+        if_else(term %in% keep_last, match(term, keep_last), 0L),
+        term
+      )
 
 knitr::kable(model_compare_df_1 , digits = 3, caption = "Model Comparison")
-
-# keep_last_n <- 6
-# cut_row <- nrow(df) - keep_last_n  # line goes BEFORE row (cut_row + 1)
-# 
-# kbl(
-#   df,
-#   format = if (knitr::is_latex_output()) "latex" else "html",
-#   booktabs = TRUE
-# ) %>%
-#   kable_styling(full_width = FALSE) %>%
-#   # HTML: black horizontal line before last 6 rows
-#   row_spec(cut_row + 1, extra_css = "border-top: 2px solid black;") %>%
-#   # PDF/LaTeX: horizontal rule before last 6 rows
-#   row_spec(cut_row + 1, extra_latex_before = "\\midrule")
 
 
 ```

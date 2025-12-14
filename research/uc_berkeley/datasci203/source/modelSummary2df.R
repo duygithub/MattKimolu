@@ -122,9 +122,9 @@ modelSummary2df <- function(model_summary_list) {
 ######################################################
 ## Testing:
 
-model_summary_list<- rlang::set_names(
-  list(model_v1, model_v2),
-  c("model_v1", "model_v2")
-)
-
-test2 <- modelSummary2df(model_summary_list)
+# model_summary_list<- rlang::set_names(
+#   list(model_v1, model_v2),
+#   c("model_v1", "model_v2")
+# )
+# 
+# test2 <- modelSummary2df(model_summary_list)
