@@ -1110,15 +1110,136 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 
 
 
-# Appendix B - Model Validation
+# Appendix B - Model Adequacy Checking
 
 
 ## Residual Analysis (Pending)
 
-## Test Beta distribution (Pending)
 
 
-# Appendix C - Post-hoc Analysis
+# Appendix C - Model Validation
+
+We want to make sure that Model_v4 not only fits the current dataset well, but also remains valid for future or unseen data. To do this, we tested the stability of the coefficients by repeatedly splitting the data and re-estimating the model. For the data splits, we randomized the samples while stratifying by “data_entry_type” to ensure that each set had balanced characteristics. After randomization, each sample was assigned to either the estimation set (for fitting the model) or the validation set (for evaluating prediction error). We refit the model using the estimation set and then calculated the mean squared prediction error using the validation set. This process was repeated 1,000 times.
+
+From the beta distribution plots, we can conclude the following: (a) Regarding stability, most beta histograms are symmetric and narrow. This suggests that the coefficients are stable, since their estimates are mostly normally distributed. However, Beta 7 and Beta 8 appear slightly skewed, which may be because they are interaction terms. (b) Regarding sign consistency, the medians of Beta 1 and Beta 2 are close to 0, which suggests that we cannot reliably interpret the direction of their effects. The remaining beta coefficients have consistent signs.
+
+The MSP distribution plot is strongly right skewed. This indicates that most MSP values are small, meaning the model’s predictions are generally reasonable. However, there are a few cases with large MSP values, which may be due to outliers in the validation set.
+
+
+
+
+
+```{r, Model Validation, echo=FALSE, message=FALSE, warning=FALSE}
+#| echo: false
+#| fig-cap: "Distribution of Beta"
+#| fig-width: 10
+#| fig-height: 14
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_beta_distribution
+#| message: false
+#| warning: false
+
+## Split into estimate set and validation set, then test beta and MSP distribution
+
+df <- main_data_for_modeling2
+model <- model_v4 
+
+# 
+beta0 <- numeric() 
+beta1 <- numeric()
+beta2 <- numeric()
+beta6 <- numeric()
+beta7 <- numeric()
+beta8 <- numeric()
+MSP <- numeric()
+
+
+for (i in 1:1000){
+  
+  #set.seed(i)
+  #Test
+  # i<-1
+  
+  n <- nrow(df)
+  n_half <- floor(nrow(df)/2)
+  obs <- c(1:n)
+  
+  
+	# sample.est <- sort(sample(obs,n_half))
+	# sample.val <- (1:n)[-sample.est]
+	# df.est <- df[sample.est,]
+	# df.val <- df[sample.val,]
+	
+  
+  ## Assign randomly to 2 sets: estimate and valide. 
+  df$set <- ave(seq_len(nrow(df)), df$data_entry_type, FUN = function(i) {
+    n <- length(i)
+    sample(rep(c("estimate", "validate"), length.out = n))
+  })
+  
+  df.est <- df[df$set == "estimate", ]
+  df.val <- df[df$set == "validate", ]
+
+ ## Check balance 
+ # table(df$data_entry_type, df$set)
+ 
+	fit <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = df.est  )
+	# coefficients(fit)
+	y_hat <- predict(fit, df.val)
+	pred_error <- df.val[,"time_milliseconds"] - y_hat
+	
+	beta0[i] <- coef(fit)["(Intercept)"]
+	beta1[i] <- coef(fit)["stroke_count"]
+	beta2[i] <- coef(fit)["I(stroke_count^2)"]
+	beta6[i] <- coef(fit)["event_ordinal"]
+	beta7[i] <- coef(fit)["stroke_count:event_ordinal"]
+	beta8[i] <- coef(fit)["I(stroke_count^2):event_ordinal"]
+	MSP[i] <- sum(pred_error^2)/n_half
+}
+
+make_hist <- function(x, title) {
+  ggplot(data.frame(x = x), aes(x)) +
+    geom_histogram(bins = 30) +
+    labs(title = title, x = NULL, y = "Frequency") +
+    theme_minimal()+ 
+    theme(plot.title = element_text(size = 7, face = "bold"))+ 
+    theme(axis.title.y = element_text(size = 7))
+}
+
+
+p1 <- make_hist(beta1, "beta1 distribution: \nStroke Count")
+p2 <- make_hist(beta2, "beta2 distribution: \nStroke Count^2")
+p3 <- make_hist(beta6, "beta6 distribution: \nEvent Ordinal")
+p4 <- make_hist(beta7, "beta7 distribution: \nStroke Count x Event Ordinal")
+p5 <- make_hist(beta8, "beta8 distribution: \nStroke Count^2 x Event Ordinal")
+p6 <- make_hist(MSP, "MSP distribution: \nMean Squared Prediction Error")
+
+p_combined <- (p1 | p2 | p3) / (p4 | p5 | p6)
+
+p_combined
+
+```
+
+```{r, Model Validation beta scatter plot}
+
+
+
+
+
+```
+
+
+
+
+# Appendix D - Post-hoc Analysis
 
 ## Model without Outliers, Leverage Points and Influential points
 
