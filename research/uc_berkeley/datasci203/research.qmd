@@ -1598,93 +1598,168 @@ We build a new model using the dataset without outliers, leverage points and inf
 #| message: false
 #| warning: false
 
-# 
-# if (!require("MASS")) install.packages("MASS")
-# library(MASS)
-# 
-# 
-# 
-# ## Model v1, without transformed stroke count
-# 
-# 
-# 
-# 
-# 
-# 
-# ## get lambda for boxcox transformation, and extract as df
-# ## First try lambda from 0 to 10
-# ## For y value transformation.
-# BC <- boxcox( model_v3, lambda = seq(0, 10, 1/100), plotit = FALSE)
-# BC_df <- data.frame(
-#   logLik = BC$y,
-#   lambda = BC$x
-# )
-# 
-# 
-# ## 95% CI threshold for lambda
-# BC_95ci <- max(BC$y) - 0.5*qchisq(0.95, 1)
-# 
-# ## get max of lambda
-# BC_lambda_max <-  BC$x[which.max(BC$y)]
-# max_logLik <- max(BC$y)
-# 
-# ## Ploting
-# bc_plot <- ggplot(BC_df, aes(x = lambda, y = logLik)) +
-#   geom_line(linewidth = 1) +
-#   geom_vline(xintercept = BC_lambda_max, linetype = "dashed", linewidth = 1, color = "red") +
-#   geom_hline(yintercept = BC_95ci, linetype = "dashed", linewidth = 1, color = "blue") +
-#   annotate("text",
-#            x = BC_lambda_max, y = max_logLik,
-#            label = sprintf("lambda* = %.2f", BC_lambda_max),
-#            vjust = -0.8, hjust = 0.5, color = "red") +
-#   annotate("text",
-#            x = 10, y = BC_95ci,
-#            label = "95% cutoff",
-#            vjust = -0.6, hjust = 1, color = "blue") +
-#   labs(
-#     x = "lambda",
-#     y = "Log-Likelihood",
-#     title = "Box-Cox Transformation"
-#   ) +
-#   scale_x_continuous(
-#     limits = c(0, 10),
-#     breaks = seq(0, 10, by = 0.5)
-#   ) +
-#   theme_minimal()
-# 
-# bc_plot
-# 
-# 
-# 
-# 
-# ## Testing on transformed new model:
-# y <- main_data_for_modeling$time_milliseconds
-# BC_lambda_max <- BC_lambda_max
-# 
-# main_data_for_modeling_BC <- main_data_for_modeling %>%
-#   mutate(y_bc = (time_milliseconds^BC_lambda_max - 1) / BC_lambda_max)
-# 
-# 
-#  model_v4 <- lm(y_bc ~
-#                 stroke_count +
-#                 data_entry_type +
-#                 stroke_count * data_entry_type ,
-#               data = main_data_for_modeling)
-# 
-# summary( model_v4 )
-# 
-# stargazer(model_v1, model_v4,type = "text" )
+
+if (!require("MASS")) install.packages("MASS")
+library(MASS)
+
+
+
+## Model v4
+model_v4 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling  )
+
+
+
+model <- model_v4
+
+## get lambda for boxcox transformation, and extract as df
+## First try lambda from 0 to 10
+## For y value transformation.
+BC <- boxcox( model, lambda = seq(0, 10, 1/100), plotit = FALSE)
+BC_df <- data.frame(
+  logLik = BC$y,
+  lambda = BC$x
+)
+
+
+## 95% CI threshold for lambda
+BC_95ci <- max(BC$y) - 0.5*qchisq(0.95, 1)
+
+## get max of lambda
+BC_lambda_max <-  BC$x[which.max(BC$y)]
+max_logLik <- max(BC$y)
+
+## Ploting
+bc_plot <- ggplot(BC_df, aes(x = lambda, y = logLik)) +
+  geom_line(linewidth = 1) +
+  geom_vline(xintercept = BC_lambda_max, linetype = "dashed", linewidth = 1, color = "red") +
+  geom_hline(yintercept = BC_95ci, linetype = "dashed", linewidth = 1, color = "blue") +
+  annotate("text",
+           x = BC_lambda_max, y = max_logLik,
+           label = sprintf("lambda* = %.2f", BC_lambda_max),
+           vjust = -0.8, hjust = 0.5, color = "red") +
+  annotate("text",
+           x = 10, y = BC_95ci,
+           label = "95% cutoff",
+           vjust = -0.6, hjust = 1, color = "blue") +
+  labs(
+    x = "lambda",
+    y = "Log-Likelihood",
+    title = "Box-Cox Transformation"
+  ) +
+  scale_x_continuous(
+    limits = c(0, 10),
+    breaks = seq(0, 10, by = 0.5)
+  ) +
+  theme_minimal()
+
+bc_plot
+
+
+
+
+## Testing on transformed new model:
+y <- main_data_for_modeling$time_milliseconds
+BC_lambda_max <- BC_lambda_max
+
+main_data_for_modeling_BC <- main_data_for_modeling %>%
+  mutate(y_bc = (time_milliseconds^BC_lambda_max - 1) / BC_lambda_max)
+ 
+model_v7 <- lm(y_bc ~
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling_BC  )
+
+
+
+source("source/modelSummary2df.R")
+
+beta_rename <- read.csv("source/beta_rename.csv")
+
+
+###########################
+## Test model without Outlier,Leverage,Influential
+ dataset201 <- dataset102 %>%
+   filter(outlier_type == "Non-Outlier,Leverage,Influential")
+
+ 
+ model_v6 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data =dataset201   )
+ 
+
+
+model_summary_list<- rlang::set_names(
+  list( model_v4, model_v7),
+  c("model_v4", "model_v7")
+)
+
+model_compare_df_1 <- modelSummary2df(model_summary_list)
+
+model_compare_df_2 <- beta_rename %>%
+  right_join(model_compare_df_1, by = c("old_name" = "term")) %>%
+  dplyr::select(-old_name ) %>%
+  rename(term = new_name)
+
+    ## Sorting
+    keep_last <- c("[Sample Size]", 
+                   "[R^2]", 
+                   "[Adjusted R^2]",
+                   "[RSE]", 
+                   "[Test Statistic]", 
+                   "[P-value]")
+    
+
+    model_compare_df_2 <- model_compare_df_2 %>%
+      arrange(
+        term %in% keep_last,
+        if_else(term %in% keep_last, match(term, keep_last), 0L),
+        term
+      )
+
+knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
+
+
+
+
+par(mfrow =c(1,2))
+
+plot(fitted(model_v4), rstandard(model_v4),
+     xlab = "Fitted values", ylab = "standardized residuals",
+     main = "model_v4")
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3)
+
+plot(fitted(model_v7), rstandard(model_v7),
+     xlab = "Fitted values (Box–Cox scale)", ylab = "standardized residuals",
+     main = "model_v7: (BC scale)")
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3)
 
 
 ```
 
-We would like to improve our Model v1, so we tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = 4.02, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of 4.02. So our transformation y is the following:
+We would like to improve our Model v4, we have tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = `r BC_lambda_max`, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of `r BC_lambda_max`. So our transformation y is the following:
 
 $$
-y^{(\lambda)} = \dfrac{y^{\lambda} - 1}{\lambda} \text{, where lambda = 4.02}
+y^{(\lambda)} = \dfrac{y^{\lambda} - 1}{\lambda} 
 $$
-Need to add model comparison later.
-
+After the Boxcox transformation, those coefficients are no longer in the same units, so we can not directly comparing their coefficients. Instead, we have compared their R^2 where it improved from	0.7579 to 0.8016. standardized residuals versus fitted-value plots were also examined for both models. The Box–Cox transformation produced a residual pattern that was slightly improved where those residuals are more evenly scattered around zero compared with the untransformed model.
 
 
 <!-- ## Sample size re-estimation (Pending) -->
