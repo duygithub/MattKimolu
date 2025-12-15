@@ -31,6 +31,7 @@ library(tidyr)
 library(broom)
 library(rlang)
 library(kableExtra)
+library(patchwork)
 
 # For Causal SEM
 if (!require("lavaan")) install.packages("lavaan")
@@ -1131,7 +1132,7 @@ The MSP distribution plot is strongly right skewed. This indicates that most MSP
 #| echo: false
 #| fig-cap: "Distribution of Beta"
 #| fig-width: 10
-#| fig-height: 14
+#| fig-height: 7
 #| fig-pos: H
 #| fig-cap-location: top
 #| label: plot_beta_distribution
@@ -1255,6 +1256,7 @@ There are 5 observations those are outliers, leverage points, or influence point
 
 #| echo: false
 #| fig-cap: "Model without Outliers, Leverage Points and Influential points"
+#| fig-width: 10
 #| fig-height: 8
 #| fig-pos: H
 #| fig-cap-location: top
@@ -1267,7 +1269,7 @@ model <- model_v4
 main_data_for_modeling2 <- main_data_for_modeling%>%
   mutate(record_id = row_number(), .before = 1)
 
-write.csv(main_data_for_modeling2, "data/combined_data.csv", row.names = FALSE)
+# write.csv(main_data_for_modeling2, "data/combined_data.csv", row.names = FALSE)
 
 
 dat3<- main_data_for_modeling2
@@ -1306,8 +1308,7 @@ names(H_ii)[names(H_ii) == "V2"] <- "H_ii"
 #cook's distance:
 d <- cooks.distance(model)
 
-d[order(d, decreasing = TRUE)]
-cooks_d <- data.frame(d )
+cooks_d <- data.frame(d[order(d, decreasing = TRUE)])
 cooks_d$rowid <- 1:nrow(cooks_d)
 
 
@@ -1525,7 +1526,7 @@ ggplot() +
  
 ```
 
-
+We build a new model using the dataset without outliers, leverage points and influential points, and compared with the previous model. The new model_v6 has 61 samples has several improvements: (a) R^2 increased from 0.7579 to 0.9053 and (b) RSE reduced from 1656 to 981. However, stroke count is still not significant in the new model. 
 
 ```{r remove outlier model comparison , echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -1586,7 +1587,7 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 
 ```
 
-We build a new model using the dataset without outliers, leverage points and influential points, and compared with the previous model. The new model_v6 has 61 samples has several improvements: (a) R^2 increased from 0.7579 to 0.9053 and (b) RSE reduced from 1656 to 981. However, stroke count is still not significant in the new model. 
+
 
 
 ## Boxcox Transformation
