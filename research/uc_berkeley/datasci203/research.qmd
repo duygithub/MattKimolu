@@ -1430,7 +1430,20 @@ knitr::kable(dataset105 , digits = 3,
 
 
 
+```
 
+
+```{r, Outlier,Leverage,Influential plot, echo=FALSE, message=FALSE, warning=FALSE}
+
+#| echo: false
+#| fig-cap: "Model without Outliers, Leverage Points and Influential points"
+#| fig-width: 14
+#| fig-height: 16
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_model_v1_no_outliers
+#| message: false
+#| warning: false
 ##########################################################
 ## Plot Outlier,Leverage,Influential:
 df <- dataset102
@@ -1478,7 +1491,7 @@ pred_data <- cbind(pred_data, pred_results)
 
 
 # Plot with outliers
-ggplot() +
+p_outlier <- ggplot() +
   # Add 95% CI
   geom_ribbon(data = pred_data,
               aes(x = stroke_count,
@@ -1526,7 +1539,7 @@ ggplot() +
 
 
  
- 
+ p_outlier
  
  
  
