@@ -1109,7 +1109,7 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 ```
 
 
-
+{{< pagebreak >}}
 
 # Appendix B - Model Adequacy Checking
 
@@ -1128,11 +1128,11 @@ The MSP distribution plot is strongly right skewed. This indicates that most MSP
 
 
 
-```{r, Model Validation, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, Model Validation, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=4.5}
 #| echo: false
 #| fig-cap: "Distribution of Beta"
-#| fig-width: 10
-#| fig-height: 7
+##| fig-width: 10
+##| fig-height: 5.5
 #| fig-pos: H
 #| fig-cap-location: top
 #| label: plot_beta_distribution
@@ -1214,8 +1214,8 @@ make_hist <- function(x, title) {
     geom_histogram(bins = 30) +
     labs(title = title, x = NULL, y = "Frequency") +
     theme_minimal()+ 
-    theme(plot.title = element_text(size = 7, face = "bold"))+ 
-    theme(axis.title.y = element_text(size = 7))
+    theme(plot.title = element_text(size = 10, face = "bold"))+ 
+    theme(axis.title.y = element_text(size = 10))
 }
 
 
@@ -1233,7 +1233,7 @@ p_combined
 ```
 
 
-
+{{< pagebreak >}}
 
 # Appendix D - Post-hoc Analysis
 
@@ -1254,15 +1254,7 @@ There are 5 observations those are outliers, leverage points, or influence point
 
 ```{r, Outlier,Leverage,Influential, echo=FALSE, message=FALSE, warning=FALSE}
 
-#| echo: false
-#| fig-cap: "Model without Outliers, Leverage Points and Influential points"
-#| fig-width: 10
-#| fig-height: 8
-#| fig-pos: H
-#| fig-cap-location: top
-#| label: plot_model_v1_no_outliers
-#| message: false
-#| warning: false
+
 
 model <- model_v4
 
@@ -1433,17 +1425,18 @@ knitr::kable(dataset105 , digits = 3,
 ```
 
 
-```{r, Outlier,Leverage,Influential plot, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, Outlier,Leverage,Influential plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=5.7}
 
 #| echo: false
 #| fig-cap: "Model without Outliers, Leverage Points and Influential points"
-#| fig-width: 14
-#| fig-height: 16
+##| fig-width: 12
+##| fig-height: 4
 #| fig-pos: H
 #| fig-cap-location: top
-#| label: plot_model_v1_no_outliers
+#| label: plot_model_v4_no_outliers
 #| message: false
 #| warning: false
+
 ##########################################################
 ## Plot Outlier,Leverage,Influential:
 df <- dataset102
@@ -1539,7 +1532,7 @@ p_outlier <- ggplot() +
 
 
  
- p_outlier
+p_outlier
  
  
  
@@ -1614,16 +1607,6 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 ```{r boxcox transformation, echo=FALSE, message=FALSE, warning=FALSE}
 
 
-#| echo: false
-#| fig-cap: "Boxcox Transformation"
-#| fig-height: 10
-#| fig-pos: H
-#| fig-cap-location: top
-#| label: plot_boxcox
-#| message: false
-#| warning: false
-
-
 if (!require("MASS")) install.packages("MASS")
 library(MASS)
 
@@ -1671,12 +1654,12 @@ y^{(\lambda)} = \dfrac{y^{\lambda} - 1}{\lambda}
 $$
 
 
-```{r boxcox plot,  echo=FALSE, message=FALSE, warning=FALSE}
+```{r boxcox plot,  echo=FALSE, message=FALSE, warning=FALSE, fig.width=10,              fig.height =2.6}
 
 #| echo: false
 #| fig-cap: "Boxcox Transformation"
-#| fig-weight: 10
-#| fig-height: 10
+##| fig-width: 12
+##| fig-height: 10
 #| fig-pos: H
 #| fig-cap-location: top
 #| label: plot_boxcox
@@ -1691,11 +1674,11 @@ bc_plot <- ggplot(BC_df, aes(x = lambda, y = logLik)) +
   annotate("text",
            x = BC_lambda_max, y = max_logLik,
            label = sprintf("lambda* = %.2f", BC_lambda_max),
-           vjust = -0.8, hjust = 0.5, color = "red") +
+           size = 5, vjust = 0.9, hjust = 0.5, color = "red") +
   annotate("text",
            x = 10, y = BC_95ci,
            label = "95% cutoff",
-           vjust = -0.6, hjust = 1, color = "blue") +
+           size = 5, vjust = 0.9, hjust = 1, color = "blue") +
   labs(
     x = "lambda",
     y = "Log-Likelihood",
@@ -1704,8 +1687,18 @@ bc_plot <- ggplot(BC_df, aes(x = lambda, y = logLik)) +
   scale_x_continuous(
     limits = c(0, 10),
     breaks = seq(0, 10, by = 0.5)
-  ) +
+  )  +
+  theme(
+    axis.title.x = element_text(size = 7),  
+    axis.title.y = element_text(size = 7),  
+    axis.text.x  = element_text(size = 6), 
+    axis.text.y  = element_text(size = 6),  
+    axis.ticks   = element_line(linewidth = 0.6)  
+  ) + 
   theme_minimal()
+
+
+# options(repr.plot.width = 10, repr.plot.height = 14)
 
 bc_plot
 
@@ -1717,16 +1710,6 @@ After the Boxcox transformation, those coefficients are no longer in the same un
 
 ```{r boxcox transformation new model,  echo=FALSE, message=FALSE, warning=FALSE }
 
-#| echo: false
-#| fig-cap: "Boxcox Transformation"
-#| fig-weight: 10
-#| fig-height: 8
-#| fig-pos: H
-#| fig-cap-location: top
-#| label: plot_boxcox
-#| message: false
-#| warning: false
-#| 
 
 ## Testing on transformed new model:
 y <- main_data_for_modeling$time_milliseconds
@@ -1798,7 +1781,20 @@ model_compare_df_2 <- beta_rename %>%
 
 knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 
+```
 
+```{r boxcox transformation residual compare,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=4}
+
+#| echo: false
+#| fig-cap: "Boxcox Transformed Model Residual Compare"
+##| fig-width: 12
+##| fig-height: 10
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_boxcox_residual
+#| message: false
+#| warning: false
+#| 
 
 
 par(mfrow =c(1,2))
@@ -1822,6 +1818,7 @@ abline(h = c(-2, 2), lty = 3)
 
 
 <!-- ## Sample size re-estimation (Pending) -->
+
 
 
 
