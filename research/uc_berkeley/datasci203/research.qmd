@@ -1127,8 +1127,6 @@ The MSP distribution plot is strongly right skewed. This indicates that most MSP
 
 
 
-
-
 ```{r, Model Validation, echo=FALSE, message=FALSE, warning=FALSE}
 #| echo: false
 #| fig-cap: "Distribution of Beta"
@@ -1225,14 +1223,6 @@ p6 <- make_hist(MSP, "MSP distribution: \nMean Squared Prediction Error")
 p_combined <- (p1 | p2 | p3) / (p4 | p5 | p6)
 
 p_combined
-
-```
-
-```{r, Model Validation beta scatter plot}
-
-
-
-
 
 ```
 
