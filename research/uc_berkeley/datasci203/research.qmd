@@ -1140,6 +1140,11 @@ The MSP distribution plot is strongly right skewed. This indicates that most MSP
 
 ## Split into estimate set and validation set, then test beta and MSP distribution
 
+main_data_for_modeling2 <- main_data_for_modeling%>%
+  mutate(record_id = row_number(), .before = 1) %>%
+  mutate(stroke_count_square = stroke_count ^2)
+
+
 df <- main_data_for_modeling2
 model <- model_v4 
 
