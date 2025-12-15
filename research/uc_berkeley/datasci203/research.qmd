@@ -771,12 +771,12 @@ knitr::kable(pred_data3, digits = 3, caption = "Optimal Stroke count per data ty
 We have attached table here for optimal stroke count for each data entry type and each ordinal event. Notice that when the ordinal event is lower than 6, the result indicates that the fewer the stroke count is, the lower the swim time is. This is because of we had interaction terms in the model, such as stroke count by ordinal event, and also stroke count square by ordinal event. 
 
 
-```{r optimal stroke count plot, echo=FALSE, message=FALSE, warning=FALSE}
+```{r optimal stroke count plot, echo=FALSE, message=FALSE, warning=FALSE  , fig.width=10, fig.height=7}
 
 #| echo: false
 #| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
-#| fig-width: 7
-#| fig-height: 10
+##| fig-width: 7
+##| fig-height: 10
 #| fig-pos: H
 #| fig-cap-location: top
 #| label: plot_optimal_stroke_count
@@ -811,7 +811,7 @@ pred_results <- predict(model , newdata = pred_data, interval = "confidence", le
 pred_data <- cbind(pred_data, pred_results)
 
 
-ggplot(main_data_for_modeling,
+p_plot_with_model <- ggplot(main_data_for_modeling,
        aes(x = as.numeric(stroke_count),
            y = as.numeric(time_milliseconds),
            color = factor(data_entry_type))) +
@@ -862,11 +862,7 @@ labs(
 theme(legend.position = "bottom",
       legend.box = "vertical")
 
-### Explanation of the Shapes
-# In R's `ggplot2`, shapes are mapped to integer codes. I used the following for your request:
-# * **Shape 16:** Filled Circle (Dot) $\rightarrow$ Used for "25" and "50L1".
-# * **Shape 4:** Cross (X) $\rightarrow$ Used for "50L2".
-# * **Shape 17:** Filled Triangle $\rightarrow$ Used for "100IM".
+p_plot_with_model
 
 
 
