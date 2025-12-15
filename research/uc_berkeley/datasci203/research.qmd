@@ -1801,13 +1801,15 @@ par(mfrow =c(1,2))
 
 plot(fitted(model_v4), rstandard(model_v4),
      xlab = "Fitted values", ylab = "standardized residuals",
-     main = "model_v4")
+     main = "model_v4",
+     ylim = c(-6, 3))
 abline(h = 0, lty = 2)
 abline(h = c(-2, 2), lty = 3)
 
 plot(fitted(model_v7), rstandard(model_v7),
      xlab = "Fitted values (Box–Cox scale)", ylab = "standardized residuals",
-     main = "model_v7: (BC scale)")
+     main = "model_v7: (BC scale)",
+     ylim = c(-6, 3))
 abline(h = 0, lty = 2)
 abline(h = c(-2, 2), lty = 3)
 
