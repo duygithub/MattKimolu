@@ -1308,8 +1308,14 @@ names(H_ii)[names(H_ii) == "V2"] <- "H_ii"
 #cook's distance:
 d <- cooks.distance(model)
 
-cooks_d <- data.frame(d[order(d, decreasing = TRUE)])
-cooks_d$rowid <- 1:nrow(cooks_d)
+# d[order(d, decreasing = TRUE)]
+# cooks_d <- data.frame(d)
+# cooks_d$rowid <- 1:nrow(cooks_d)
+
+
+d<-d[order(d, decreasing = TRUE)]
+cooks_d <- data.frame(d)
+cooks_d$rowid <- as.integer(rownames(cooks_d )) 
 
 
 dataset99 <- merge(dat3,res1,by="rowid")
