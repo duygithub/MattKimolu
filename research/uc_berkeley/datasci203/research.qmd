@@ -785,9 +785,9 @@ We have attached table here for optimal stroke count for each data entry type an
 
 model <- model_v4
 
-main_data_y_min <- 25000
-main_data_y_max <- 40000
-main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
+main_data_y_min <- 24000
+main_data_y_max <- 42000
+main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 1000)
 
 color_mapping <- c(
                    "25 or 50L1" = "blue",
@@ -1643,7 +1643,7 @@ max_logLik <- max(BC$y)
 
 ```
 
-We would like to improve our Model v4, we have tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = `r BC_lambda_max`, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of `r BC_lambda_max`. So our $y^{(\lambda)}$ after  transformation is the following:
+We would like to improve our Model v4, we have tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = `r BC_lambda_max`, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of `r BC_lambda_max`. So our $y$ after  transformation is the following:
 
 $$
 y^{(\lambda)} = \dfrac{y^{\lambda} - 1}{\lambda} 
