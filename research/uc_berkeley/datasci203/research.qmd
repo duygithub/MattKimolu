@@ -1647,7 +1647,7 @@ max_logLik <- max(BC$y)
 
 ```
 
-We would like to improve our Model v4, we have tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = `r BC_lambda_max`, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of `r BC_lambda_max`. So our transformation y is the following:
+We would like to improve our Model v4, we have tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = `r BC_lambda_max`, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of `r BC_lambda_max`. So our $y^{(\lambda)}$ after  transformation is the following:
 
 $$
 y^{(\lambda)} = \dfrac{y^{\lambda} - 1}{\lambda} 
@@ -1706,7 +1706,7 @@ bc_plot
 ```
 
 
-After the Boxcox transformation, those coefficients are no longer in the same units, so we can not directly comparing their coefficients. Instead, we have compared their R^2 where it improved from	0.7579 to 0.8016. standardized residuals versus fitted-value plots were also examined for both models. The Box–Cox transformation produced a residual pattern that was slightly improved where those residuals are more evenly scattered around zero compared with the untransformed model.
+After the Boxcox transformation, those coefficients are no longer in the same units, so we can not directly comparing their coefficients. Instead, we have compared their R^2 where it improved from	0.7579 to 0.8016. Standardized residuals versus fitted-value plots were also examined for both models. The Box–Cox transformation produced a residual pattern that was slightly improved where those residuals are more evenly scattered around zero compared with the untransformed model.
 
 ```{r boxcox transformation new model,  echo=FALSE, message=FALSE, warning=FALSE }
 
