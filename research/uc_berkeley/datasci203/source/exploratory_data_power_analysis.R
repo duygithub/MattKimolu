@@ -44,6 +44,7 @@ make_data_from_exploratory_data <- function(summary_df, total_n) {
 
 
 power_analysis <- function(simulation_count, summary_df, total_n, alpha) {
+  set.seed(0)
   reject_vector <- NA
   
   for (i in 1 : simulation_count) {

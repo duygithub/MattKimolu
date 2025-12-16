@@ -30,7 +30,6 @@ library(dplyr)
 library(tidyr)
 library(broom)
 library(rlang)
-library(kableExtra)
 library(patchwork)
 library(lmtest)
 
@@ -894,7 +893,16 @@ To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia
 ## $S_C$ Heteroskedasticity and Technique { #sec-heteroskedasticity_and_technique }
 Our quadratic equation gives us two solution for a given $T_{Target}$ if $T_{Target} \neq T_{Fastest}$. A reason to consider $T_{Target} \neq T_{Fastest}$ is if $\sigma^2[T_{Target}] \ll \sigma^2[T_{Fastest}]$ and $T_{Target} \approx T_{Fastest}$.
 If $S_{C_{Less}}$ and $S_{C_{More}}$ results in the same $T_{Target}$, $S_{C_{Less}}$ would require less energy, and therefore be preferable. However $S_{C_{Less}}$ would also require much more precision in the kick and streamline, and thus likely to have a higher variance. There seems to be heteroscedasticity with variance of stroke counts, especially for younger swimmers that have not mastered precision. It would be useful to test the correlation between $S_C$ and $\sigma^2[T_{Lap}]$ with Spearman's Correlation Test. If $\rho \approx 1$ and $p < \alpha$, then it would be very beneficial for the swimmer to train for precision.
-Qualitatively, Jadzia Vo's swim coaches have confirmed that Jadzia's kicks are not consistently narrow, which explains the variance seen in @fig-exploratory_data_stroke_count_elapsed_time_plot.
+Looking at @fig-residual_vs_fitted_model_final, Jadzia seems to have a consistent-enough kicking technique to generate homoskedastic data.
+
+```{r qq_plot_main_model}
+#| echo: false
+#| fig-cap: "Residuals vs Fitted Values Plot of Linear Model"
+#| fig-pos: H
+#| label: fig-residual_vs_fitted_model_final
+
+plot(model_final, which = 1)
+```
 
 {{< pagebreak >}}
 
