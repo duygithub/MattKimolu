@@ -1119,7 +1119,7 @@ pairs(
 
 ## Residual: Constant Variance
 
-```{r Constant Variance bptest}
+```{r Constant Variance bptest, echo=FALSE, message=FALSE, warning=FALSE}
 
 model <- model_final
 
@@ -1137,7 +1137,7 @@ The Scale-Location plot confirms this, as the smoothed line remains relatively f
 The Breusch-Pagan test reported a p-value of `r bptest_result``, which failed to reject null hypothesis, so there is no evidence of heteroscedasticity.
 
 
-```{r Constant Variance Plot,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=8}
+```{r Constant Variance Plot,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=16}
 
 #| echo: false
 #| fig-cap: "Constant Variance Plot"
@@ -1157,6 +1157,27 @@ plot(model, which = 1)
 plot(model, which = 3)
 
 
+
+# ## Studentized residuals
+rstandard(fit)
+plot(fitted(fit), rstudent(fit),
+     xlab = "Fitted values", ylab = "Studentized Residuals",
+     main = "Studentized Residuals vs. Fitted",
+     ylim = c(-9, 3))
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3)
+
+
+## standardized residuals
+rstandard(fit)
+plot(fitted(fit), rstandard(fit),
+     xlab = "Fitted values", ylab = "Standardized residuals",
+     main = "standardized residuals vs. Fitted",
+     ylim = c(-9, 3))
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3)
+
+
 ```
 
 
@@ -1174,7 +1195,7 @@ The MSP distribution plot is strongly right skewed. This indicates that most MSP
 
 
 
-```{r, Model Validation, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=4.5}
+```{r, Model Validation, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=6}
 #| echo: false
 #| fig-cap: "Distribution of Beta"
 ##| fig-width: 10
