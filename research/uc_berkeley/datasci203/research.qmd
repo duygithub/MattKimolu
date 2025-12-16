@@ -1130,7 +1130,7 @@ bptest_result <- round(bptest(model)$"p.value",4)
 
 We have used 3 different approaches to examine constant variance, and they support the constant variance assumption.
 
-The Residuals vs Fitted plot shows residuals scattered in a band of approximately uniform thickness across fitted values, with no funnel-shaped pattern.
+Those Residual plots show residuals scattered in a band of approximately uniform thickness across fitted values, with no funnel-shaped pattern.
 
 The Scale-Location plot confirms this, as the smoothed line remains relatively flat.
 
@@ -1178,7 +1178,62 @@ abline(h = c(-2, 2), lty = 3)
 
 ```
 
+## Residual: Normality
 
+
+```{r Shapiro-Wilk Normality Test,  echo=FALSE, message=FALSE, warning=FALSE }
+
+
+
+model <- model_final
+
+# Shapiro-Wilk Normality Test
+shapiro_test_pvalue <- shapiro.test(model$residuals)$"p.value" 
+shapiro_test_pvalue2 <- ifelse(shapiro_test_pvalue < 0.0001, "<0.0001",
+                              round(shapiro_test_pvalue,4 ))
+shapiro_test_W <- round(shapiro.test(model$residuals)$"statistic",4)
+
+```
+
+We examine normality of residuals using histogram, Q-Q plot, and the Shapiro-Wilk test. Combined of those 3 results we concluded that residuals violate the normality assumption. This violation seems driven by outliers, we will later have analysis for outliers to further study about them. 
+
+The histogram reveals a roughly symmetric distribution centered near zero, but with an extreme negative outlier creating left skewness. The Q-Q plot shows that while the central portion of residuals follows the theoretical line, but there is a severe departure in the lower left tail driven by observations 41 and 47 and other outliers, which shows heavier tails than normal distribution. The result of Shapiro-Wilk test (W = `r shapiro_test_W`, `r shapiro_test_pvalue2`) indicates that the null hypothesis of normality has been rejected. 
+
+
+```{r Residual qq plot,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=7}
+
+#| echo: false
+#| fig-cap: "Residual qq plot"
+##| fig-width: 12
+##| fig-height: 10
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_residual_qqplot
+#| message: false
+#| warning: false
+
+
+
+model <- model_final
+
+
+par(mfrow =c(1,2))
+
+######################################################
+# Histogram of residuals
+hist(model$residuals,
+     main = "Histogram of Residuals",
+     xlab = "Residuals",
+     col = "lightblue",
+     border = "white",
+     breaks = 80)
+
+
+# Q-Q Plot
+plot(model, which = 2)
+
+
+```
 
 
 {{< pagebreak >}}
