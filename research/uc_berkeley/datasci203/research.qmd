@@ -30,13 +30,15 @@ library(dplyr)
 library(tidyr)
 library(broom)
 library(rlang)
-library(kableExtra)
 
+if (!require("kableExtra")) install.packages("kableExtra")
 # For Causal SEM
 if (!require("lavaan")) install.packages("lavaan")
 if (!require("semPlot")) install.packages("semPlot")
 if (!require("tidySEM")) install.packages("tidySEM")
 
+
+library(kableExtra)
 library(lavaan)
 library(semPlot)
 library(tidySEM)
@@ -275,29 +277,24 @@ Our regression model is defined as
 $$
 \begin{split}
 T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 \\
-& + \gamma_{50L2} I_{50L2} + \delta_{50L2}S_CI_{50L2} + \zeta_{50L2}{S_C}^2I_{50L2} \\
-& + \gamma_{100IM} I_{100IM}  + \delta_{100IM}S_CI_{100IM}  + \zeta_{100IM}{S_C}^2I_{100IM} \\
-& + \eta U + \theta_0 O + \theta_1 O^2 + \epsilon
+& + \gamma_{50L2} I_{50L2} \\
+& + \gamma_{100IM} I_{100IM} \\
+& + \eta_0 O + \eta_1 O S_C + \eta_2 O {S_C}^2 \\
+& + \epsilon
 \end{split}
 $$ {#eq-regression_model}
 
 ::: {tbl-colwidths="[20,80]"}
 | Component(s) | Definition |
 | :--- | :--- |
-| $T_{Lap}$ | The timing of how long it took for the swimmer to complete the breaststroke swim. For the data entry of types 25 and 50L1, this is the time it takes the swimmer to swim the first lap. For 50L2, this is the time it takes the swimmer to swim the second lap. For 100IM, this is the time it takes for the swimmer to swim the breaststroke leg of the IM.
-| $\beta_0$ | This is the time needed to travel the entire distance of the first lap, assuming no stroke is taken. This is theoretically achievable for any stroke in a 25 SCY, 25 SCM, and 50 LCM scenario by a swimmer diving in and gliding to the other side without taking a single stroke. The values are in milliseconds. |
+| $T_{Lap}$ | The timing of how long it took for the swimmer to complete the breaststroke swim. For the data entry of types 25 and 50L1, this is the time it takes the swimmer to swim the first lap. For 50L2, this is the time it takes the swimmer to swim the second lap. For 100IM, this is the time it takes for the swimmer to swim the breaststroke leg of the IM. The values are in milliseconds.
+| $\beta_0$ | This is the time needed to travel the entire distance of the first lap, assuming no stroke is taken. This is theoretically achievable for any stroke in a 25 SCY, 25 SCM, and 50 LCM scenario by a swimmer diving in and gliding to the other side without taking a single stroke.|
 | $\beta_1$, $\beta_2$ | The increase or decrease in time for each stroke the swimmer takes. |
 | $S_C$ | The stroke count that the swimmer takes for the given leg. |
 | $\gamma_{50L2}$, $\gamma_{100IM}$ | $\gamma$'s operationalizes the combined lap penalty (e.g. for the previous lap in 50L2 and the previous two laps in 100IM) where the swimmer has to turn and pullout (which will always be slower than a good dive and start pullout), thereby increasing the base time $\beta_0$. |
 | $I_{50L2Y}$ | An indicator variable; 1 if this is the 2nd leg of a 50 Breaststroke SCY event and 0 otherwise. |
 | $I_{100IM}$ | An indicator variable; 1 if this is the breaststroke leg of a 100 Individual Medley SCY event and 0 otherwise. |
-| $\delta_{50L2}$, $\delta_{100IM}$, $\zeta_{50L2}$, $\zeta_{100IM}$ | $\delta$'s operationalizes the fatigue from previous laps, thereby changing the slope of the model based on the change in the cost or benefit of each additional stroke. |
-| $S_CI_{50L2}$ | An interaction variable that applies only if this is the 2nd leg of a 50 BR SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
-| $S_CI_{100IM}$ | An interaction variable that applies only if this is the breaststroke leg of a 100 IM SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
-| $S_CI_{50L2}$, ${S_C}^2I_{50L2}$ | An interaction variable that applies only if this is the 2nd leg of a 50 BR SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
-| $S_CI_{100IM}$, ${S_C}^2I_{100IM}$ | An interaction variable that applies only if this is the breaststroke leg of a 100 IM SCY event. Used in conjunction with $\delta$ to determine the cost or benefit of an additional stroke. |
-| $\eta U$ | $U$ operationalizes if the swimmer is feeling unwell and $\eta$ is the corresponding regression coefficient. |
-| $\theta_0 O$, $\theta_1 O^2$ | $O$ is the event_ordinal from the data file and $\theta$'s are the corresponding regression coefficient. Operationalizes the tradeoff between fatigue over numerous trials vs flow state. |
+| $\eta_0 O$, $\eta_1 O S_C$, $\eta_2 O S_C^2$ | $O$ is the event_ordinal from the data file and $\eta$'s are the corresponding regression coefficient. Operationalizes the tradeoff between fatigue over numerous trials vs flow state. |
 | $\epsilon$ | The residual of the actual observed time vs that predicted by the model. Because we are building a explanatory model and not a predictive model, we are not interested in this value. |
 : Definition of Model Components {#tbl-definition_of_model_components}
 :::
@@ -413,11 +410,8 @@ guides(shape = "none")
 We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-regression_model. We use the summary statistics, excluding those without standard deviations, in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$.
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
-# source("source/exploratory_data_power_analysis.R")
-
-## Updated by Eric, 2025-12-09, replaced with another power analysis function:
- source("source/descriptive_summary.R")
- source("source/exploratory_data_power_analysis.R")
+source("source/descriptive_summary.R")
+source("source/exploratory_data_power_analysis.R")
 
 
 exploratory_summary <- descriptive_summary(prepped_exploratory_data)
@@ -519,45 +513,16 @@ theme(legend.position = "bottom",
 
 # Analysis
 
-```{r group_modeling}
-# data_for_modeling_group_2550L1 <- prep_data_for_modeling_group_2550L1(main_data)
-data_for_modeling_group_2550L1 <- main_data_for_modeling %>%
-  filter(data_entry_type == '25 or 50L1')
-model_subgroup_2550L1 <-lm(time_milliseconds ~ 
-                stroke_count + 
-                I(stroke_count^2),
-                data_for_modeling_group_2550L1)
-
-data_for_modeling_group_50L2 <- main_data_for_modeling %>%
-  filter(data_entry_type == '50L2')
-model_subgroup_50L2 <-lm(time_milliseconds ~ 
-                stroke_count + 
-                I(stroke_count^2) +
-                I(stroke_count^3),
-                data_for_modeling_group_50L2)
-
-data_for_modeling_group_100IM <- main_data_for_modeling %>%
-  filter(data_entry_type == '100IM')
-model_subgroup_100IM <-lm(time_milliseconds ~ 
-                stroke_count + 
-                I(stroke_count^2),
-                data_for_modeling_group_100IM)
-
-```
-
-## Hypothesis Testing
-
 ## Deriving Stroke Count
 
-Once we've collected the data and used OLS to calculate the regression coefficients, we end up with the equation
+This is our model for the 
 
 $$
 \begin{split}
-T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 + \theta_0 O + \theta_1 O^2 \\
-& + \gamma_{50L2} I_{50L2} + \delta_{50L2}S_CI_{50L2} + \zeta_{50L2}{S_C}^2I_{50L2} \\
-& + \gamma_{100IM} I_{100IM}  + \delta_{100IM}S_CI_{100IM}  + \zeta_{100IM}{S_C}^2I_{100IM} \\
-& + \eta_{unwell} (U_{unwell} ) + \eta_{unwell} (U_{unwell} S_C ) + \eta_{unwell} (U_{unwell} {S_C}^2) \\\
-& + \eta_{well} (U_{well} ) + \eta_{well} (U_{well} S_C) + \eta_{well} (U_{well} {S_C}^2)\\
+\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
+& + \hat{\gamma}_{50L2} I_{50L2} \\
+& + \hat{\gamma}_{100IM} I_{100IM} \\
+& + \hat{\eta}_0 O + \hat{\eta}_1 O S_C + \hat{\eta}_2 O {S_C}^2 \\
 & + \epsilon
 \end{split}
 $$ {#eq-fitted_regression_model}
@@ -566,7 +531,7 @@ Next, we group the times first by the Data Entry Type as defined in @tbl-definit
 
 * 25 and 50L1 are grouped together
 * 50L2
-* 100IM
+* 100IM (we don't attempt to find the optimal $S_C$ for this value because we have a data set that is far too small for analysis.)
 
 After the grouping by the Data Entry Type, we group by the stroke count so we can calculate the following statistics:
 
@@ -594,14 +559,11 @@ $$
 S_C = \frac{-(\hat{\beta}_1 + \delta_{50L2}) \pm \sqrt{(\hat{\beta}_1 + \delta_{50L2})^2 - 4 \hat{\beta}_2(\hat{\beta}_0 + \gamma_{50L2} - T_{Target})}} {2\hat{\beta}_2}
 $$ {#eq-stroke_count_for_target_time_50L2} Stroke Count for Second Leg of 50 BR SCY Associated with Target Time
 
-$$
-S_C = \frac{-(\hat{\beta}_1 + \delta_{100IM}) \pm \sqrt{(\hat{\beta}_1 + \delta_{100IM})^2 - 4 \hat{\beta}_2(\hat{\beta}_0 + \gamma_{100IM} - T_{Target})}} {2\hat{\beta}_2}
-$$ {#eq-stroke_count_for_target_time_100IM} Stroke Count for Breaststroke Leg of 100 IM SCY Associated with Target Time
+<!-- $$ -->
+<!-- S_C = \frac{-(\hat{\beta}_1 + \delta_{100IM}) \pm \sqrt{(\hat{\beta}_1 + \delta_{100IM})^2 - 4 \hat{\beta}_2(\hat{\beta}_0 + \gamma_{100IM} - T_{Target})}} {2\hat{\beta}_2} -->
+<!-- $$ {#eq-stroke_count_for_target_time_100IM} Stroke Count for Breaststroke Leg of 100 IM SCY Associated with Target Time -->
 
-The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is not the vertex because there are two $S_C$'s in the solution (from too few strokes and too many strokes):
-
-* Given 2 $S_C$'s, with all else being equal, we would likely choose the one with lower variance for a 25 BR SCY.
-* Given 2 $S_C$'s, we might consider choosing the lower $S_C$ if the swimmer is a weak breaststroker in an IM even if the variance is a bit higher or $\bar{x}$ is a bit slower.
+The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is not the vertex because there are two $S_C$'s in the solution (from too few strokes and too many strokes). Given 2 $S_C$'s, with all else being equal, we would likely choose the one with lower variance for a 25 BR SCY.
 
 ### Case Study: Jadzia Bao Tran Vo
 
@@ -620,8 +582,8 @@ kable(summary_data_entry_type_25_50L1 , digits = 1,
 kable(summary_data_entry_type_50L2 , digits = 1, 
       caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 50L2 Entries")
 
-kable(summary_data_entry_type_100IM , digits = 1, 
-      caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 100MI Entries")
+# kable(summary_data_entry_type_100IM , digits = 1, 
+#       caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 100MI Entries")
 
 
 ```
@@ -685,7 +647,7 @@ model_v0 <- lm(time_milliseconds ~
                 event_ordinal  , 
               data = main_data_for_modeling  )
 
-model_v4 <- lm(time_milliseconds ~ 
+model_final <- lm(time_milliseconds ~ 
                 stroke_count + 
                 I(stroke_count^2) + 
                 data_entry_type + 
@@ -695,7 +657,7 @@ model_v4 <- lm(time_milliseconds ~
               data = main_data_for_modeling  )
 
 
-test1 <- anova(model_v0, model_v4)
+test1 <- anova(model_v0, model_final)
 
 hypothesis_p_value <- unique(test1$`Pr(>F)`)
 hypothesis_p_value <- round(na.omit(hypothesis_p_value)[1],4)
@@ -719,7 +681,7 @@ The result of the F-test from ANOVA gave us a p-value of `r hypothesis_p_value2`
 
 ## Simulate testing data:
 
-model <- model_v4
+# model <- model_final
 
 stroke_seq  <- with(main_data_for_modeling, seq.int(min(stroke_count, na.rm = TRUE),
                                                    max(stroke_count, na.rm = TRUE),
@@ -1036,14 +998,14 @@ Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we had a much l
 $$
 \begin{split}
 \hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
-  & + \hat{\gamma}_{50L2} I_{50L2} + \hat{\delta}_{50L2}S_CI_{50L2} + \hat{\zeta}_{50L2}{S_C}^2I_{50L2} \\
-  & + \hat{\gamma}_{100IM} I_{100IM}  + \hat{\delta}_{100IM}S_CI_{100IM} + \hat{\zeta}_{100IM}{S_C}^2I_{100IM} \\
+  & + \hat{\gamma}_{50L2} I_{50L2} \\
+  & + \hat{\gamma}_{100IM} I_{100IM} \\
   & + \hat{\eta}_0 O + \hat{\eta}_0 O S_C + \hat{\eta}_0 O {S_C}^2
- \end{split}
+\end{split}
 $$
 
 
-We added variable event ordinal and also added interaction of storke count with event ordinal to get to see if we can get to statistical significance.
+We added variable event ordinal and also added interaction of stroke count with event ordinal to get to see if we can get to statistical significance.
 
 
 ```{r summary_regression_model_v4, echo=FALSE, results='asis'}
@@ -1053,8 +1015,8 @@ model_v4 <- lm(time_milliseconds ~
                 I(stroke_count^2) + 
                 data_entry_type + 
                 event_ordinal + 
-                event_ordinal  * stroke_count +
-                event_ordinal  *I(stroke_count^2)  , 
+                event_ordinal * stroke_count +
+                event_ordinal * I(stroke_count^2), 
               data = main_data_for_modeling  )
 
 model_v4_summary_data <- calculate_model_coefficients_summary(model_v4)
