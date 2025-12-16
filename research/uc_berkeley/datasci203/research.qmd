@@ -1011,7 +1011,7 @@ This model produced $R^2$ (`r model_v3_summary_data$r_squared`) that is greater 
 
 {{< pagebreak >}}
 
-## MCompare among Models
+## Compare among Models
 This leads us to our final comparison among our models. Our model, @eq-regression_model_final, has the highest adjusted $R^2$, the most number of significant terms, and the lowest robust standard error.
 
 ```{r compare models, echo=FALSE, message=FALSE, warning=FALSE}
