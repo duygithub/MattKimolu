@@ -785,7 +785,7 @@ knitr::kable(pred_data3, digits = 3, caption = "Optimal Stroke count per data ty
 <!--   limits = c(main_data_y_min, main_data_y_max) # Forces the graph to start/end exactly there -->
 <!-- ) + -->
 <!-- labs( -->
-<!--   title = "Model_v4: Optimal Stroke Count (Average Ordinal Event = 6)", -->
+<!--   title = "model_final: Optimal Stroke Count (Average Ordinal Event = 6)", -->
 <!--   x = expression(bold(S[C])), -->
 <!--   y = expression(bold(T[lap])), -->
 <!--   # color = "unwell_feedback", # Legend Title -->
@@ -1121,7 +1121,7 @@ pairs(
 
 ```{r Constant Variance bptest}
 
-model <- model_v4
+model <- model_final
 
 bptest_result <- round(bptest(model)$"p.value",4)
 
@@ -1150,7 +1150,7 @@ The Breusch-Pagan test reported a p-value of `r bptest_result``, which failed to
 #| warning: false
 #| 
 
-model <- model_v4
+model <- model_final
 
 par(mfrow =c(2,2))
 plot(model, which = 1)
@@ -1657,20 +1657,7 @@ if (!require("MASS")) install.packages("MASS")
 library(MASS)
 
 
-
-## Model v4
-model_v4 <- lm(time_milliseconds ~ 
-                stroke_count + 
-                I(stroke_count^2) + 
-                data_entry_type + 
-                event_ordinal + 
-                event_ordinal  * stroke_count +
-                event_ordinal  *I(stroke_count^2)  , 
-              data = main_data_for_modeling  )
-
-
-
-model <- model_v4
+model <- model_final
 
 ## get lambda for boxcox transformation, and extract as df
 ## First try lambda from 0 to 10
@@ -1798,8 +1785,8 @@ beta_rename <- read.csv("source/beta_rename.csv")
 
 
 model_summary_list<- rlang::set_names(
-  list( model_v4, model_v7),
-  c("model_v4", "model_v7")
+  list( model_final, model_v7),
+  c("model_final", "model_v7")
 )
 
 model_compare_df_1 <- modelSummary2df(model_summary_list)
@@ -1845,9 +1832,9 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 
 par(mfrow =c(1,2))
 
-plot(fitted(model_v4), rstandard(model_v4),
+plot(fitted(model_final), rstandard(model_final),
      xlab = "Fitted values", ylab = "standardized residuals",
-     main = "model_v4",
+     main = "model_final",
      ylim = c(-6, 3))
 abline(h = 0, lty = 2)
 abline(h = c(-2, 2), lty = 3)
