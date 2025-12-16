@@ -1060,8 +1060,61 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 # Appendix B - Model Adequacy Checking
 
 
-## Residual Analysis (Pending)
+## Linear Relationship Between Variables
 
+To examine relationships among variables, we generated a scatter plot matrix with pairwise correlations. 
+
+About relationship between response variable vs predictor variables, looking at the first row and column, we observe how time_milliseconds relates to each predictor. Correlations with event_ordinal $(r = 0.03)$ and stroke_count $(r = 0.07)$ are very weak, while plots shows no obvious nonlinear patterns either. The variable data_entry_type end up with a higher correlation coefficient $(r = 0.82)$, but notice that this variable is a categorical variable, so the Pearson correlation is not strictly appropriate in this case. 
+
+About relationships within predictor variables, correlation coefficients among predictors are all low $(|r| ≤ 0.17)$, so the risk of multicollinearity is minimal. 
+
+```{r relationship bettween variables plot,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=6}
+
+#| echo: false
+#| fig-cap: "Boxcox Transformed Model Residual Compare"
+##| fig-width: 12
+##| fig-height: 10
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_boxcox_residual
+#| message: false
+#| warning: false
+#| 
+
+main_data_for_modeling2 <- main_data_for_modeling%>%
+  mutate(record_id = row_number(), .before = 1) %>%
+  mutate(stroke_count_square = stroke_count ^2)
+
+
+
+main_data_for_modeling3 <- main_data_for_modeling2 %>%
+  dplyr::select(time_milliseconds, 
+                event_ordinal, 
+                stroke_count,
+                data_entry_type)
+
+panel.cor <- function(x, y, digits = 2, method = "pearson", cex.cor = 1.2, ...) {
+  
+  if (!is.numeric(x)) x <- as.numeric(x)
+  if (!is.numeric(y)) y <- as.numeric(y)
+
+  r <- suppressWarnings(cor(x, y, use = "pairwise.complete.obs", method = method))
+
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+
+  txt <- formatC(r, format = "f", digits = digits)
+  text(0.5, 0.5, txt, cex = cex.cor)
+}
+
+pairs(
+  main_data_for_modeling3,
+  upper.panel = points,
+  lower.panel = panel.cor
+)
+
+
+```
 
 
 # Appendix C - Model Validation
