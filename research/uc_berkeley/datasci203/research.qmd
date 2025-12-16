@@ -32,6 +32,7 @@ library(broom)
 library(rlang)
 library(kableExtra)
 library(patchwork)
+library(lmtest)
 
 
 if (!require("kableExtra")) install.packages("kableExtra")
@@ -784,7 +785,7 @@ knitr::kable(pred_data3, digits = 3, caption = "Optimal Stroke count per data ty
 <!--   limits = c(main_data_y_min, main_data_y_max) # Forces the graph to start/end exactly there -->
 <!-- ) + -->
 <!-- labs( -->
-<!--   title = "Model_v4: Optimal Stroke Count (Average Ordinal Event = 6)", -->
+<!--   title = "model_final: Optimal Stroke Count (Average Ordinal Event = 6)", -->
 <!--   x = expression(bold(S[C])), -->
 <!--   y = expression(bold(T[lap])), -->
 <!--   # color = "unwell_feedback", # Legend Title -->
@@ -1011,7 +1012,7 @@ This model produced $R^2$ (`r model_v3_summary_data$r_squared`) that is greater 
 
 {{< pagebreak >}}
 
-## MCompare among Models
+## Compare among Models
 This leads us to our final comparison among our models. Our model, @eq-regression_model_final, has the highest adjusted $R^2$, the most number of significant terms, and the lowest robust standard error.
 
 ```{r compare models, echo=FALSE, message=FALSE, warning=FALSE}
@@ -1060,9 +1061,182 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 # Appendix B - Model Adequacy Checking
 
 
-## Residual Analysis (Pending)
+## Linear Relationship Between Variables
+
+To examine relationships among variables, we generated a scatter plot matrix with pairwise correlations. 
+
+About relationship between response variable vs predictor variables, looking at the first row and column, we observe how time_milliseconds relates to each predictor. Correlations with event_ordinal $(r = 0.03)$ and stroke_count $(r = 0.07)$ are very weak, while plots show no obvious nonlinear patterns either. The variable data_entry_type end up with a higher correlation coefficient $(r = 0.82)$, but notice that this variable is a categorical variable, so the Pearson correlation is not strictly appropriate in this case. 
+
+About relationships within predictor variables, correlation coefficients among predictors are all low $(|r| ≤ 0.17)$, so the risk of multicollinearity is minimal. 
+
+```{r relationship bettween variables plot,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=8}
+
+#| echo: false
+#| fig-cap: "relationship bettween variables plot"
+##| fig-width: 12
+##| fig-height: 10
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_corr
+#| message: false
+#| warning: false
+#| 
+
+main_data_for_modeling2 <- main_data_for_modeling%>%
+  mutate(record_id = row_number(), .before = 1) %>%
+  mutate(stroke_count_square = stroke_count ^2)
 
 
+
+main_data_for_modeling3 <- main_data_for_modeling2 %>%
+  dplyr::select(time_milliseconds, 
+                event_ordinal, 
+                stroke_count,
+                data_entry_type)
+
+panel.cor <- function(x, y, digits = 2, method = "pearson", cex.cor = 1.2, ...) {
+  
+  if (!is.numeric(x)) x <- as.numeric(x)
+  if (!is.numeric(y)) y <- as.numeric(y)
+
+  r <- suppressWarnings(cor(x, y, use = "pairwise.complete.obs", method = method))
+
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+
+  txt <- formatC(r, format = "f", digits = digits)
+  text(0.5, 0.5, txt, cex = cex.cor)
+}
+
+pairs(
+  main_data_for_modeling3,
+  upper.panel = points,
+  lower.panel = panel.cor
+)
+
+
+```
+
+## Residual: Constant Variance
+
+```{r Constant Variance bptest, echo=FALSE, message=FALSE, warning=FALSE}
+
+model <- model_final
+
+bptest_result <- round(bptest(model)$"p.value",4)
+
+```
+
+
+We have used 3 different approaches to examine constant variance, and they support the constant variance assumption.
+
+Those Residual plots show residuals scattered in a band of approximately uniform thickness across fitted values, with no funnel-shaped pattern.
+
+The Scale-Location plot confirms this, as the smoothed line remains relatively flat.
+
+The Breusch-Pagan test reported a p-value of `r bptest_result``, which failed to reject null hypothesis, so there is no evidence of heteroscedasticity.
+
+
+```{r Constant Variance Plot,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=9}
+
+#| echo: false
+#| fig-cap: "Constant Variance Plot"
+##| fig-width: 12
+##| fig-height: 10
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_constant_variance
+#| message: false
+#| warning: false
+#| 
+
+model <- model_final
+
+par(mfrow =c(2,2))
+plot(model, which = 1)
+plot(model, which = 3)
+
+
+
+# ## Studentized residuals
+plot(fitted(model), rstudent(model),
+     xlab = "Fitted values", ylab = "Studentized Residuals",
+     main = "Studentized Residuals vs. Fitted",
+     ylim = c(-9, 3))
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3)
+
+
+## standardized residuals
+plot(fitted(model), rstandard(model),
+     xlab = "Fitted values", ylab = "Standardized residuals",
+     main = "standardized residuals vs. Fitted",
+     ylim = c(-9, 3))
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3)
+
+
+```
+
+## Residual: Normality
+
+
+```{r Shapiro-Wilk Normality Test,  echo=FALSE, message=FALSE, warning=FALSE }
+
+
+
+model <- model_final
+
+# Shapiro-Wilk Normality Test
+shapiro_test_pvalue <- shapiro.test(model$residuals)$"p.value" 
+shapiro_test_pvalue2 <- ifelse(shapiro_test_pvalue < 0.0001, "<0.0001",
+                              round(shapiro_test_pvalue,4 ))
+shapiro_test_W <- round(shapiro.test(model$residuals)$"statistic",4)
+
+```
+
+We examine normality of residuals using histogram, Q-Q plot, and the Shapiro-Wilk test. Combined of those 3 results we concluded that residuals violate the normality assumption. This violation seems driven by outliers, we will later have analysis for outliers to further study about them. 
+
+The histogram reveals a roughly symmetric distribution centered near zero, but with an extreme negative outlier creating left skewness. The Q-Q plot shows that while the central portion of residuals follows the theoretical line, but there is a severe departure in the lower left tail driven by observations 41 and 47 and other outliers, which shows heavier tails than normal distribution. The result of Shapiro-Wilk test (W = `r shapiro_test_W`, `r shapiro_test_pvalue2`) indicates that the null hypothesis of normality has been rejected. 
+
+
+```{r Residual qq plot,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=7}
+
+#| echo: false
+#| fig-cap: "Residual qq plot"
+##| fig-width: 12
+##| fig-height: 10
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_residual_qqplot
+#| message: false
+#| warning: false
+
+
+
+model <- model_final
+
+
+par(mfrow =c(1,2))
+
+######################################################
+# Histogram of residuals
+hist(model$residuals,
+     main = "Histogram of Residuals",
+     xlab = "Residuals",
+     col = "lightblue",
+     border = "white",
+     breaks = 80)
+
+
+# Q-Q Plot
+plot(model, which = 2)
+
+
+```
+
+
+{{< pagebreak >}}
 
 # Appendix C - Model Validation
 
@@ -1074,7 +1248,7 @@ The MSP distribution plot is strongly right skewed. This indicates that most MSP
 
 
 
-```{r, Model Validation, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=4.5}
+```{r, Model Validation, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=6}
 #| echo: false
 #| fig-cap: "Distribution of Beta"
 ##| fig-width: 10
@@ -1185,7 +1359,7 @@ p_combined
 
 ## Model without Outliers, Leverage Points and Influential points
 
-To check if there are any observations that affected the model v4, we examined outliers, leverage points, and influence points. 
+To check if there are any observations that affected the @eq-regression_model_final, we examined outliers, leverage points, and influence points. 
 
 We have applied the following criterias:
 
@@ -1371,7 +1545,7 @@ knitr::kable(dataset105 , digits = 3,
 ```
 
 
-```{r, Outlier,Leverage,Influential plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=5.7}
+```{r, Outlier,Leverage,Influential plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
 
 #| echo: false
 #| fig-cap: "Model without Outliers, Leverage Points and Influential points"
@@ -1557,20 +1731,7 @@ if (!require("MASS")) install.packages("MASS")
 library(MASS)
 
 
-
-## Model v4
-model_v4 <- lm(time_milliseconds ~ 
-                stroke_count + 
-                I(stroke_count^2) + 
-                data_entry_type + 
-                event_ordinal + 
-                event_ordinal  * stroke_count +
-                event_ordinal  *I(stroke_count^2)  , 
-              data = main_data_for_modeling  )
-
-
-
-model <- model_v4
+model <- model_final
 
 ## get lambda for boxcox transformation, and extract as df
 ## First try lambda from 0 to 10
@@ -1593,7 +1754,7 @@ max_logLik <- max(BC$y)
 
 ```
 
-We would like to improve our Model v4, we have tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = `r BC_lambda_max`, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of `r BC_lambda_max`. So our $y$ after  transformation is the following:
+We would like to improve our @eq-regression_model_final, we have tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = `r BC_lambda_max`, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of `r BC_lambda_max`. So our $y$ after  transformation is the following:
 
 $$
 y^{(\lambda)} = \dfrac{y^{\lambda} - 1}{\lambda} 
@@ -1698,8 +1859,8 @@ beta_rename <- read.csv("source/beta_rename.csv")
 
 
 model_summary_list<- rlang::set_names(
-  list( model_v4, model_v7),
-  c("model_v4", "model_v7")
+  list( model_final, model_v7),
+  c("model_final", "model_v7")
 )
 
 model_compare_df_1 <- modelSummary2df(model_summary_list)
@@ -1745,9 +1906,9 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 
 par(mfrow =c(1,2))
 
-plot(fitted(model_v4), rstandard(model_v4),
+plot(fitted(model_final), rstandard(model_final),
      xlab = "Fitted values", ylab = "standardized residuals",
-     main = "model_v4",
+     main = "model_final",
      ylim = c(-6, 3))
 abline(h = 0, lty = 2)
 abline(h = c(-2, 2), lty = 3)
