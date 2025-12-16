@@ -1137,7 +1137,7 @@ The Scale-Location plot confirms this, as the smoothed line remains relatively f
 The Breusch-Pagan test reported a p-value of `r bptest_result``, which failed to reject null hypothesis, so there is no evidence of heteroscedasticity.
 
 
-```{r Constant Variance Plot,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=16}
+```{r Constant Variance Plot,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=9}
 
 #| echo: false
 #| fig-cap: "Constant Variance Plot"
@@ -1159,7 +1159,6 @@ plot(model, which = 3)
 
 
 # ## Studentized residuals
-rstandard(model)
 plot(fitted(model), rstudent(model),
      xlab = "Fitted values", ylab = "Studentized Residuals",
      main = "Studentized Residuals vs. Fitted",
@@ -1169,7 +1168,6 @@ abline(h = c(-2, 2), lty = 3)
 
 
 ## standardized residuals
-rstandard(model)
 plot(fitted(model), rstandard(model),
      xlab = "Fitted values", ylab = "Standardized residuals",
      main = "standardized residuals vs. Fitted",
@@ -1492,7 +1490,7 @@ knitr::kable(dataset105 , digits = 3,
 ```
 
 
-```{r, Outlier,Leverage,Influential plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=5.7}
+```{r, Outlier,Leverage,Influential plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=6}
 
 #| echo: false
 #| fig-cap: "Model without Outliers, Leverage Points and Influential points"
