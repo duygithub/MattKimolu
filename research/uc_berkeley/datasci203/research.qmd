@@ -30,6 +30,9 @@ library(dplyr)
 library(tidyr)
 library(broom)
 library(rlang)
+library(kableExtra)
+library(patchwork)
+
 
 if (!require("kableExtra")) install.packages("kableExtra")
 # For Causal SEM
@@ -732,12 +735,12 @@ knitr::kable(pred_data3, digits = 3, caption = "Optimal Stroke count per data ty
 We have attached table here for optimal stroke count for each data entry type and each ordinal event. Notice that when the ordinal event is lower than 6, the result indicates that the fewer the stroke count is, the lower the swim time is. This is because of we had interaction terms in the model, such as stroke count by ordinal event, and also stroke count square by ordinal event. 
 
 
-```{r optimal stroke count plot, echo=FALSE, message=FALSE, warning=FALSE}
+```{r optimal stroke count plot, echo=FALSE, message=FALSE, warning=FALSE  , fig.width=10, fig.height=7}
 
 #| echo: false
 #| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
-#| fig-width: 7
-#| fig-height: 10
+##| fig-width: 7
+##| fig-height: 10
 #| fig-pos: H
 #| fig-cap-location: top
 #| label: plot_optimal_stroke_count
@@ -746,9 +749,9 @@ We have attached table here for optimal stroke count for each data entry type an
 
 model <- model_v4
 
-main_data_y_min <- 25000
-main_data_y_max <- 40000
-main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
+main_data_y_min <- 24000
+main_data_y_max <- 42000
+main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 1000)
 
 color_mapping <- c(
                    "25 or 50L1" = "blue",
@@ -772,7 +775,7 @@ pred_results <- predict(model , newdata = pred_data, interval = "confidence", le
 pred_data <- cbind(pred_data, pred_results)
 
 
-ggplot(main_data_for_modeling,
+p_plot_with_model <- ggplot(main_data_for_modeling,
        aes(x = as.numeric(stroke_count),
            y = as.numeric(time_milliseconds),
            color = factor(data_entry_type))) +
@@ -823,11 +826,7 @@ labs(
 theme(legend.position = "bottom",
       legend.box = "vertical")
 
-### Explanation of the Shapes
-# In R's `ggplot2`, shapes are mapped to integer codes. I used the following for your request:
-# * **Shape 16:** Filled Circle (Dot) $\rightarrow$ Used for "25" and "50L1".
-# * **Shape 4:** Cross (X) $\rightarrow$ Used for "50L2".
-# * **Shape 17:** Filled Triangle $\rightarrow$ Used for "100IM".
+p_plot_with_model
 
 
 
@@ -1070,265 +1069,495 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 ```
 
 
+{{< pagebreak >}}
 
-
-# Appendix B - Model Validation
+# Appendix B - Model Adequacy Checking
 
 
 ## Residual Analysis (Pending)
 
-## Test Beta distribution (Pending)
 
 
-# Appendix C - Post-hoc Analysis
+# Appendix C - Model Validation
 
-## Model without Outliers, Leverage Points and Influential points
+We want to make sure that Model_v4 not only fits the current dataset well, but also remains valid for future or unseen data. To do this, we tested the stability of the coefficients by repeatedly splitting the data and re-estimating the model. For the data splits, we randomized the samples while stratifying by “data_entry_type” to ensure that each set had balanced characteristics. After randomization, each sample was assigned to either the estimation set (for fitting the model) or the validation set (for evaluating prediction error). We refit the model using the estimation set and then calculated the mean squared prediction error using the validation set. This process was repeated 1,000 times.
 
-```{r, Outlier,Leverage,Influential, echo=FALSE, message=FALSE, warning=FALSE}
+From the beta distribution plots, we can conclude the following: (a) Regarding stability, most beta histograms are symmetric and narrow. This suggests that the coefficients are stable, since their estimates are mostly normally distributed. However, Beta 7 and Beta 8 appear slightly skewed, which may be because they are interaction terms. (b) Regarding sign consistency, the medians of Beta 1 and Beta 2 are close to 0, which suggests that we cannot reliably interpret the direction of their effects. The remaining beta coefficients have consistent signs.
 
+The MSP distribution plot is strongly right skewed. This indicates that most MSP values are small, meaning the model’s predictions are generally reasonable. However, there are a few cases with large MSP values, which may be due to outliers in the validation set.
+
+
+
+```{r, Model Validation, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=4.5}
 #| echo: false
-#| fig-cap: "Model without Outliers, Leverage Points and Influential points"
-#| fig-height: 8
+#| fig-cap: "Distribution of Beta"
+##| fig-width: 10
+##| fig-height: 5.5
 #| fig-pos: H
 #| fig-cap-location: top
-#| label: plot_model_v1_no_outliers
+#| label: plot_beta_distribution
 #| message: false
 #| warning: false
 
+## Split into estimate set and validation set, then test beta and MSP distribution
+
+main_data_for_modeling2 <- main_data_for_modeling%>%
+  mutate(record_id = row_number(), .before = 1) %>%
+  mutate(stroke_count_square = stroke_count ^2)
+
+
+df <- main_data_for_modeling2
+model <- model_v4 
+
 # 
-# 
-# main_data_for_modeling2 <- main_data_for_modeling%>%
-#   mutate(record_id = row_number(), .before = 1)
-# 
+beta0 <- numeric() 
+beta1 <- numeric()
+beta2 <- numeric()
+beta6 <- numeric()
+beta7 <- numeric()
+beta8 <- numeric()
+MSP <- numeric()
+
+
+for (i in 1:1000){
+  
+  #set.seed(i)
+  #Test
+  # i<-1
+  
+  n <- nrow(df)
+  n_half <- floor(nrow(df)/2)
+  obs <- c(1:n)
+  
+  
+	# sample.est <- sort(sample(obs,n_half))
+	# sample.val <- (1:n)[-sample.est]
+	# df.est <- df[sample.est,]
+	# df.val <- df[sample.val,]
+	
+  
+  ## Assign randomly to 2 sets: estimate and valide. 
+  df$set <- ave(seq_len(nrow(df)), df$data_entry_type, FUN = function(i) {
+    n <- length(i)
+    sample(rep(c("estimate", "validate"), length.out = n))
+  })
+  
+  df.est <- df[df$set == "estimate", ]
+  df.val <- df[df$set == "validate", ]
+
+ ## Check balance 
+ # table(df$data_entry_type, df$set)
+ 
+	fit <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = df.est  )
+	# coefficients(fit)
+	y_hat <- predict(fit, df.val)
+	pred_error <- df.val[,"time_milliseconds"] - y_hat
+	
+	beta0[i] <- coef(fit)["(Intercept)"]
+	beta1[i] <- coef(fit)["stroke_count"]
+	beta2[i] <- coef(fit)["I(stroke_count^2)"]
+	beta6[i] <- coef(fit)["event_ordinal"]
+	beta7[i] <- coef(fit)["stroke_count:event_ordinal"]
+	beta8[i] <- coef(fit)["I(stroke_count^2):event_ordinal"]
+	MSP[i] <- sum(pred_error^2)/n_half
+}
+
+make_hist <- function(x, title) {
+  ggplot(data.frame(x = x), aes(x)) +
+    geom_histogram(bins = 30) +
+    labs(title = title, x = NULL, y = "Frequency") +
+    theme_minimal()+ 
+    theme(plot.title = element_text(size = 10, face = "bold"))+ 
+    theme(axis.title.y = element_text(size = 10))
+}
+
+
+p1 <- make_hist(beta1, "beta1 distribution: \nStroke Count")
+p2 <- make_hist(beta2, "beta2 distribution: \nStroke Count^2")
+p3 <- make_hist(beta6, "beta6 distribution: \nEvent Ordinal")
+p4 <- make_hist(beta7, "beta7 distribution: \nStroke Count x Event Ordinal")
+p5 <- make_hist(beta8, "beta8 distribution: \nStroke Count^2 x Event Ordinal")
+p6 <- make_hist(MSP, "MSP distribution: \nMean Squared Prediction Error")
+
+p_combined <- (p1 | p2 | p3) / (p4 | p5 | p6)
+
+p_combined
+
+```
+
+
+{{< pagebreak >}}
+
+# Appendix D - Post-hoc Analysis
+
+## Model without Outliers, Leverage Points and Influential points
+
+To check if there are any observations that affected the model v4, we examined outliers, leverage points, and influence points. 
+
+We have applied the following criterias:
+
+Outliers: Standardized residuals $> 2$
+
+Leverage points: $H_{ii} > 2 \cdot p/n = 2 * 8 / 66 = 0.24$
+
+Influential points: Cook's distance $> 4 / n = 4 / 66 = 0.06$
+
+There are 5 observations those are outliers, leverage points, or influence points. We have attached detailed info about those observations and also indicated them on the graph.
+
+
+```{r, Outlier,Leverage,Influential, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+
+model <- model_v4
+
+main_data_for_modeling2 <- main_data_for_modeling%>%
+  mutate(record_id = row_number(), .before = 1)
+
 # write.csv(main_data_for_modeling2, "data/combined_data.csv", row.names = FALSE)
-# 
-#   model_v1 <- lm(time_milliseconds ~ 
-#                 stroke_count + 
-#                 I(stroke_count^2) + 
-#                 data_entry_type + 
-#                 stroke_count * data_entry_type + 
-#                 I(stroke_count^2) * data_entry_type ,
-#               data = main_data_for_modeling2  )
-# 
-# dat3<- main_data_for_modeling2
-# dat3$stroke_count_square <- dat3$stroke_count^2
-# 
-# 
-# dat3$rowid <- 1:length(dat3$record_id)
-# 
-# #residual
-# res1 <- dat3$time_milliseconds - (predict(model_v1))
-# res1 <- data.frame(res1 )
-# res1$rowid <- 1:nrow(res1)
-# 
-# #absolute residual
-# abs_res1 <- abs(dat3$time_milliseconds - (predict(model_v1)))
-# abs_res1 <- data.frame(abs_res1)
-# abs_res1$rowid <- 1:nrow(abs_res1)
-# #<-abs_res1[order(abs_res1$abs_res1, decreasing = TRUE),]
-# 
-# #standard residual
-# standard_res1<-abs(rstandard(model_v1))
-# standard_res1 <- data.frame(standard_res1 )
-# standard_res1$rowid <- 1:nrow(standard_res1)
-# 
-# #H Matrix
-# X <- as.matrix(cbind(1, dat3$data_entry_type ,dat3$stroke_count , dat3$stroke_count_square ))
-# H <- X%*%solve(t(X)%*%X)%*%t(X)
-# 
-# data_length <-  nrow(dat3)
-# 
-# H.order <- cbind(c(1:data_length), diag(H))
-# H_ii<-as.data.frame(H.order)
-# names(H_ii)[names(H_ii) == "V1"] <- "rowid"
-# names(H_ii)[names(H_ii) == "V2"] <- "H_ii"
-# 
-# #cook's distance:
-# d <- cooks.distance(model_v1)
-# 
+
+
+dat3<- main_data_for_modeling2
+dat3$stroke_count_square <- dat3$stroke_count^2
+
+
+dat3$rowid <- 1:length(dat3$record_id)
+
+#residual
+res1 <- dat3$time_milliseconds - (predict(model))
+res1 <- data.frame(res1 )
+res1$rowid <- 1:nrow(res1)
+
+#absolute residual
+abs_res1 <- abs(dat3$time_milliseconds - (predict(model)))
+abs_res1 <- data.frame(abs_res1)
+abs_res1$rowid <- 1:nrow(abs_res1)
+#<-abs_res1[order(abs_res1$abs_res1, decreasing = TRUE),]
+
+#standard residual
+standard_res1<-abs(rstandard(model))
+standard_res1 <- data.frame(standard_res1 )
+standard_res1$rowid <- 1:nrow(standard_res1)
+
+#H Matrix
+X <- as.matrix(cbind(1, dat3$data_entry_type ,dat3$stroke_count , dat3$stroke_count_square ))
+H <- X%*%solve(t(X)%*%X)%*%t(X)
+
+data_length <-  nrow(dat3)
+
+H.order <- cbind(c(1:data_length), diag(H))
+H_ii<-as.data.frame(H.order)
+names(H_ii)[names(H_ii) == "V1"] <- "rowid"
+names(H_ii)[names(H_ii) == "V2"] <- "H_ii"
+
+#cook's distance:
+d <- cooks.distance(model)
+
 # d[order(d, decreasing = TRUE)]
-# cooks_d <- data.frame(d )
+# cooks_d <- data.frame(d)
 # cooks_d$rowid <- 1:nrow(cooks_d)
-# 
-# 
-# dataset99 <- merge(dat3,res1,by="rowid")
-# dataset99 <- merge(dataset99,H_ii,by="rowid")
-# dataset99 <- merge(dataset99,cooks_d,by="rowid")
-# dataset99 <- merge(dataset99,standard_res1,by="rowid")
-# dataset99$deleted_residual<- dataset99$res1 /(1- dataset99$H_ii)
-# names(dataset99)[names(dataset99) == "res1"] <- "Residual"
-# names(dataset99)[names(dataset99) == "d"] <- "Cooks_d"
-# 
-# 
-# 
-# dfbetas_result <- data.frame(dfbetas(model_v1))
-# dfbetas_result$rowid <- 1:nrow(dfbetas_result)
-# 
-# dffits_result <- data.frame(dffits(model_v1))
-# dffits_result$rowid <- 1:nrow(dffits_result)
-# 
-# #dataset99 = subset(dataset99, select = -c(time,pub,citation,salary) )
-# 
-# #dataset99 <- merge(dataset99,dfbetas_result,by="rowid")
-# dataset99 <- merge(dataset99,dffits_result,by="rowid")
-# 
-# 
-# 
-# # Define n and p for your model
-# n <- nrow(dat3)  # sample size 
-# p <- length(coef(model_v1))  # number of parameters
-# 
-# # Determine: INFLUENTIAL POINTS (based on DFFITS(beta)) 
-# dffits_cutoff <- 2 * sqrt(p/n)
-# dataset99$influential_dffits <- abs(dataset99$dffits.model_v1.) > dffits_cutoff
-# 
-# 
-# # Determine LEVERAGE POINTS
-# leverage_cutoff <- 2 * p/n  
-# dataset99$high_leverage <- dataset99$H_ii > leverage_cutoff
-# 
-# # Determine OUTLIERS (Based on Standardized Residuals)
-# outlier_cutoff <- 2  
-# dataset99$outlier <- dataset99$standard_res1 > outlier_cutoff
-# 
-# 
-# # Determine: INFLUENTIAL POINTS (Based on Cook's Distance )
-# cooks_cutoff <- 4 / n  
-# dataset99$influential_cooks <- dataset99$Cooks_d > cooks_cutoff
-# 
-# 
-# dataset99_influential <- dataset99 %>%
-#   filter(influential_cooks == TRUE) %>%
-#   mutate(outlier_type = "Influential Point")
-# 
-# dataset99_outlier <- dataset99 %>%
-#   filter(outlier == TRUE) %>%
-#   mutate(outlier_type = "Outlier")
-# 
-# 
-# dataset99_none <- dataset99 %>%
-#   filter(outlier == FALSE &
-#            influential_dffits== FALSE &
-#            influential_cooks == FALSE &
-#            high_leverage == FALSE ) %>%
-#   mutate(outlier_type = "Non-Outlier,Leverage,Influential")
-# 
-# 
-# dataset101 <- bind_rows(dataset99_influential,
-#                         dataset99_outlier,
-#                         dataset99_none)
-# 
-# dataset102 <- dataset101 %>%
-#   mutate(point_label = ifelse(outlier_type == "Non-Outlier,Leverage,Influential",
-#                               "", record_id))
-# 
-# ##########################################################
-# ## Plot Outlier,Leverage,Influential:
-# df <- dataset102
-# 
-# # Define color mapping
-# color_mapping <- c(
-#                    "25 or 50L1" = "blue", 
-#                    "50L2" = "red",
-#                    "100IM" = "darkgreen")
-# 
-# # Convert unwell_feedback to factor for shape mapping
-# # df$unwell_feedback <- as.factor(df$unwell_feedback)
-# 
-# # Define shape mapping
-# shape_mapping <- c(  "Non-Outlier,Leverage,Influential" = 16, 
-#                      "Leverage Point"=3,
-#                      "Influential Point"=4,
-#                       "Outlier"=1
-# 
-# )
-# 
-# # scale_shape_manual(name="Point Status",values=c(
-# #     "Non-Outlier,Leverage,Influential"=16,
-# #     "Leverage Point"=3,
-# #     "Influential Point(diffit)"=4,
-# #     "Outlier"=1
-# 
-# 
-# 
-# # Create prediction data for each data_entry_type
-# stroke_range <- range(main_data_for_modeling2$stroke_count)
-# pred_data <- expand.grid(
-#   stroke_count = seq(stroke_range[1], stroke_range[2], length.out = 100),
-#   data_entry_type = unique(main_data_for_modeling2$data_entry_type)
-# )
-# 
-# # Get predictions with 95% confidence intervals
-# pred_results <- predict(model_v1, newdata = pred_data, interval = "confidence", level = 0.95)
-# pred_data <- cbind(pred_data, pred_results)
-# 
-# # Plot with outliers
-# ggplot() +
-#   # Add 95% CI 
-#   geom_ribbon(data = pred_data, 
-#               aes(x = stroke_count, 
-#                   ymin = lwr, 
-#                   ymax = upr, 
-#                   fill = data_entry_type), 
-#               alpha = 0.2)+
-#   # Add prediction lines
-#   geom_line(data = pred_data, 
-#             aes(x = stroke_count, 
-#                 y = fit, 
-#                 color = data_entry_type), 
-#             linewidth = 1) +
-#   # Add scatter points
-#   geom_point(data = df, 
-#              aes(x = stroke_count, 
-#                  y = time_milliseconds, 
-#                  color = data_entry_type, 
-#                  shape = outlier_type), 
-#              size = 3) +
-#   geom_text(data = df, 
-#             aes(x = stroke_count, 
-#                  y = time_milliseconds, 
-#                 label = point_label ), vjust = -0.5) +
-#   # Apply color scales
-#   scale_color_manual(values = color_mapping) +
-#   scale_fill_manual(values = color_mapping) +
-#   scale_shape_manual(values = shape_mapping) +
-#   # Labels
-#   labs(x = "Stroke Count", 
-#        y = "Time (milliseconds)",
-#        color = "Data Entry Type",
-#        fill = "Data Entry Type",
-#        shape = "Outlier Type") +
-#   theme_minimal()+
-#   scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+ 
-#   # scale_y_continuous(breaks = function(y) seq(floor(min(y)/1000)*1000,
-#   #                                              ceiling(max(y)/1000)*1000,
-#   #                                              by = 1000))+ 
-#   scale_y_continuous(breaks = function(y) seq(24000,
-#                                                42000,
-#                                                by = 1000))+
-#   coord_cartesian(ylim = c(24000,42000))+
-#   theme(legend.position = "right") 
-# 
-# 
-# 
-# ###########################
-# ## Test model without Outlier,Leverage,Influential
-# dataset201 <- dataset102 %>%
-#   filter(outlier_type == "Non-Outlier,Leverage,Influential")
-# 
-# model_v6 <- lm(formula = time_milliseconds ~ stroke_count + I(stroke_count^2) + 
-#     data_entry_type + stroke_count * data_entry_type + I(stroke_count^2) * 
-#     data_entry_type, data =dataset201 )
-# 
-# # summary(model_v6)
+
+
+d<-d[order(d, decreasing = TRUE)]
+cooks_d <- data.frame(d)
+cooks_d$rowid <- as.integer(rownames(cooks_d )) 
+
+
+dataset99 <- merge(dat3,res1,by="rowid")
+dataset99 <- merge(dataset99,H_ii,by="rowid")
+dataset99 <- merge(dataset99,cooks_d,by="rowid")
+dataset99 <- merge(dataset99,standard_res1,by="rowid")
+dataset99$deleted_residual<- dataset99$res1 /(1- dataset99$H_ii)
+names(dataset99)[names(dataset99) == "res1"] <- "Residual"
+names(dataset99)[names(dataset99) == "d"] <- "Cooks_d"
+
+
+
+dfbetas_result <- data.frame(dfbetas(model))
+dfbetas_result$rowid <- 1:nrow(dfbetas_result)
+
+dffits_result <- data.frame(dffits(model))
+dffits_result$rowid <- 1:nrow(dffits_result)
+
+#dataset99 = subset(dataset99, select = -c(time,pub,citation,salary) )
+
+#dataset99 <- merge(dataset99,dfbetas_result,by="rowid")
+dataset99 <- merge(dataset99,dffits_result,by="rowid")
+
+
+
+# Define n and p for your model
+n <- nrow(dat3)  # sample size
+p <- length(coef(model))  # number of parameters
+
+# Determine: INFLUENTIAL POINTS (based on DFFITS(beta))
+dffits_cutoff <- 2 * sqrt(p/n)
+dataset99$influential_dffits <- abs(dataset99$dffits.model.) > dffits_cutoff
+
+
+# Determine LEVERAGE POINTS
+leverage_cutoff <- 2 * p/n
+dataset99$high_leverage <- dataset99$H_ii > leverage_cutoff
+
+# Determine OUTLIERS (Based on Standardized Residuals)
+outlier_cutoff <- 2
+dataset99$outlier <- dataset99$standard_res1 > outlier_cutoff
+
+
+# Determine: INFLUENTIAL POINTS (Based on Cook's Distance )
+cooks_cutoff <- 4 / n
+dataset99$influential_cooks <- dataset99$Cooks_d > cooks_cutoff
+
+
+dataset99_influential <- dataset99 %>%
+  filter(influential_cooks == TRUE) %>%
+  mutate(outlier_type = "Influential Point")
+
+dataset99_outlier <- dataset99 %>%
+  filter(outlier == TRUE) %>%
+  mutate(outlier_type = "Outlier")
+
+
+dataset99_leverage <- dataset99 %>%
+  filter(high_leverage == TRUE) %>%
+  mutate(outlier_type = "Leverage Point")
+
+dataset99_none <- dataset99 %>%
+  filter(outlier == FALSE &
+           influential_dffits== FALSE &
+           influential_cooks == FALSE &
+           high_leverage == FALSE ) %>%
+  mutate(outlier_type = "Non-Outlier,Leverage,Influential")
+
+
+dataset101 <- bind_rows(dataset99_influential,
+                        dataset99_outlier,
+                        dataset99_leverage,
+                        dataset99_none)
+
+dataset102 <- dataset101 %>%
+  mutate(point_label = ifelse(outlier_type == "Non-Outlier,Leverage,Influential",
+                              "", record_id))
+
+######################################################
+
+### List observations:
+
+dataset105 <- dataset102 %>%
+  filter(outlier_type != "Non-Outlier,Leverage,Influential") %>%
+  distinct(record_id, .keep_all = TRUE) %>%
+  mutate(H_ii = round(H_ii,2 ),
+         standard_res1 = round(standard_res1,2 ),
+         Cooks_d = round(Cooks_d,2 )) %>%
+  mutate(outlier = ifelse(outlier == "FALSE", "", outlier),
+         high_leverage = ifelse(high_leverage == "FALSE", "", high_leverage),
+         influential_cooks = ifelse(influential_cooks == "FALSE", "", influential_cooks),
+         ) %>%
+  # dplyr::select("record_id", "time_milliseconds",
+  #               "outlier" , "high_leverage",  "influential_cooks",
+  #               "standard_res1","H_ii" ,  "Cooks_d" , 
+  #        "event_ordinal", "stroke_count" ,
+  #        "data_entry_type"  , "time_milliseconds"  ) %>%
+  dplyr::select("record_id", 
+                "outlier" , "high_leverage",  "influential_cooks",
+                "standard_res1","H_ii" ,  "Cooks_d"  ) %>%
+  rename(`obs` = record_id,
+         # `Time` = time_milliseconds,
+         `Leverage Point` = high_leverage,
+         `Outlier` = outlier,
+         `Influential Point` = influential_cooks,
+         `Standardized Residual` = standard_res1,
+         ) 
+
+
+knitr::kable(dataset105 , digits = 3, 
+             caption = "Outlier, Leverage Points, and Influential Points")
+
 
 
 ```
-By using Model v1, we have calculated standardized residual, leverage ($h_{ii}$), and Cook's distance ($D_i$), to identify data points those are outlines, leverage points and influential points. 
 
-There are 2 data points those are both outlines and influential points. 
 
-We compared the full data and subset data fits by examining (i) overall model significance, (ii) coefficient estimates and their standard errors, and (iii) the estimated effect of stroke count (including the quadratic term) and its interaction with data entry type. (Pending)
+```{r, Outlier,Leverage,Influential plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=5.7}
+
+#| echo: false
+#| fig-cap: "Model without Outliers, Leverage Points and Influential points"
+##| fig-width: 12
+##| fig-height: 4
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_model_v4_no_outliers
+#| message: false
+#| warning: false
+
+##########################################################
+## Plot Outlier,Leverage,Influential:
+df <- dataset102
+
+# Define color mapping
+color_mapping <- c(
+                   "25 or 50L1" = "blue",
+                   "50L2" = "red",
+                   "100IM" = "darkgreen")
+
+# Convert unwell_feedback to factor for shape mapping
+# df$unwell_feedback <- as.factor(df$unwell_feedback)
+
+# Define shape mapping
+shape_mapping <- c(  "Non-Outlier,Leverage,Influential" = 16,
+                     "Leverage Point"=3,
+                     "Influential Point"=4,
+                      "Outlier"=1
+
+)
+
+# scale_shape_manual(name="Point Status",values=c(
+#     "Non-Outlier,Leverage,Influential"=16,
+#     "Leverage Point"=3,
+#     "Influential Point(diffit)"=4,
+#     "Outlier"=1
+
+
+
+# Create prediction data for each data_entry_type
+stroke_range <- range(main_data_for_modeling$stroke_count)
+
+ordinal_mean <- ceiling(mean(main_data_for_modeling$event_ordinal))
+
+
+pred_data <- expand.grid(
+  event_ordinal = seq(ordinal_mean,ordinal_mean, length.out = 1),
+  stroke_count = seq(stroke_range[1], stroke_range[2], length.out = 100),
+  data_entry_type = unique(main_data_for_modeling$data_entry_type)
+)
+
+pred_results <- predict(model , newdata = pred_data, interval = "confidence", level = 0.95)
+pred_data <- cbind(pred_data, pred_results)
+
+
+
+# Plot with outliers
+p_outlier <- ggplot() +
+  # Add 95% CI
+  geom_ribbon(data = pred_data,
+              aes(x = stroke_count,
+                  ymin = lwr,
+                  ymax = upr,
+                  fill = data_entry_type),
+              alpha = 0.2)+
+  # Add prediction lines
+  geom_line(data = pred_data,
+            aes(x = stroke_count,
+                y = fit,
+                color = data_entry_type),
+            linewidth = 1) +
+  # Add scatter points
+  geom_point(data = df,
+             aes(x = stroke_count,
+                 y = time_milliseconds,
+                 color = data_entry_type,
+                 shape = outlier_type),
+             size = 3) +
+  geom_text(data = df,
+            aes(x = stroke_count,
+                 y = time_milliseconds,
+                label = point_label ), vjust = -0.5) +
+  # Apply color scales
+  scale_color_manual(values = color_mapping) +
+  scale_fill_manual(values = color_mapping) +
+  scale_shape_manual(values = shape_mapping) +
+  # Labels
+  labs(x = "Stroke Count",
+       y = "Time (milliseconds)",
+       color = "Data Entry Type",
+       fill = "Data Entry Type",
+       shape = "Outlier Type") +
+  theme_minimal()+
+  scale_x_continuous(breaks = function(x) seq(floor(min(x)-1), ceiling(max(x)+1), by = 1))+
+  # scale_y_continuous(breaks = function(y) seq(floor(min(y)/1000)*1000,
+  #                                              ceiling(max(y)/1000)*1000,
+  #                                              by = 1000))+
+  scale_y_continuous(breaks = function(y) seq(24000,
+                                               42000,
+                                               by = 1000))+
+  coord_cartesian(ylim = c(24000,42000))+
+  theme(legend.position = "right")
+
+
+ 
+p_outlier
+ 
+ 
+ 
+```
+
+We build a new model using the dataset without outliers, leverage points and influential points, and compared with the previous model. The new model_v6 has 61 samples has several improvements: (a) R^2 increased from 0.7579 to 0.9053 and (b) RSE reduced from 1656 to 981. However, stroke count is still not significant in the new model. 
+
+```{r remove outlier model comparison , echo=FALSE, message=FALSE, warning=FALSE}
+
+source("source/modelSummary2df.R")
+
+beta_rename <- read.csv("source/beta_rename.csv")
+
+
+###########################
+## Test model without Outlier,Leverage,Influential
+ dataset201 <- dataset102 %>%
+   filter(outlier_type == "Non-Outlier,Leverage,Influential")
+
+ 
+ model_v6 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data =dataset201   )
+ 
+
+
+model_summary_list<- rlang::set_names(
+  list( model_v4, model_v6),
+  c("model_v4", "model_v6")
+)
+
+model_compare_df_1 <- modelSummary2df(model_summary_list)
+
+model_compare_df_2 <- beta_rename %>%
+  right_join(model_compare_df_1, by = c("old_name" = "term")) %>%
+  dplyr::select(-old_name ) %>%
+  rename(term = new_name)
+
+    ## Sorting
+    keep_last <- c("[Sample Size]", 
+                   "[R^2]", 
+                   "[Adjusted R^2]",
+                   "[RSE]", 
+                   "[Test Statistic]", 
+                   "[P-value]")
+    
+
+    model_compare_df_2 <- model_compare_df_2 %>%
+      arrange(
+        term %in% keep_last,
+        if_else(term %in% keep_last, match(term, keep_last), 0L),
+        term
+      )
+
+knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
+
+
+
+
+```
 
 
 
@@ -1338,108 +1567,220 @@ We compared the full data and subset data fits by examining (i) overall model si
 ```{r boxcox transformation, echo=FALSE, message=FALSE, warning=FALSE}
 
 
+if (!require("MASS")) install.packages("MASS")
+library(MASS)
+
+
+
+## Model v4
+model_v4 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling  )
+
+
+
+model <- model_v4
+
+## get lambda for boxcox transformation, and extract as df
+## First try lambda from 0 to 10
+## For y value transformation.
+BC <- boxcox( model, lambda = seq(0, 10, 1/100), plotit = FALSE)
+BC_df <- data.frame(
+  logLik = BC$y,
+  lambda = BC$x
+)
+
+
+## 95% CI threshold for lambda
+BC_95ci <- max(BC$y) - 0.5*qchisq(0.95, 1)
+
+## get max of lambda
+BC_lambda_max <-  BC$x[which.max(BC$y)]
+max_logLik <- max(BC$y)
+
+
+
+```
+
+We would like to improve our Model v4, we have tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = `r BC_lambda_max`, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of `r BC_lambda_max`. So our $y$ after  transformation is the following:
+
+$$
+y^{(\lambda)} = \dfrac{y^{\lambda} - 1}{\lambda} 
+$$
+
+
+```{r boxcox plot,  echo=FALSE, message=FALSE, warning=FALSE, fig.width=10,              fig.height =2.6}
+
 #| echo: false
 #| fig-cap: "Boxcox Transformation"
-#| fig-height: 10
+##| fig-width: 12
+##| fig-height: 10
 #| fig-pos: H
 #| fig-cap-location: top
 #| label: plot_boxcox
 #| message: false
 #| warning: false
+#| 
+## Ploting
+bc_plot <- ggplot(BC_df, aes(x = lambda, y = logLik)) +
+  geom_line(linewidth = 1) +
+  geom_vline(xintercept = BC_lambda_max, linetype = "dashed", linewidth = 1, color = "red") +
+  geom_hline(yintercept = BC_95ci, linetype = "dashed", linewidth = 1, color = "blue") +
+  annotate("text",
+           x = BC_lambda_max, y = max_logLik,
+           label = sprintf("lambda* = %.2f", BC_lambda_max),
+           size = 5, vjust = 0.9, hjust = 0.5, color = "red") +
+  annotate("text",
+           x = 10, y = BC_95ci,
+           label = "95% cutoff",
+           size = 5, vjust = 0.9, hjust = 1, color = "blue") +
+  labs(
+    x = "lambda",
+    y = "Log-Likelihood",
+    title = "Box-Cox Transformation"
+  ) +
+  scale_x_continuous(
+    limits = c(0, 10),
+    breaks = seq(0, 10, by = 0.5)
+  )  +
+  theme(
+    axis.title.x = element_text(size = 7),  
+    axis.title.y = element_text(size = 7),  
+    axis.text.x  = element_text(size = 6), 
+    axis.text.y  = element_text(size = 6),  
+    axis.ticks   = element_line(linewidth = 0.6)  
+  ) + 
+  theme_minimal()
 
 
-# if (!require("MASS")) install.packages("MASS")
-# library(MASS)
-# 
-# 
-# 
-# ## Model v1, without transformed stroke count
-#  model_v1 <- lm(time_milliseconds ~ 
-#                   stroke_count + 
-#                   I(stroke_count^2) + 
-#                   data_entry_type + 
-#                   stroke_count * data_entry_type + 
-#                   I(stroke_count^2) * data_entry_type,
-#               data = main_data_for_modeling)
-# 
-# 
-# ## get lambda for boxcox transformation, and extract as df
-# ## First try lambda from 0 to 10
-# ## For y value transformation.
-# BC <- boxcox( model_v3, lambda = seq(0, 10, 1/100), plotit = FALSE)
-# BC_df <- data.frame(
-#   logLik = BC$y,
-#   lambda = BC$x
-# )
-# 
-# 
-# ## 95% CI threshold for lambda
-# BC_95ci <- max(BC$y) - 0.5*qchisq(0.95, 1)
-# 
-# ## get max of lambda
-# BC_lambda_max <-  BC$x[which.max(BC$y)]
-# max_logLik <- max(BC$y)
-# 
-# ## Ploting
-# bc_plot <- ggplot(BC_df, aes(x = lambda, y = logLik)) +
-#   geom_line(linewidth = 1) +
-#   geom_vline(xintercept = BC_lambda_max, linetype = "dashed", linewidth = 1, color = "red") +
-#   geom_hline(yintercept = BC_95ci, linetype = "dashed", linewidth = 1, color = "blue") +
-#   annotate("text",
-#            x = BC_lambda_max, y = max_logLik,
-#            label = sprintf("lambda* = %.2f", BC_lambda_max),
-#            vjust = -0.8, hjust = 0.5, color = "red") +
-#   annotate("text",
-#            x = 10, y = BC_95ci,
-#            label = "95% cutoff",
-#            vjust = -0.6, hjust = 1, color = "blue") +
-#   labs(
-#     x = "lambda",
-#     y = "Log-Likelihood",
-#     title = "Box-Cox Transformation"
-#   ) +
-#   scale_x_continuous(
-#     limits = c(0, 10),                 
-#     breaks = seq(0, 10, by = 0.5)        
-#   ) +
-#   theme_minimal()
-# 
-# bc_plot 
+# options(repr.plot.width = 10, repr.plot.height = 14)
 
-
-
-# 
-# ## Testing on transformed new model:
-# y <- main_data_for_modeling$time_milliseconds
-# BC_lambda_max <- BC_lambda_max
-# 
-# main_data_for_modeling_BC <- main_data_for_modeling %>%
-#   mutate(y_bc = (time_milliseconds^BC_lambda_max - 1) / BC_lambda_max)
-# 
-# 
-#  model_v4 <- lm(y_bc ~ 
-#                 stroke_count + 
-#                 data_entry_type + 
-#                 stroke_count * data_entry_type ,
-#               data = main_data_for_modeling)
-# 
-# summary( model_v4 )
-# 
-# stargazer(model_v1, model_v4,type = "text" )
+bc_plot
 
 
 ```
 
-We would like to improve our Model v1, so we tried the Boxcox transformation. The result of the Boxcox transformation indicated that the when lambda = 4.02, the likelihood reached max. It indicates that the Boxcox transformation suggests that to transfer the response variable with lambda of 4.02. So our transformation y is the following:
 
-$$
-y^{(\lambda)} = \dfrac{y^{\lambda} - 1}{\lambda} \text{, where lambda = 4.02}
-$$
-Need to add model comparison later.
+After the Boxcox transformation, those coefficients are no longer in the same units, so we can not directly comparing their coefficients. Instead, we have compared their R^2 where it improved from	0.7579 to 0.8016. Standardized residuals versus fitted-value plots were also examined for both models. The Box–Cox transformation produced a residual pattern that was slightly improved where those residuals are more evenly scattered around zero compared with the untransformed model.
+
+```{r boxcox transformation new model,  echo=FALSE, message=FALSE, warning=FALSE }
 
 
+## Testing on transformed new model:
+y <- main_data_for_modeling$time_milliseconds
+BC_lambda_max <- BC_lambda_max
 
-## Sample size re-estimation (Pending)
+main_data_for_modeling_BC <- main_data_for_modeling %>%
+  mutate(y_bc = (time_milliseconds^BC_lambda_max - 1) / BC_lambda_max)
+ 
+model_v7 <- lm(y_bc ~
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling_BC  )
+
+
+
+source("source/modelSummary2df.R")
+
+beta_rename <- read.csv("source/beta_rename.csv")
+
+
+###########################
+## Test model without Outlier,Leverage,Influential
+ dataset201 <- dataset102 %>%
+   filter(outlier_type == "Non-Outlier,Leverage,Influential")
+
+ 
+ model_v6 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data =dataset201   )
+ 
+
+
+model_summary_list<- rlang::set_names(
+  list( model_v4, model_v7),
+  c("model_v4", "model_v7")
+)
+
+model_compare_df_1 <- modelSummary2df(model_summary_list)
+
+model_compare_df_2 <- beta_rename %>%
+  right_join(model_compare_df_1, by = c("old_name" = "term")) %>%
+  dplyr::select(-old_name ) %>%
+  rename(term = new_name)
+
+    ## Sorting
+    keep_last <- c("[Sample Size]", 
+                   "[R^2]", 
+                   "[Adjusted R^2]",
+                   "[RSE]", 
+                   "[Test Statistic]", 
+                   "[P-value]")
+    
+
+    model_compare_df_2 <- model_compare_df_2 %>%
+      arrange(
+        term %in% keep_last,
+        if_else(term %in% keep_last, match(term, keep_last), 0L),
+        term
+      )
+
+knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
+
+```
+
+```{r boxcox transformation residual compare,  echo=FALSE, message=FALSE, warning=FALSE , fig.width=10, fig.height=4}
+
+#| echo: false
+#| fig-cap: "Boxcox Transformed Model Residual Compare"
+##| fig-width: 12
+##| fig-height: 10
+#| fig-pos: H
+#| fig-cap-location: top
+#| label: plot_boxcox_residual
+#| message: false
+#| warning: false
+#| 
+
+
+par(mfrow =c(1,2))
+
+plot(fitted(model_v4), rstandard(model_v4),
+     xlab = "Fitted values", ylab = "standardized residuals",
+     main = "model_v4",
+     ylim = c(-6, 3))
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3)
+
+plot(fitted(model_v7), rstandard(model_v7),
+     xlab = "Fitted values (Box–Cox scale)", ylab = "standardized residuals",
+     main = "model_v7: (BC scale)",
+     ylim = c(-6, 3))
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3)
+
+
+```
+
+
+
+
+<!-- ## Sample size re-estimation (Pending) -->
+
 
 
 

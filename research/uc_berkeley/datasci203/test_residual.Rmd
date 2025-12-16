@@ -1,0 +1,214 @@
+
+# TFL Pipeline program
+
+
+```{r Load all needed library}
+
+# List of required packages
+required_packages <- c(
+  "ggplot2", "readr", "dplyr", "tidyr", "tidyverse", 
+  "rmarkdown", "here", "emmeans", "readxl", "data.table",
+ "parsedate", "mmrm", "patchwork",
+  "rstudioapi",
+ "units", "stargazer", "sandwich",
+ "knitr", "modelsummary", "broom", "rlang",
+ "MASS"
+ 
+)
+
+# Function to check and install missing packages
+install_if_missing <- function(packages) {
+  for (pkg in packages) {
+    if (!require(pkg, character.only = TRUE)) {
+      install.packages(pkg, dependencies = TRUE)
+      library(pkg, character.only = TRUE)
+    }
+  }
+}
+
+# Call the function to install and load the necessary packages
+install_if_missing(required_packages)
+
+# Set the encoding to UTF-8
+Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+#################################################################
+
+
+
+```
+
+```{r, setwd}
+
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+# current_path <- getwd()
+
+
+```
+
+```{r, process data}
+
+
+source("source/compile_main_data.R")
+
+data_files_names <- c("20251118_-8.csv", "20251121_-8.csv", "20251122_-8.csv", "20251129_-8.csv", "20251204_-8.csv", "20251208_-8.csv", "20251211_-8.csv","20251213_-8.csv")
+main_data <- compile_data_files(data_files_names)
+main_data_for_plotting <- prep_data_for_plotting(main_data)
+main_data_for_modeling <- prep_data_for_modeling(main_data)
+
+
+
+
+```
+
+```{r, data}
+
+
+main_data_for_modeling2 <- main_data_for_modeling%>%
+  mutate(record_id = row_number(), .before = 1) %>%
+  mutate(stroke_count_square = stroke_count ^2)
+  
+
+
+model_v4 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling  )
+
+summary(model_v4)
+
+
+model_v5 <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = main_data_for_modeling  )
+
+summary(model_v5)
+
+```
+
+```{r plot model 4}
+
+## Split into estimate set and validation set, then test beta and MSP distribution
+
+main_data_for_modeling2 <- main_data_for_modeling%>%
+  mutate(record_id = row_number(), .before = 1) %>%
+  mutate(stroke_count_square = stroke_count ^2)
+  
+
+df <- main_data_for_modeling2
+model <- model_v4 
+
+# 
+beta0 <- numeric() 
+beta1 <- numeric()
+beta2 <- numeric()
+beta6 <- numeric()
+beta7 <- numeric()
+beta8 <- numeric()
+MSP <- numeric()
+
+
+for (i in 1:1000){
+  
+  #set.seed(i)
+  #Test
+  # i<-1
+  
+  n <- nrow(df)
+  n_half <- floor(nrow(df)/2)
+  obs <- c(1:n)
+
+  ## Assign randomly to 2 sets: estimate and valide. But stratified by data_entry_type
+  df$set <- ave(seq_len(nrow(df)), df$data_entry_type, FUN = function(i) {
+    n <- length(i)
+    sample(rep(c("estimate", "validate"), length.out = n))
+  })
+  
+  df.est <- df[df$set == "estimate", ]
+  df.val <- df[df$set == "validate", ]
+
+ ## Check balance 
+ # table(df$data_entry_type, df$set)
+ 
+	fit <- lm(time_milliseconds ~ 
+                stroke_count + 
+                I(stroke_count^2) + 
+                data_entry_type + 
+                event_ordinal + 
+                event_ordinal  * stroke_count +
+                event_ordinal  *I(stroke_count^2)  , 
+              data = df.est  )
+	# coefficients(fit)
+	y_hat <- predict(fit, df.val)
+	pred_error <- df.val[,"time_milliseconds"] - y_hat
+	
+	beta0[i] <- coef(fit)["(Intercept)"]
+	beta1[i] <- coef(fit)["stroke_count"]
+	beta2[i] <- coef(fit)["I(stroke_count^2)"]
+	beta6[i] <- coef(fit)["event_ordinal"]
+	beta7[i] <- coef(fit)["stroke_count:event_ordinal"]
+	beta8[i] <- coef(fit)["I(stroke_count^2):event_ordinal"]
+	MSP[i] <- sum(pred_error^2)/n_half
+}
+
+
+summary(beta0)
+hist(beta0)
+
+summary(beta1)
+hist(beta1)
+
+summary(beta2)
+hist(beta2)
+
+summary(beta6)
+hist(beta6)
+
+summary(beta7)
+hist(beta7)
+
+summary(beta8)
+hist(beta8)
+
+summary(MSP)
+hist(MSP)
+
+plot(beta1,beta6, xlab = "estimate of beta_1", ylab = "estimate of beta_6")
+
+
+
+```
+
+```{r histogram}
+
+make_hist <- function(x, title) {
+  ggplot(data.frame(x = x), aes(x)) +
+    geom_histogram(bins = 30) +
+    labs(title = title, x = NULL, y = "Frequency") +
+    theme_minimal()+ 
+    theme(plot.title = element_text(size = 7, face = "bold"))+ 
+    theme(axis.title.y = element_text(size = 7))
+}
+
+
+p1 <- make_hist(beta1, "beta1 distribution: \nStroke Count")
+p2 <- make_hist(beta2, "beta2 distribution: \nStroke Count^2")
+p3 <- make_hist(beta6, "beta6 distribution: \nEvent Ordinal")
+p4 <- make_hist(beta7, "beta7 distribution: \nStroke Count x Event Ordinal")
+p5 <- make_hist(beta8, "beta8 distribution: \nStroke Count^2 x Event Ordinal")
+p6 <- make_hist(MSP, "MSP distribution: \nMean Squared Prediction Error")
+
+p_combined <- (p1 | p2 | p3) / (p4 | p5 | p6)
+
+p_combined
+
+```

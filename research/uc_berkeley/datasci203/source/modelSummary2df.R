@@ -28,9 +28,10 @@ modelSummary2df <- function(model_summary_list) {
     coef_df <- tidy(model) %>%
       mutate(
         stars = case_when(
-          p.value < 0.01 ~ "***",
-          p.value < 0.05 ~ "**",
-          p.value < 0.1  ~ "*",
+          p.value < 0.001 ~ "***",
+          p.value < 0.01 ~ "**",
+          p.value < 0.05  ~ "*",
+          p.value < 0.1  ~ ".",
           TRUE ~ ""
         )
       )
