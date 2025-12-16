@@ -52,6 +52,9 @@ alpha <- .05
 data_plot_custom_shapes <- c("25" = 15, "50L1" = 18, "50L2" = 3, "100IM" = 17)
 data_plot_custom_colors <- c("1" = "red", "0" = "blue", "-1" = "green")
 
+main_data_y_min <- 24000
+main_data_y_max <- 39000
+
 source("source/model_summary.R")
 ```
 
@@ -91,7 +94,7 @@ The importance of stroke-related statistics in predicting swimming performance i
 1. The majority of analysis relies on $S_R$ or $S_L$, both requiring special camera equipment and software that is not easily accessible.
 1. Younger swimmers are still finding their swimming rhythm.
 
-We believe that we can easily overcome (2) by using the proxy Stroke Count ($S_C$) per lap. We define a stroke as a swimmer's head breaking coming back down after taking a breath. We also believe that individualized models for young swimmers plays an important role in the LTAD framework from (1) because it enables conversations about skill and technique. Finally, we believe that an individualized model can help swimmers develop their swimming rhythm in (3).
+We believe that we can easily overcome (2) by using the proxy Stroke Count ($S_C$) per lap. We define a stroke as a swimmer's head breaking and coming back down after taking a breath. We also believe that individualized models for young swimmers plays an important role in the LTAD framework from (1) because it enables conversations about skill and technique. Finally, we believe that an individualized model can help swimmers develop their swimming rhythm in (3).
 
 ## Motivations
 
@@ -99,7 +102,7 @@ Helping young swimmers learn fundamentals and develop good technique is critical
 
 * Emphasize the need for good technique, which reduces the risk of injury.
 * Help swimmers appreciate the importance of learning technical concepts because $S_C$ operationalizes fundamental concepts of stroke efficiency and streamlined swimming.
-* Encourages swimmers to listen to their bodies and think about how they feel when they move.
+* Encourages swimmers to listen to their bodies and think about how they feel when they move through the water.
 * Reduce the emphasis on physical advantage and help swimmers focus on their long-term development.
 
 This study aims to create a framework for deriving an individualized optimal $S_C$ that minimizes the time $T_{Lap}$, measured in milliseconds, to complete a lap. We hope that the individualized data will allow coaches to have conversations about how proper technique can lead to an efficient $S_C$ that both minimizes $T_{Lap}$ and reduces the chance of injury.
@@ -244,26 +247,25 @@ Our base assumption is that $S_C$ and ${GlideDistance}$ are the two main predict
 * While the swim gear varies between competition and practice, the swimmer should use the same swim gear for the duration of the experiment.
 
 
-## Causal Theory and Null Hypothesis
+<!-- ## Causal Theory and Null Hypothesis -->
 
-We opt for the explanatory mode for model building because we are primarily interested in deriving $S_C$.
+<!-- We opt for the explanatory mode for model building because we are primarily interested in deriving $S_C$. -->
 
-@Craig1979, @Vorontsov1991, @Vorontsov2002, @JurimaeBestPredictors and many other studies have shown a causal relationship between a stroke statistic and its effect on $T_{Lap}$. Since $S_C$ has a mathematical relationship to those stroke statistics, then $S_C$ has a causal relationship with $T_{Lap}$. We want to see if there is a tighter causal relationship centered around an $S_{C_{Optimal}}$ and define our Null Hypothesis as:
+<!-- @Craig1979, @Vorontsov1991, @Vorontsov2002, @JurimaeBestPredictors and many other studies have shown a causal relationship between a stroke statistic and its effect on $T_{Lap}$. Since $S_C$ has a mathematical relationship to those stroke statistics, then $S_C$ has a causal relationship with $T_{Lap}$. We want to see if there is a tighter causal relationship centered around an $S_{C_{Optimal}}$ and define our Null Hypothesis as: -->
 
-> **$H_0$**: Given event_type, $\left| T_{Lap_{Optimal}} - T_{Lap_{-2}} \right| \le 500$ and $\left| T_{Lap_{Optimal}} - T_{Lap_{+2}} \right| \le 500$ where $T_{Lap_{Optimal}} \sim S_{C_{Optimal}}$, $T_{Lap_{-2}} \sim S_{C_{Optimal}} - 2$ strokes, and $T_{Lap_{+2}} \sim S_{C_{Optimal}} + 2$ strokes.
+<!-- > **$H_0$**: Given event_type, $\left| T_{Lap_{Optimal}} - T_{Lap_{-2}} \right| \le 500$ and $\left| T_{Lap_{Optimal}} - T_{Lap_{+2}} \right| \le 500$ where $T_{Lap_{Optimal}} \sim S_{C_{Optimal}}$, $T_{Lap_{-2}} \sim S_{C_{Optimal}} - 2$ strokes, and $T_{Lap_{+2}} \sim S_{C_{Optimal}} + 2$ strokes. -->
 
-For example, if we determine that the optimal $S_{C}$ for a given swimmer is 17 with a corresponding time of 20 seconds, then **$H_0$** asserts that there is not a .5 second difference from 20 seconds if the swimmer swims 15 or 19 strokes.
+<!-- For example, if we determine that the optimal $S_{C}$ for a given swimmer is 17 with a corresponding time of 20 seconds, then **$H_0$** asserts that there is not a .5 second difference from 20 seconds if the swimmer swims 15 or 19 strokes. -->
 
-We choose .5 second for our 25 SCY lap because the difference between a top and second -tier national swimmer[^6] for a 50 BR SCY is $\le$ 2 seconds[^7]. A .5 second for each lap would equal a 1 second improvement for 50 SCY and the swimmer can work on glide time and turns to improve the time by another second.
+<!-- We choose .5 second for our 25 SCY lap because the difference between a top and second -tier national swimmer[^6] for a 50 BR SCY is $\le$ 2 seconds[^7]. A .5 second for each lap would equal a 1 second improvement for 50 SCY and the swimmer can work on glide time and turns to improve the time by another second. -->
 
-We choose 2 strokes because it's difficult to differentiate between a single stroke. For instance a swimmer might swim 20 strokes and touches the wall on the way down on the 21st stroke.
+<!-- We choose 2 strokes because it's difficult to differentiate between a single stroke. For instance a swimmer might swim 20 strokes and touches the wall on the way down on the 21st stroke. -->
 
-[^6]: A AAAA-ranked swimmer is in the top 2% of swimmers in their age group, their same-sex, in that stroke and distance. A AAA-ranked swimmer is in the top 6% of swimmers in their age group, their same-sex, in that stroke and distance. \
-    **Source:** Central California Swimming. (2024). 2024-2028 Motivational Standards Age Group. <https://www.gomotionapp.com/team/caraa/page/system/res/102429>
-    
-[^7]: AAAA time for boys and girls under 11-years-old for 50 BR SCY is 36.39 and 36.89 seconds, respectively. AAA time for boys and girls under 11-years-old for 50 BR SCY is 38.29 and 38.89 seconds, respectively. \
-    **Source:** Pacific Swimming. (2024). 2024-2028 Motivational Standards Age Group. <https://www.pacswim.org/userfiles/cms/documents/801/2024-2028-motivational-standards-age-group.pdf>
+<!-- [^6]: A AAAA-ranked swimmer is in the top 2% of swimmers in their age group, their same-sex, in that stroke and distance. A AAA-ranked swimmer is in the top 6% of swimmers in their age group, their same-sex, in that stroke and distance. \ -->
+<!--     **Source:** Central California Swimming. (2024). 2024-2028 Motivational Standards Age Group. <https://www.gomotionapp.com/team/caraa/page/system/res/102429> -->
 
+<!-- [^7]: AAAA time for boys and girls under 11-years-old for 50 BR SCY is 36.39 and 36.89 seconds, respectively. AAA time for boys and girls under 11-years-old for 50 BR SCY is 38.29 and 38.89 seconds, respectively. \ -->
+<!--     **Source:** Pacific Swimming. (2024). 2024-2028 Motivational Standards Age Group. <https://www.pacswim.org/userfiles/cms/documents/801/2024-2028-motivational-standards-age-group.pdf> -->
 
 ## Interaction Terms and Operationalizing Fatigue
 Our linear model make use of dummy / indicator variables to account for the optimal $S_C$ being different for the 50 BR SCY and 100 IM SCY because of the following considerations:
@@ -275,7 +277,7 @@ It's clear that $S_C$ for any subsequent lap is not independent of $S_C$ for the
 
 ## Regression Model
 
-Our regression model is defined as
+After attempting several models outlined in @sec-appendix_a, we settle on our final regression model:
 
 $$
 \begin{split}
@@ -285,7 +287,7 @@ T_{Lap} = & \beta_0 + \beta_1 S_C + \beta_2 {S_C}^2 \\
 & + \eta_0 O + \eta_1 O S_C + \eta_2 O {S_C}^2 \\
 & + \epsilon
 \end{split}
-$$ {#eq-regression_model}
+$$ {#eq-regression_model_final}
 
 ::: {tbl-colwidths="[20,80]"}
 | Component(s) | Definition |
@@ -410,7 +412,7 @@ guides(shape = "none")
 
 ## Power Analysis
 
-We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-regression_model. We use the summary statistics, excluding those without standard deviations, in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$.
+We use @fig-exploratory_data_stroke_count_elapsed_time_plot to help inform us of how to model @eq-regression_model_final. We use the summary statistics, excluding those without standard deviations, in @tbl-summary_statistics_exploratory_data to generate test data from $N(\bar{x}, s)$.
 
 ```{r exploratory_data_power_analysis, echo=FALSE, message=FALSE, warning=FALSE}
 source("source/descriptive_summary.R")
@@ -431,7 +433,7 @@ exploratory_data_power <- power_analysis(power_analysis_simulation_count,
 
 ```
 
-We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of at least `r exploratory_data_power` for $\alpha$ = `r alpha`.
+We ran `r power_analysis_simulation_count` simulations and determined that our swimmer should swim at least `r power_analysis_data_size` laps to achieve a power of approximately `r exploratory_data_power` for $\alpha$ = `r alpha`.
 
 ## Data Collection
 
@@ -452,7 +454,7 @@ summary_main_data_stats <- summarize(
   standard_deviation=sd(time_milliseconds))
 ```
 
-Jadzia Vo swam `r number_of_br_laps` 25 SCY BR laps over `r number_of_br_sessions` sessions. Each session happened on a different day.
+In addition to the data collected for the power analysis, Jadzia Vo swam an additional `r number_of_br_laps` 25 SCY BR laps over `r number_of_br_sessions` sessions. Each session happened on a different day.
 
 ```{r plot_main_data}
 #| echo: false
@@ -464,8 +466,7 @@ Jadzia Vo swam `r number_of_br_laps` 25 SCY BR laps over `r number_of_br_session
 #| message: false
 #| warning: false
 
-main_data_y_min <- 25000
-main_data_y_max <- 40000
+
 main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 500)
 
 
@@ -514,149 +515,121 @@ theme(legend.position = "bottom",
 
 ```
 
-# Analysis
+<!-- # Analysis -->
 
-## Deriving Stroke Count
+<!-- ## Deriving Stroke Count -->
 
-This is our model for the 
+<!-- After attempting several models outlined in @sec-appendix_a, we settle on our final model: -->
 
-$$
-\begin{split}
-\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
-& + \hat{\gamma}_{50L2} I_{50L2} \\
-& + \hat{\gamma}_{100IM} I_{100IM} \\
-& + \hat{\eta}_0 O + \hat{\eta}_1 O S_C + \hat{\eta}_2 O {S_C}^2 \\
-& + \epsilon
-\end{split}
-$$ {#eq-fitted_regression_model}
+<!-- $$ -->
+<!-- \begin{split} -->
+<!-- \hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\ -->
+<!-- & + \hat{\gamma}_{50L2} I_{50L2} \\ -->
+<!-- & + \hat{\gamma}_{100IM} I_{100IM} \\ -->
+<!-- & + \hat{\eta}_0 O + \hat{\eta}_1 O S_C + \hat{\eta}_2 O {S_C}^2 \\ -->
+<!-- & + \epsilon -->
+<!-- \end{split} -->
+<!-- $$ {#eq-fitted_regression_model} -->
 
-Next, we group the times first by the Data Entry Type as defined in @tbl-definition_input_parameters
+<!-- Next, we group the times first by the Data Entry Type as defined in @tbl-definition_input_parameters -->
 
-* 25 and 50L1 are grouped together
-* 50L2
-* 100IM (we don't attempt to find the optimal $S_C$ for this value because we have a data set that is far too small for analysis.)
+<!-- * 25 and 50L1 are grouped together -->
+<!-- * 50L2 -->
+<!-- * 100IM -->
+<!-- (we don't attempt to find the optimal $S_C$ for this value because we have a data set that is far too small for analysis.) -->
 
-After the grouping by the Data Entry Type, we group by the stroke count so we can calculate the following statistics:
+<!-- After the grouping by the Data Entry Type, we group by the stroke count so we can calculate the following statistics: -->
 
-* number of entries ($n$)
-* mean ($\bar{x}$)
-* median ($\tilde{x}$)
-* fastest ($x_{Fastest}$)
-* slowest ($x_{Slowest}$)
-* sample standard deviation ($s$)
-* sample standard error of the mean ($s_{\bar{x}}$)
+<!-- * number of entries ($n$) -->
+<!-- * mean ($\bar{x}$) -->
+<!-- * median ($\tilde{x}$) -->
+<!-- * fastest ($x_{Fastest}$) -->
+<!-- * slowest ($x_{Slowest}$) -->
+<!-- * sample standard deviation ($s$) -->
+<!-- * sample standard error of the mean ($s_{\bar{x}}$) -->
 
-Choosing the optimal stroke for each swimmer will likely require understanding their swimming style, personality, and maturity. For example, all of the following scenarios are possible for a given swimmer:
+<!-- Choosing the optimal stroke for each swimmer will likely require understanding their swimming style, personality, and maturity. For example, all of the following scenarios are possible for a given swimmer: -->
 
-* $S_{C_1}$ is associated with the two fastest times.
-* $S_{C_2}$ is associated with the fastest $\bar{x}$, but the third biggest $s$.
-* $S_{C_3}$ is associated with the second fastest $\bar{x}$, but the smallest $s$.
+<!-- * $S_{C_1}$ is associated with the two fastest times. -->
+<!-- * $S_{C_2}$ is associated with the fastest $\bar{x}$, but the third biggest $s$. -->
+<!-- * $S_{C_3}$ is associated with the second fastest $\bar{x}$, but the smallest $s$. -->
 
-Once we've selected the $T_{Target}$, we calculate the desired $S_C$ for each of the three scenarios:
+<!-- Once we've selected the $T_{Target}$, we calculate the desired $S_C$ for each of the three scenarios: -->
 
-$$
-S_C = \frac{-\hat{\beta}_1 \pm \sqrt{{\hat{\beta}_1}^2 - 4 \hat{\beta}_2(\hat{\beta}_0 - T_{Target})}} {2\hat{\beta}_2}
-$$ {#eq-stroke_count_for_target_time_25} Stroke Count for 25 BR SCY or First Leg of 50 BR SCY Associated with Target Time
+<!-- $$ -->
+<!-- S_C = \frac{-\hat{\beta}_1 \pm \sqrt{{\hat{\beta}_1}^2 - 4 \hat{\beta}_2(\hat{\beta}_0 - T_{Target})}} {2\hat{\beta}_2} -->
+<!-- $$ {#eq-stroke_count_for_target_time_25} Stroke Count for 25 BR SCY or First Leg of 50 BR SCY Associated with Target Time -->
 
-$$
-S_C = \frac{-(\hat{\beta}_1 + \delta_{50L2}) \pm \sqrt{(\hat{\beta}_1 + \delta_{50L2})^2 - 4 \hat{\beta}_2(\hat{\beta}_0 + \gamma_{50L2} - T_{Target})}} {2\hat{\beta}_2}
-$$ {#eq-stroke_count_for_target_time_50L2} Stroke Count for Second Leg of 50 BR SCY Associated with Target Time
+<!-- $$ -->
+<!-- S_C = \frac{-(\hat{\beta}_1 + \delta_{50L2}) \pm \sqrt{(\hat{\beta}_1 + \delta_{50L2})^2 - 4 \hat{\beta}_2(\hat{\beta}_0 + \gamma_{50L2} - T_{Target})}} {2\hat{\beta}_2} -->
+<!-- $$ {#eq-stroke_count_for_target_time_50L2} Stroke Count for Second Leg of 50 BR SCY Associated with Target Time -->
 
 <!-- $$ -->
 <!-- S_C = \frac{-(\hat{\beta}_1 + \delta_{100IM}) \pm \sqrt{(\hat{\beta}_1 + \delta_{100IM})^2 - 4 \hat{\beta}_2(\hat{\beta}_0 + \gamma_{100IM} - T_{Target})}} {2\hat{\beta}_2} -->
 <!-- $$ {#eq-stroke_count_for_target_time_100IM} Stroke Count for Breaststroke Leg of 100 IM SCY Associated with Target Time -->
 
-The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is not the vertex because there are two $S_C$'s in the solution (from too few strokes and too many strokes). Given 2 $S_C$'s, with all else being equal, we would likely choose the one with lower variance for a 25 BR SCY.
+<!-- The quadratic formula for $S_C$ gives us additional options when $T_{Target}$ is not the vertex because there are two $S_C$'s in the solution (from too few strokes and too many strokes). Given 2 $S_C$'s, with all else being equal, we would likely choose the one with lower variance for a 25 BR SCY. -->
 
-### Case Study: Jadzia Bao Tran Vo
+<!-- ### Case Study: Jadzia Bao Tran Vo -->
 
-Based on the following data set, we have computed the following for Jadzia Vo:
+<!-- Based on the following data set, we have computed the following for Jadzia Vo: -->
 
-``` {r descriptive_analysis_by_data_entry_type, echo=FALSE, message=FALSE, warning=FALSE}
-
-
-summary_data_entry_type_25_50L1 <- derive_detailed_analysis_by_stroke_count(main_data_for_modeling, "25 or 50L1")
-summary_data_entry_type_50L2 <- derive_detailed_analysis_by_stroke_count(main_data_for_modeling, "50L2")
-summary_data_entry_type_100IM <- derive_detailed_analysis_by_stroke_count(main_data_for_modeling, "100IM")
-
-kable(summary_data_entry_type_25_50L1 , digits = 1, 
-      caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 25 and 50L1 Entries")
-
-kable(summary_data_entry_type_50L2 , digits = 1, 
-      caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 50L2 Entries")
-
-# kable(summary_data_entry_type_100IM , digits = 1, 
-#       caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 100MI Entries")
+<!-- ``` {r descriptive_analysis_by_data_entry_type, echo=FALSE, message=FALSE, warning=FALSE} -->
 
 
-```
+<!-- summary_data_entry_type_25_50L1 <- derive_detailed_analysis_by_stroke_count(main_data_for_modeling, "25 or 50L1") -->
+<!-- summary_data_entry_type_50L2 <- derive_detailed_analysis_by_stroke_count(main_data_for_modeling, "50L2") -->
+<!-- summary_data_entry_type_100IM <- derive_detailed_analysis_by_stroke_count(main_data_for_modeling, "100IM") -->
+
+<!-- kable(summary_data_entry_type_25_50L1 , digits = 1, -->
+<!--       caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 25 and 50L1 Entries") -->
+
+<!-- kable(summary_data_entry_type_50L2 , digits = 1, -->
+<!--       caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 50L2 Entries") -->
+
+<!-- # kable(summary_data_entry_type_100IM , digits = 1, -->
+<!-- #       caption = "Analysis of Jadzia Vo's Swimming Time (ms) by Stroke Count for 100MI Entries") -->
 
 
-#### Limited Applicability to Individual Medley (IM) Events
+<!-- ``` -->
 
-IM's are inherently different from other competitive events because the swimmer must swim all four strokes. Swimmers' performance can vary significantly among different strokes. For example, Katie Ledecky, who holds the world record for most gold medals won by a female swimmer, has only ever swam freestyle events at the Olympics [@OlympicsLedecky]. Michael Phelps, who holds the world record for most gold medals won by a male swimmer [@OlympicsPhelps], has never swam an individual backstroke or breaststroke event at the Olympics [@OlympediaPhelpsIndividualEvents]. When optimizing for IM, it's important to consider the strengths of the swimmer, which is rarely breaststroke. For many swimmers, including Jadzia Vo, optimizing the breaststroke time in an IM will likely lead to a sub optimal overall IM time.
-
-If we want to find an optimal $S_C$ for each stroke to optimize for the time of the entire IM, then we'll need to build completely different model that has all the variables interacting together. However, if we have apriori knowledge that can help inform our race strategy, we can still use this model to help determine a good IM strategy.
-
-USA Swimming has a Power Point Calculator at <https://data.usaswimming.org/datahub/powerpointcalculator> for calculating the relative strengths of a swimmer's stroke across different events. There are some notable idiosyncrasies about the calculator:
-
-* Age group ranges are defined by USA Swimming. For example, for 50 FR SCY, a 7-year-old and an 8-year-old will be compared together whereas a 9-year-old and a 10-year-old will be compared together. This means that a swimmer who just turned 7 yesterday will have their time compared with a swimmer who will turn 9 tomorrow, giving the latter swimmer an almost 2-year advantage in physical development and swim experience.
-* There is no fraction, so we used \pm 6 months to determine the age.
-* For events that there is no time standard (e.g. swimmers under 9 years old do not have time standards for a 500 FR SCY), they will be compared against the first group where the time standard applies. For example, a swimmer who turned 7 yesterday and swims a 500 FR SCY will be compared to a swimmer who will turn 11 tomorrow, giving the latter swimmer an almost 4-year advantage in physical development and swim experience.
-
-We can use USA Swimming's Power Points to determine what is likely the swimmer's best stroke and prioritize those strokes when optimizing for an IM swim.
-
-| **Event** | **Age** | **Best Time** | **Power Points** |
-| :--- | :--- | :--- | :--- |
-| 50 BK SCY | 8 | 44.96 | 242 |
-| 50 BR SCY | 8 | 52.63	| 207 |
-| 50 FL SCY | 8 | 43.56 | 242 |
-| 50 FR SCY | 8 | 39.22 | 241 |
-: USA Swimming Power Points for Jadzia Vo {#tbl-power_points_jadzia_vo}
-
-<!-- | 100 FR SCY | 8 | 1:30.30 | 131 | -->
-<!-- | 200 FR SCY | 8 | 3:09:35 | 161 | -->
-<!-- | 500 FR SCY | 8 | 8:21.35	| 157 | -->
-<!-- | 100 BK SCY | 8 | 1:40.19 | 209 | -->
-<!-- | 100 BR SCY | 7 | 1:57.03 | 188 | -->
-<!-- | 100 FL SCY | 8 | 1:52.12 | 82 | -->
-<!-- | 100 IM SCY | 8 | 1:36.42 | 269 | -->
-<!-- | 200 IM SCY | 7 | 3:50.64 | 84 | -->
-<!-- | 50 FR LCM | 7 | 48.85 | 97 | -->
-<!-- | 100 FR LCM | 8 | 1:41.90 | 156 | -->
-<!-- | 200 FR LCM | 8 | 3:37.42 | 142 | -->
-<!-- | 400 FR LCM | 8 | 7:43.73	| 130 | -->
-<!-- | 50 BK LCM | 8 | 54.50 | 164 | -->
-<!-- | 100 BK LCM | 8 | 1:52.15 | 259 | -->
-<!-- | 200 BK LCM | 8 | 4:00.86 | 1 | -->
-<!-- | 50 BR LCM | 8 | 1:01.33	| 198 | -->
-<!-- | 100 BR LCM | 8 | 2:19.21 | 138 | -->
-<!-- | 200 BR LCM | 8 | 4:47.47 | 1 | -->
-<!-- | 50 FL LCM | 8 | 50.22 | 211 | -->
-<!-- | 100 FL LCM | 8 | 2:02.80 | 168 | -->
-<!-- | 200 IM LCM | 8 | 4:06.95 | 189 | -->
-
-To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia's breaststroke is the her weakest (BR=207) whereas her other three strokes are effectively equally strong (FR=241, BK=242, FL=242). We would want to optimize her times for the other three strokes. The challenge will be to find $T_{Target}$ for breaststroke (third leg) that is as fast as possible without materially impacting $T_{Target}$ for freestyle (fourth and final leg). Once we've defined $T_{Target}$ for breaststroke, we can use @eq-stroke_count_for_target_time_100IM to find $S_C$ for breaststroke that is a good minimizer for the 100 IM.
 
 # Conclusion
 
 ## Hypothesis Testing Results
 
+### Model V0: Baseline
+
+$$
+\begin{split}
+\hat{T}_{Lap} = & \hat{\beta}_0 \\
+ & + \hat{\gamma}_{50L2} I_{50L2} \\
+ & + \hat{\gamma}_{100IM} I_{100IM} \\
+ & + \hat{\eta}_0 O
+\end{split}
+$$ {#eq-regression_model_v0}
+
+This is the baseline model that we use to compare our model against. It does not include any $S_C$.
+
 ```{r, hypothesis testing results, echo=FALSE, message=FALSE, warning=FALSE}
   
 
 model_v0 <- lm(time_milliseconds ~ 
-                stroke_count + 
-                event_ordinal  , 
-              data = main_data_for_modeling  )
+                 data_entry_type +
+                event_ordinal, 
+              data = main_data_for_modeling)
+
+model_v0_summary_data <- calculate_model_coefficients_summary(model_v0)
+
+knitr::kable(model_v0_summary_data$table_summary_data, digits = 3, caption = "Model v0 Summary")
 
 model_final <- lm(time_milliseconds ~ 
                 stroke_count + 
                 I(stroke_count^2) + 
                 data_entry_type + 
                 event_ordinal + 
-                event_ordinal  * stroke_count +
-                event_ordinal  *I(stroke_count^2)  , 
+                event_ordinal * stroke_count +
+                event_ordinal * I(stroke_count^2)  , 
               data = main_data_for_modeling  )
 
 
@@ -671,20 +644,19 @@ hypothesis_p_value2 <- ifelse(hypothesis_p_value< 0.0001,
 
 ```
 
-### Result 1: Stroke count significantly affected swimming time.
+### Result 1: Stroke count significantly affected swimming time
 
-To test if stroke count significantly affects swimming time, we have compared 2 models by using the ANOVA test. The reduced model is model_v0 which will be used as baseline model, it only includes “data_entry_type” and “ordinal_events”. And the full model will be model_v4 which includes “stroke_count”, its quadratic term and other interaction terms with “data_entry_type” and “ordinal_events”.
+To test if stroke count significantly affects swimming time, we compared our model defined by @eq-regression_model_final with the baseline model defined by @eq-regression_model_v0 with the ANOVA test.
 
-The result of the F-test from ANOVA gave us a p-value of `r hypothesis_p_value2` which is significant, so we reject null hypothesis. This result indicates that stroke count is meaningful for predicting swim time. 
+The result of the F-test from ANOVA gave us a p-value of `r hypothesis_p_value2` which is significant, which indicates that stroke count is meaningful for predicting swim time for swimmers under 11-years-old.
 
-### Result 2: Optimal Stroke count per data type and ordinal events
+### Result 2: We discovered a flaw in our data collection
 
+The following table identifies optimal stroke count for each data_entry_type and event_ordinal. Notice that after event_ordinal 6, the optimal $S_C$ no longer seems to change. This is likely evidence that the swimmer is now too fatigued to produce IID data. In a normal competition day, over a period of 3+ hours, swimmers do not compete in more than 4 events (the maximum is usually 3 events in 3 hours). This points to the fact that our rest period is either not enough, or is only valid up until 6 trials. When we started this data collection, the event_ordinal value was only collected in case we ever needed to review the data and was never meant to be part of our model. The fact event_ordinal is a significant part of our model points to a data collection failure.
 
 ```{r optimal Stroke count, echo=FALSE, message=FALSE, warning=FALSE}
 
 ## Simulate testing data:
-
-# model <- model_final
 
 stroke_seq  <- with(main_data_for_modeling, seq.int(min(stroke_count, na.rm = TRUE),
                                                    max(stroke_count, na.rm = TRUE),
@@ -705,7 +677,7 @@ pred_data <- expand.grid(
 )
 
 # Get predictions with 95% confidence intervals
-pred_results <- predict(model , newdata = pred_data, interval = "confidence", level = 0.95)
+pred_results <- predict(model_final , newdata = pred_data, interval = "confidence", level = 0.95)
 pred_data2 <- cbind(pred_data, pred_results)
  
 
@@ -732,106 +704,103 @@ knitr::kable(pred_data3, digits = 3, caption = "Optimal Stroke count per data ty
 
 ```
 
-We have attached table here for optimal stroke count for each data entry type and each ordinal event. Notice that when the ordinal event is lower than 6, the result indicates that the fewer the stroke count is, the lower the swim time is. This is because of we had interaction terms in the model, such as stroke count by ordinal event, and also stroke count square by ordinal event. 
+
+<!-- ```{r optimal stroke count plot, echo=FALSE, message=FALSE, warning=FALSE  , fig.width=10, fig.height=7} -->
+
+<!-- #| echo: false -->
+<!-- #| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count" -->
+<!-- ##| fig-width: 7 -->
+<!-- ##| fig-height: 10 -->
+<!-- #| fig-pos: H -->
+<!-- #| fig-cap-location: top -->
+<!-- #| label: plot_optimal_stroke_count -->
+<!-- #| message: false -->
+<!-- #| warning: false -->
+
+<!-- model <- model_final -->
 
 
-```{r optimal stroke count plot, echo=FALSE, message=FALSE, warning=FALSE  , fig.width=10, fig.height=7}
+<!-- main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 1000) -->
 
-#| echo: false
-#| fig-cap: "Distribution of Elapsed Time (in milliseconds) for each Stroke Count"
-##| fig-width: 7
-##| fig-height: 10
-#| fig-pos: H
-#| fig-cap-location: top
-#| label: plot_optimal_stroke_count
-#| message: false
-#| warning: false
-
-model <- model_v4
-
-main_data_y_min <- 24000
-main_data_y_max <- 42000
-main_data_y_seq <- seq(from = main_data_y_min, to = main_data_y_max, by = 1000)
-
-color_mapping <- c(
-                   "25 or 50L1" = "blue",
-                   "50L2" = "red",
-                   "100IM" = "darkgreen")
+<!-- color_mapping <- c( -->
+<!--                    "25 or 50L1" = "blue", -->
+<!--                    "50L2" = "red", -->
+<!--                    "100IM" = "darkgreen") -->
 
 
-# Create prediction data for each data_entry_type
-stroke_range <- range(main_data_for_modeling$stroke_count)
+<!-- # Create prediction data for each data_entry_type -->
+<!-- stroke_range <- range(main_data_for_modeling$stroke_count) -->
 
-ordinal_mean <- ceiling(mean(main_data_for_modeling$event_ordinal))
-
-
-pred_data <- expand.grid(
-  event_ordinal = seq(ordinal_mean,ordinal_mean, length.out = 1),
-  stroke_count = seq(stroke_range[1], stroke_range[2], length.out = 100),
-  data_entry_type = unique(main_data_for_modeling$data_entry_type)
-)
-
-pred_results <- predict(model , newdata = pred_data, interval = "confidence", level = 0.95)
-pred_data <- cbind(pred_data, pred_results)
+<!-- ordinal_mean <- ceiling(mean(main_data_for_modeling$event_ordinal)) -->
 
 
-p_plot_with_model <- ggplot(main_data_for_modeling,
-       aes(x = as.numeric(stroke_count),
-           y = as.numeric(time_milliseconds),
-           color = factor(data_entry_type))) +
-  # Add prediction lines
-  geom_line(data = pred_data,
-            aes(x = stroke_count,
-                y = fit,
-                color = data_entry_type),
-            linewidth = 1) +
-  geom_ribbon(data = pred_data,
-              aes(x = stroke_count,
-                  ymin = lwr,
-                  ymax = upr,
-                  fill = data_entry_type),
-              alpha = 0.1,
-              inherit.aes = FALSE)+
-geom_jitter(
-    width = 0.3,   # Controls the amount of horizontal jitter (default is 40% of the resolution of the data)
-    alpha = 0.7,   # Makes points semi-transparent to better visualize density
-    size = 3,     # Sets the size of the points
-    size = 2     # Sets the size of the points
-  ) +
-# geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) +
-geom_text(aes(label = main_data_for_plotting$event_ordinal), 
-          nudge_x = 0.15,     # Move slightly to the right
-          nudge_y = -180,     # Move slightly down (Adjust this value based on your Y scale!)
-          size = 3,           # Make font smaller than the dots
-          color = "black",    # Keep text black so it's readable
-          fontface = "bold",
-          show.legend = FALSE # Don't add 'a' to the legend
-  ) +  
-scale_color_manual(values = color_mapping) +
-scale_fill_manual(values = color_mapping) +
-# scale_shape_manual(values = data_plot_custom_shapes) +
-scale_y_continuous(
-  breaks = main_data_y_seq,      # Forces labels at 0, 10000, ... 80000
-  limits = c(main_data_y_min, main_data_y_max) # Forces the graph to start/end exactly there
-) +
-labs(
-  title = "Model_v4: Optimal Stroke Count (Average Ordinal Event = 6)",
-  x = expression(bold(S[C])),
-  y = expression(bold(T[lap])),
-  # color = "unwell_feedback", # Legend Title
-  # shape = "data_entry_type", # Legend Title
-  color = "data_entry_type"  # Legend Title (must match color title to combine legends)
-) +
-  scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+
-theme(legend.position = "bottom",
-      legend.box = "vertical")
+<!-- pred_data <- expand.grid( -->
+<!--   event_ordinal = seq(ordinal_mean,ordinal_mean, length.out = 1), -->
+<!--   stroke_count = seq(stroke_range[1], stroke_range[2], length.out = 100), -->
+<!--   data_entry_type = unique(main_data_for_modeling$data_entry_type) -->
+<!-- ) -->
 
-p_plot_with_model
+<!-- pred_results <- predict(model , newdata = pred_data, interval = "confidence", level = 0.95) -->
+<!-- pred_data <- cbind(pred_data, pred_results) -->
+
+
+<!-- p_plot_with_model <- ggplot(main_data_for_modeling, -->
+<!--        aes(x = as.numeric(stroke_count), -->
+<!--            y = as.numeric(time_milliseconds), -->
+<!--            color = factor(data_entry_type))) + -->
+<!--   # Add prediction lines -->
+<!--   geom_line(data = pred_data, -->
+<!--             aes(x = stroke_count, -->
+<!--                 y = fit, -->
+<!--                 color = data_entry_type), -->
+<!--             linewidth = 1) + -->
+<!--   geom_ribbon(data = pred_data, -->
+<!--               aes(x = stroke_count, -->
+<!--                   ymin = lwr, -->
+<!--                   ymax = upr, -->
+<!--                   fill = data_entry_type), -->
+<!--               alpha = 0.1, -->
+<!--               inherit.aes = FALSE)+ -->
+<!-- geom_jitter( -->
+<!--     width = 0.3,   # Controls the amount of horizontal jitter (default is 40% of the resolution of the data) -->
+<!--     alpha = 0.7,   # Makes points semi-transparent to better visualize density -->
+<!--     size = 3,     # Sets the size of the points -->
+<!--     size = 2     # Sets the size of the points -->
+<!--   ) + -->
+<!-- # geom_point(width = 0.2, alpha = 0.7, size = 3, stroke = 2) + -->
+<!-- geom_text(aes(label = main_data_for_plotting$event_ordinal),  -->
+<!--           nudge_x = 0.15,     # Move slightly to the right -->
+<!--           nudge_y = -180,     # Move slightly down (Adjust this value based on your Y scale!) -->
+<!--           size = 3,           # Make font smaller than the dots -->
+<!--           color = "black",    # Keep text black so it's readable -->
+<!--           fontface = "bold", -->
+<!--           show.legend = FALSE # Don't add 'a' to the legend -->
+<!--   ) +   -->
+<!-- scale_color_manual(values = color_mapping) + -->
+<!-- scale_fill_manual(values = color_mapping) + -->
+<!-- # scale_shape_manual(values = data_plot_custom_shapes) + -->
+<!-- scale_y_continuous( -->
+<!--   breaks = main_data_y_seq,      # Forces labels at 0, 10000, ... 80000 -->
+<!--   limits = c(main_data_y_min, main_data_y_max) # Forces the graph to start/end exactly there -->
+<!-- ) + -->
+<!-- labs( -->
+<!--   title = "Model_v4: Optimal Stroke Count (Average Ordinal Event = 6)", -->
+<!--   x = expression(bold(S[C])), -->
+<!--   y = expression(bold(T[lap])), -->
+<!--   # color = "unwell_feedback", # Legend Title -->
+<!--   # shape = "data_entry_type", # Legend Title -->
+<!--   color = "data_entry_type"  # Legend Title (must match color title to combine legends) -->
+<!-- ) + -->
+<!--   scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))+ -->
+<!-- theme(legend.position = "bottom", -->
+<!--       legend.box = "vertical") -->
+
+<!-- p_plot_with_model -->
 
 
 
 
-```
+<!-- ``` -->
 
 
 
@@ -873,6 +842,54 @@ We also limited our study to breaststroke. There are three other competitive str
 <!-- ## Non-Linear Interaction Term for IM's -->
 <!-- Our model assumes that the interaction term for a 100 IM is $\delta_{100IM}S_CI_{100IM}$. Logically, we think that there should be another term $\delta_{100IM_2}{S_C}^2I_{100IM}$ because the cost of additional strokes, and therefore additional energy, is incredibly punishing for any young competitive swimmer who's not a strong breaststroker (as evident by @tbl-power_points_jadzia_vo is a relatively weak breaststroker). However, we lack the data to have sufficient conviction to add this term. Therefore, in the interest of parsimony, we opted for a linear interaction term. -->
 
+
+## Limited Applicability to Individual Medley (IM) Events
+
+IM's are inherently different from other competitive events because the swimmer must swim all four strokes. Swimmers' performance can vary significantly among different strokes. For example, Katie Ledecky, who holds the world record for most gold medals won by a female swimmer, has only ever swam freestyle events at the Olympics [@OlympicsLedecky]. Michael Phelps, who holds the world record for most gold medals won by a male swimmer [@OlympicsPhelps], has never swam an individual backstroke or breaststroke event at the Olympics [@OlympediaPhelpsIndividualEvents]. When optimizing for IM, it's important to consider the strengths of the swimmer, which is rarely breaststroke. For many swimmers, including our test subject, Jadzia Bao Tran Vo, optimizing the breaststroke time in an IM will likely lead to a sub optimal overall IM time.
+
+If we want to find an optimal $S_C$ for each stroke to optimize for the time of the entire IM, then we'll need to build completely different model that has all the variables interacting together. However, if we have apriori knowledge that can help inform our race strategy, we can still use this model to help determine a good IM strategy.
+
+USA Swimming has a Power Point Calculator at <https://data.usaswimming.org/datahub/powerpointcalculator> for calculating the relative strengths of a swimmer's stroke across different events. There are some notable idiosyncrasies about the calculator:
+
+* Age group ranges are defined by USA Swimming. For example, for 50 FR SCY, a 7-year-old and an 8-year-old will be compared together whereas a 9-year-old and a 10-year-old will be compared together. This means that a swimmer who just turned 7 yesterday will have their time compared with a swimmer who will turn 9 tomorrow, giving the latter swimmer an almost 2-year advantage in physical development and swim experience.
+* There is no fraction, so we used \pm 6 months to determine the age.
+* For events that there is no time standard (e.g. swimmers under 9 years old do not have time standards for a 500 FR SCY), they will be compared against the first group where the time standard applies. For example, a swimmer who turned 7 yesterday and swims a 500 FR SCY will be compared to a swimmer who will turn 11 tomorrow, giving the latter swimmer an almost 4-year advantage in physical development and swim experience.
+
+We can use USA Swimming's Power Points to determine what is likely the swimmer's best stroke and prioritize those strokes when optimizing for an IM swim.
+
+| **Event** | **Age** | **Best Time** | **Power Points** |
+| :--- | :--- | :--- | :--- |
+| 50 BK SCY | 8 | 44.96 | 242 |
+| 50 BR SCY | 8 | 52.63	| 207 |
+| 50 FL SCY | 8 | 43.56 | 242 |
+| 50 FR SCY | 8 | 39.22 | 241 |
+: USA Swimming Power Points for Jadzia Vo {#tbl-power_points_jadzia_vo}
+
+<!-- | 100 FR SCY | 8 | 1:30.30 | 131 | -->
+<!-- | 200 FR SCY | 8 | 3:09:35 | 161 | -->
+<!-- | 500 FR SCY | 8 | 8:21.35	| 157 | -->
+<!-- | 100 BK SCY | 8 | 1:40.19 | 209 | -->
+<!-- | 100 BR SCY | 7 | 1:57.03 | 188 | -->
+<!-- | 100 FL SCY | 8 | 1:52.12 | 82 | -->
+<!-- | 100 IM SCY | 8 | 1:36.42 | 269 | -->
+<!-- | 200 IM SCY | 7 | 3:50.64 | 84 | -->
+<!-- | 50 FR LCM | 7 | 48.85 | 97 | -->
+<!-- | 100 FR LCM | 8 | 1:41.90 | 156 | -->
+<!-- | 200 FR LCM | 8 | 3:37.42 | 142 | -->
+<!-- | 400 FR LCM | 8 | 7:43.73	| 130 | -->
+<!-- | 50 BK LCM | 8 | 54.50 | 164 | -->
+<!-- | 100 BK LCM | 8 | 1:52.15 | 259 | -->
+<!-- | 200 BK LCM | 8 | 4:00.86 | 1 | -->
+<!-- | 50 BR LCM | 8 | 1:01.33	| 198 | -->
+<!-- | 100 BR LCM | 8 | 2:19.21 | 138 | -->
+<!-- | 200 BR LCM | 8 | 4:47.47 | 1 | -->
+<!-- | 50 FL LCM | 8 | 50.22 | 211 | -->
+<!-- | 100 FL LCM | 8 | 2:02.80 | 168 | -->
+<!-- | 200 IM LCM | 8 | 4:06.95 | 189 | -->
+
+To optimize for the 100 IM SCY, we look at SCY data and it's obvious that Jadzia's breaststroke is the her weakest (BR=207) whereas her other three strokes are effectively equally strong (FR=241, BK=242, FL=242). We would want to optimize her times for the other three strokes. The challenge will be to find $T_{Target}$ for breaststroke (third leg) that is as fast as possible without materially impacting $T_{Target}$ for freestyle (fourth and final leg).
+<!-- Once we've defined $T_{Target}$ for breaststroke, we can use @eq-stroke_count_for_target_time_100IM to find $S_C$ for breaststroke that is a good minimizer for the 100 IM. -->
+
 ## $S_C$ Heteroskedasticity and Technique { #sec-heteroskedasticity_and_technique }
 Our quadratic equation gives us two solution for a given $T_{Target}$ if $T_{Target} \neq T_{Fastest}$. A reason to consider $T_{Target} \neq T_{Fastest}$ is if $\sigma^2[T_{Target}] \ll \sigma^2[T_{Fastest}]$ and $T_{Target} \approx T_{Fastest}$.
 If $S_{C_{Less}}$ and $S_{C_{More}}$ results in the same $T_{Target}$, $S_{C_{Less}}$ would require less energy, and therefore be preferable. However $S_{C_{Less}}$ would also require much more precision in the kick and streamline, and thus likely to have a higher variance. There seems to be heteroscedasticity with variance of stroke counts, especially for younger swimmers that have not mastered precision. It would be useful to test the correlation between $S_C$ and $\sigma^2[T_{Lap}]$ with Spearman's Correlation Test. If $\rho \approx 1$ and $p < \alpha$, then it would be very beneficial for the swimmer to train for precision.
@@ -885,7 +902,7 @@ Qualitatively, Jadzia Vo's swim coaches have confirmed that Jadzia's kicks are n
 ::: {#refs}
 :::
 
-# Appendix A - Evolution of Regression Model
+# Appendix A - Evolution of Regression Model {#sec-appendix_a}
 This section details how our regression model evolved over time.
 
 ## Model V1: Basic Model with Three Event Types
@@ -962,7 +979,7 @@ knitr::kable(model_v2_summary_data$table_summary_data, digits = 3, caption = "Mo
 # )
 ```
 
-Compared to @eq-regression_model_v1, we achieved a much larger $R^2$ (`r model_v2_summary_data$r_squared`), but incrementally larger adjusted $R^2$ (`r model_v2_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting.`
+Compared to @eq-regression_model_v1, we achieved a much larger $R^2$ (`r model_v2_summary_data$r_squared`), but incrementally larger adjusted $R^2$ (`r model_v2_summary_data$adjusted_r_squared`) and with estimators with higher $p$ values, indicating that this model suffers from overfitting. Moreover, we didn't achive any significance with the coefficients.
 
 ## Model V3: Simplify to get to Stastical Significance
 
@@ -988,56 +1005,25 @@ model_v3_summary_data <- calculate_model_coefficients_summary(model_v3)
 knitr::kable(model_v3_summary_data$table_summary_data, digits = 3, caption = "Model v3 Summary")
 ```
 
-Compared to @eq-regression_model_v1 and @eq-regression_model_v2, we had a much lower $R^2$ (`r model_v3_summary_data$r_squared`), but the largest adjusted $R^2$ (`r model_v3_summary_data$adjusted_r_squared`) and statistical significance. However, this model doesn't make sense to us because the model is missing interaction terms, which should matter.
+This model produced $R^2$ (`r model_v3_summary_data$r_squared`) that is greater than  @eq-regression_model_v1 but less than @eq-regression_model_v2, but the lowest adjusted $R^2$ (`r model_v3_summary_data$adjusted_r_squared`). Moreover, this model doesn't make sense to us because the model is missing interaction terms, which should matter.
 
-
-## Model V4: Added interaction term with event ordinal
-
-
-$$
-\begin{split}
-\hat{T}_{Lap} = & \hat{\beta}_0 + \hat{\beta}_1 S_C + \hat{\beta}_2 {S_C}^2 \\
-  & + \hat{\gamma}_{50L2} I_{50L2} \\
-  & + \hat{\gamma}_{100IM} I_{100IM} \\
-  & + \hat{\eta}_0 O + \hat{\eta}_0 O S_C + \hat{\eta}_0 O {S_C}^2
-\end{split}
-$$
-
-
-We added variable event ordinal and also added interaction of stroke count with event ordinal to get to see if we can get to statistical significance.
-
-
-```{r summary_regression_model_v4, echo=FALSE, results='asis'}
-
-model_v4 <- lm(time_milliseconds ~ 
-                stroke_count + 
-                I(stroke_count^2) + 
-                data_entry_type + 
-                event_ordinal + 
-                event_ordinal * stroke_count +
-                event_ordinal * I(stroke_count^2), 
-              data = main_data_for_modeling  )
-
-model_v4_summary_data <- calculate_model_coefficients_summary(model_v4)
-
-knitr::kable(model_v4_summary_data$table_summary_data, digits = 3, caption = "Model v4 Summary")
-```
 
 
 {{< pagebreak >}}
 
-## MCompare between Models
+## MCompare among Models
+This leads us to our final comparison among our models. Our model, @eq-regression_model_final, has the highest adjusted $R^2$, the most number of significant terms, and the lowest robust standard error.
 
 ```{r compare models, echo=FALSE, message=FALSE, warning=FALSE}
- 
+
 source("source/modelSummary2df.R")
 
 beta_rename <- read.csv("source/beta_rename.csv")
 
 
 model_summary_list<- rlang::set_names(
-  list(model_v1, model_v2, model_v3, model_v4),
-  c("model_v1", "model_v2", "model_v3", "model_v4")
+  list(model_v1, model_v2, model_v3, model_final),
+  c("model_v1", "model_v2", "model_v3", "model_final")
 )
 
 model_compare_df_1 <- modelSummary2df(model_summary_list)
@@ -1048,13 +1034,13 @@ model_compare_df_2 <- beta_rename %>%
   rename(term = new_name)
 
     ## Sorting
-    keep_last <- c("[Sample Size]", 
-                   "[R^2]", 
+    keep_last <- c("[Sample Size]",
+                   "[R^2]",
                    "[Adjusted R^2]",
-                   "[RSE]", 
-                   "[Test Statistic]", 
+                   "[RSE]",
+                   "[Test Statistic]",
                    "[P-value]")
-    
+
 
     model_compare_df_2 <- model_compare_df_2 %>%
       arrange(
@@ -1080,7 +1066,7 @@ knitr::kable(model_compare_df_2 , digits = 3, caption = "Model Comparison")
 
 # Appendix C - Model Validation
 
-We want to make sure that Model_v4 not only fits the current dataset well, but also remains valid for future or unseen data. To do this, we tested the stability of the coefficients by repeatedly splitting the data and re-estimating the model. For the data splits, we randomized the samples while stratifying by “data_entry_type” to ensure that each set had balanced characteristics. After randomization, each sample was assigned to either the estimation set (for fitting the model) or the validation set (for evaluating prediction error). We refit the model using the estimation set and then calculated the mean squared prediction error using the validation set. This process was repeated 1,000 times.
+We want to make sure that @eq-regression_model_final not only fits the current dataset well, but also remains valid for future or unseen data. To do this, we tested the stability of the coefficients by repeatedly splitting the data and re-estimating the model. For the data splits, we randomized the samples while stratifying by “data_entry_type” to ensure that each set had balanced characteristics. After randomization, each sample was assigned to either the estimation set (for fitting the model) or the validation set (for evaluating prediction error). We refit the model using the estimation set and then calculated the mean squared prediction error using the validation set. This process was repeated 1,000 times.
 
 From the beta distribution plots, we can conclude the following: (a) Regarding stability, most beta histograms are symmetric and narrow. This suggests that the coefficients are stable, since their estimates are mostly normally distributed. However, Beta 7 and Beta 8 appear slightly skewed, which may be because they are interaction terms. (b) Regarding sign consistency, the medians of Beta 1 and Beta 2 are close to 0, which suggests that we cannot reliably interpret the direction of their effects. The remaining beta coefficients have consistent signs.
 
@@ -1107,7 +1093,7 @@ main_data_for_modeling2 <- main_data_for_modeling%>%
 
 
 df <- main_data_for_modeling2
-model <- model_v4 
+model <- model_final
 
 # 
 beta0 <- numeric() 
@@ -1216,7 +1202,7 @@ There are 5 observations those are outliers, leverage points, or influence point
 
 
 
-model <- model_v4
+model <- model_final
 
 main_data_for_modeling2 <- main_data_for_modeling%>%
   mutate(record_id = row_number(), .before = 1)
@@ -1393,7 +1379,7 @@ knitr::kable(dataset105 , digits = 3,
 ##| fig-height: 4
 #| fig-pos: H
 #| fig-cap-location: top
-#| label: plot_model_v4_no_outliers
+#| label: plot_model_final_no_outliers
 #| message: false
 #| warning: false
 
@@ -1525,8 +1511,8 @@ beta_rename <- read.csv("source/beta_rename.csv")
 
 
 model_summary_list<- rlang::set_names(
-  list( model_v4, model_v6),
-  c("model_v4", "model_v6")
+  list( model_final, model_v6),
+  c("model_final", "model_v6")
 )
 
 model_compare_df_1 <- modelSummary2df(model_summary_list)
