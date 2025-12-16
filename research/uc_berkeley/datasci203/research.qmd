@@ -1159,8 +1159,8 @@ plot(model, which = 3)
 
 
 # ## Studentized residuals
-rstandard(fit)
-plot(fitted(fit), rstudent(fit),
+rstandard(model)
+plot(fitted(model), rstudent(model),
      xlab = "Fitted values", ylab = "Studentized Residuals",
      main = "Studentized Residuals vs. Fitted",
      ylim = c(-9, 3))
@@ -1169,8 +1169,8 @@ abline(h = c(-2, 2), lty = 3)
 
 
 ## standardized residuals
-rstandard(fit)
-plot(fitted(fit), rstandard(fit),
+rstandard(model)
+plot(fitted(model), rstandard(model),
      xlab = "Fitted values", ylab = "Standardized residuals",
      main = "standardized residuals vs. Fitted",
      ylim = c(-9, 3))
@@ -1187,7 +1187,7 @@ abline(h = c(-2, 2), lty = 3)
 
 # Appendix C - Model Validation
 
-We want to make sure that @eq-regression_model_final not only fits the current dataset well, but also remains valid for future or unseen data. To do this, we tested the stability of the coefficients by repeatedly splitting the data and re-estimating the model. For the data splits, we randomized the samples while stratifying by “data_entry_type” to ensure that each set had balanced characteristics. After randomization, each sample was assigned to either the estimation set (for fitting the model) or the validation set (for evaluating prediction error). We refit the model using the estimation set and then calculated the mean squared prediction error using the validation set. This process was repeated 1,000 times.
+We want to make sure that @eq-regression_ not only fits the current dataset well, but also remains valid for future or unseen data. To do this, we tested the stability of the coefficients by repeatedly splitting the data and re-estimating the model. For the data splits, we randomized the samples while stratifying by “data_entry_type” to ensure that each set had balanced characteristics. After randomization, each sample was assigned to either the estimation set (for fitting the model) or the validation set (for evaluating prediction error). We refit the model using the estimation set and then calculated the mean squared prediction error using the validation set. This process was repeated 1,000 times.
 
 From the beta distribution plots, we can conclude the following: (a) Regarding stability, most beta histograms are symmetric and narrow. This suggests that the coefficients are stable, since their estimates are mostly normally distributed. However, Beta 7 and Beta 8 appear slightly skewed, which may be because they are interaction terms. (b) Regarding sign consistency, the medians of Beta 1 and Beta 2 are close to 0, which suggests that we cannot reliably interpret the direction of their effects. The remaining beta coefficients have consistent signs.
 
